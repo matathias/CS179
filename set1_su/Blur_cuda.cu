@@ -40,6 +40,6 @@ void cudaCallBlurKernel(const unsigned int blocks,
         const unsigned int blur_v_size) {
         
     /* TODO: Call the kernel above this function. */
-    cudaBlurKernerl<<<blocks, threadsPerBlock>>>
+    cudaBlurKernel<<<blocks, threadsPerBlock>>>
         (raw_data, blur_v, out_data, N, blur_v_size);
 }
