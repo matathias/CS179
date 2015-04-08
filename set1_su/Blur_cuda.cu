@@ -42,4 +42,7 @@ void cudaCallBlurKernel(const unsigned int blocks,
     /* TODO: Call the kernel above this function. */
     cudaBlurKernel<<<blocks, threadsPerBlock>>>
         (raw_data, blur_v, out_data, N, blur_v_size);
+
+    for (int i = 0; i < 10; i++)
+        printf("Output %d: %f", i, out_data[i]);
 }
