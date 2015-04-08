@@ -22,7 +22,6 @@ cudaBlurKernel(const float *raw_data, const float *blur_v, float *out_data,
         for (int j = 0; j <= i; j++){
             out_data[i] += raw_data[i - j] * blur_v[j]; 
         }
-        printf("Output %d: %f", i, out_data[i]);
     }
     for (int i = blur_v_size; i < N; i++){
         for (int j = 0; j < blur_v_size; j++){
@@ -43,7 +42,4 @@ void cudaCallBlurKernel(const unsigned int blocks,
     /* TODO: Call the kernel above this function. */
     cudaBlurKernel<<<blocks, threadsPerBlock>>>
         (raw_data, blur_v, out_data, N, blur_v_size);
-
-    //for (int i = 0; i < 10; i++)
-    //    cout << "Output " << i << ": " << out_data[i];
 }
