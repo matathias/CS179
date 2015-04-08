@@ -17,6 +17,17 @@ cudaBlurKernel(const float *raw_data, const float *blur_v, float *out_data,
 
     It may be helpful to use the information in the lecture slides, 
     as well as the CPU implementation, as a reference. */
+
+    for (int i = 0; i < blur_v_size; i++){
+        for (int j = 0; j <= i; j++){
+            out_data[i] += raw_data[i - j] * blur_v[j]; 
+        }
+    }
+    for (int i = blur_v_size; i < N; i++){
+        for (int j = 0; j < blur_v_size; j++){
+            out_data[i] += raw_data[i - j] * blur_v[j]; 
+        }
+    }
 }
 
 
@@ -29,4 +40,6 @@ void cudaCallBlurKernel(const unsigned int blocks,
         const unsigned int blur_v_size) {
         
     /* TODO: Call the kernel above this function. */
+    cudaBlurKernerl<<<blocks, threadsPerBlock>>>
+        (raw_data, blur_v, out_data, N, blur_v_size);
 }
