@@ -85,7 +85,7 @@ int large_gauss_test(int argc, char **argv){
     float mean = 0.0;
     float std = 5.0;
 
-    int GAUSSIAN_SIDE_WIDTH = 10;
+    int GAUSSIAN_SIDE_WIDTH = 1;
     int GAUSSIAN_SIZE = 2 * GAUSSIAN_SIDE_WIDTH + 1;
 
     // Space for both sides of the gaussian blur vector, plus the middle,
@@ -155,7 +155,8 @@ int large_gauss_test(int argc, char **argv){
     parameter to control how many trials we run. */
 
     int nChannels = 1;      // Can set as the number of trials
-    int N = 1e7;        // Can set how many data points arbitrarily
+    //int N = 1e7;        // Can set how many data points arbitrarily
+    int N = 5;
 #endif
 
 
@@ -332,7 +333,7 @@ int large_gauss_test(int argc, char **argv){
             } else {
                 success = false;
                 cerr << "Incorrect output at index " << i << ": " << output_data_host[i] << ", " 
-                    << output_data[i] << ", " << dev_out_data[i] << endl;
+                    << output_data[i] << endl;
             }
         }
 
