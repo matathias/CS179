@@ -85,7 +85,7 @@ int large_gauss_test(int argc, char **argv){
     float mean = 0.0;
     float std = 5.0;
 
-    int GAUSSIAN_SIDE_WIDTH = 1;
+    int GAUSSIAN_SIDE_WIDTH = 10;
     int GAUSSIAN_SIZE = 2 * GAUSSIAN_SIDE_WIDTH + 1;
 
     // Space for both sides of the gaussian blur vector, plus the middle,
@@ -155,8 +155,7 @@ int large_gauss_test(int argc, char **argv){
     parameter to control how many trials we run. */
 
     int nChannels = 1;      // Can set as the number of trials
-    //int N = 1e7;        // Can set how many data points arbitrarily
-    int N = 5;
+    int N = 1e7;        // Can set how many data points arbitrarily
 #endif
 
 
@@ -166,6 +165,7 @@ int large_gauss_test(int argc, char **argv){
     float *input_data = (float*)malloc(sizeof(float) * N );
 
     // Output data storage for GPU implementation (will write to this from GPU)
+    // Initialize the outputs to zero to ensure equality in the end
     float *output_data = (float*)calloc(N, sizeof(float));
 
     // Output data storage for CPU implementation
@@ -204,6 +204,8 @@ int large_gauss_test(int argc, char **argv){
     /* TODO: Allocate memory on the GPU here to store the output 
     audio signal. */
     cudaMalloc((void **) &dev_out_data, N * sizeof(float));
+    // ensure that dev_out_data is all 0s by copying from output_data, which is
+    // all zeros.
     cudaMemcpy(dev_out_data, output_data, N * sizeof(float), 
                cudaMemcpyHostToDevice);
 
