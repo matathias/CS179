@@ -166,10 +166,10 @@ int large_gauss_test(int argc, char **argv){
     float *input_data = (float*)malloc(sizeof(float) * N );
 
     // Output data storage for GPU implementation (will write to this from GPU)
-    float *output_data = (float*)calloc(N * sizeof(float));
+    float *output_data = (float*)calloc(N, sizeof(float));
 
     // Output data storage for CPU implementation
-    float *output_data_host = (float*)calloc(N * sizeof(float));
+    float *output_data_host = (float*)calloc(N, sizeof(float));
 
 
     
