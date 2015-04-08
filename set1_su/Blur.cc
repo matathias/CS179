@@ -166,10 +166,10 @@ int large_gauss_test(int argc, char **argv){
     float *input_data = (float*)malloc(sizeof(float) * N );
 
     // Output data storage for GPU implementation (will write to this from GPU)
-    float *output_data = (float*)malloc(N * sizeof(float));
+    float *output_data = (float*)calloc(N * sizeof(float));
 
     // Output data storage for CPU implementation
-    float *output_data_host = (float*)malloc(N * sizeof(float));
+    float *output_data_host = (float*)calloc(N * sizeof(float));
 
 
     
@@ -204,6 +204,8 @@ int large_gauss_test(int argc, char **argv){
     /* TODO: Allocate memory on the GPU here to store the output 
     audio signal. */
     cudaMalloc((void **) &dev_out_data, N * sizeof(float));
+    cudaMemcpy(dev_out_data, output_data, N * sizeof(float), 
+               cudaMemcpyHostToDevice);
 
 
 
