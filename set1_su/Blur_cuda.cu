@@ -30,8 +30,11 @@ cudaBlurKernel(const float *raw_data, const float *blur_v, float *out_data,
         }
     }*/
     unsigned int index = blockIdx.x * blockDim.x + threadIdx.x;
-    for (int j = 0; j <= index && j < blur_v_size; j++){
-        out_data[index] += raw_data[index - j] * blur_v[j];
+    while (index < N) {
+        for (int j = 0; j <= index && j < blur_v_size; j++){
+            out_data[index] += raw_data[index - j] * blur_v[j];
+        }
+        index += blockDim.x * gridDim.x;
     }
 }
 
