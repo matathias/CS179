@@ -78,8 +78,7 @@ data[threadIdx.x + blockSize.x * threadIdx.y] = 1.0;
 Is this write coalesced? How many 128 byte cache lines does this write to?
 Yes, as the memory access is sequential and aligned. As floats are 4 bytes, each
 cache line can store 32 floats; since the block is 32x32, this command writes to
-32 128-byte cache lines. However, since the write is coalesced, all threads with
-the same x index access memory at the same time.
+32 128-byte cache lines, one for each warp.
 
 (b)
 data[threadIdx.y + blockSize.y * threadIdx.x] = 1.0;
@@ -87,15 +86,14 @@ data[threadIdx.y + blockSize.y * threadIdx.x] = 1.0;
 Is this write coalesced? How many 128 byte cache lines does this write to?
 No - unlike the previous example, this write is not sequential. It accesses
 indices in the order 0, 32, 64, 96, ..., 1, 33, 65, 97, ..., which is not 
-sequential at all. However the write is still aligned, meaning it will access
-32 128-byte cache lines. It just won't do so as quickly as (a).
+sequential at all. It will still access 32 128-byte cache lines, though.
 
 (c)
 data[1 + threadIdx.x + blockSize.x * threadIdx.y] = 1.0;
 
 Is this write coalesced? How many 128 byte cache lines does this write to?
-No, as this write is misaligned. The added "1" to the index causes this command
-to access 33 128-byte cache lines instead of just 32.
+No, as this write is misaligned. The added "1" to the index forces each warp to
+access two cache lines, for 33 cache lines total.
 
 
 Question 1.4: Bank Conflicts and Instruction Dependencies (15 points)
