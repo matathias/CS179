@@ -22,6 +22,13 @@ You do not need to consider the number of execution cores on the chip.
 Hint: What is the latency of an arithmetic instruction? How many instructions
 can a GK110 begin issuing in 1 clock cycle (assuming no dependencies)?
 
+Answer:
+The GK110 can start up to 8 instructions per clock cycle (2 instrutions in each
+of 4 warps) and the arithmetic instruction latency is around 10ns. Since warps
+must complete an instruction before they can start a new one, any more than 8
+instructions will not improve the effort to hide the GK110's latency. So 8
+instructions is what it takes to hide the instruction latency on a GK110.
+
 
 Question 1.2: Thread Divergence (6 points)
 ------------------------------------------
@@ -36,6 +43,11 @@ if (idx % 32 < 16) {
 }
 
 Does this code diverge? Why or why not?
+Yes - the "% 32" means that the conditional statement effectively only evaluates
+"threadIdx.y < 16", which will be true for 16 threads and false for 16 threads.
+Then, for the 16 threads that are true, foo() will execute while the other 16
+do nothing - and after that, bar() will execute for the 16 threads that were 
+false while the remaining 16 do nothing.
 
 (b)
 const float pi = 3.14;
@@ -47,6 +59,9 @@ for (int i = 0; i < threadIdx.x; i++) {
 Does this code diverge? Why or why not?
 (This is a bit of a trick question, either "yes" or "no can be a correct answer
 with appropriate explanation).
+No - the loop will execute for every thread. The only problem is that threads
+with lower values for threadIdx.x will finish execution earlier than other
+threads and be forced to do nothing while everything finishes up.
 
 
 Question 1.3: Coalesced Memory Access (9 points)
@@ -61,16 +76,26 @@ Consider each of the following access patterns.
 data[threadIdx.x + blockSize.x * threadIdx.y] = 1.0;
 
 Is this write coalesced? How many 128 byte cache lines does this write to?
+Yes, as the memory access is sequential and aligned. As floats are 4 bytes, each
+cache line can store 32 floats; since the block is 32x32, this command writes to
+32 128-byte cache lines. However, since the write is coalesced, all threads with
+the same x index access memory at the same time.
 
 (b)
 data[threadIdx.y + blockSize.y * threadIdx.x] = 1.0;
 
 Is this write coalesced? How many 128 byte cache lines does this write to?
+No - unlike the previous example, this write is not sequential. It accesses
+indices in the order 0, 32, 64, 96, ..., 1, 33, 65, 97, ..., which is not 
+sequential at all. However the write is still aligned, meaning it will access
+32 128-byte cache lines. It just won't do so as quickly as (a).
 
 (c)
 data[1 + threadIdx.x + blockSize.x * threadIdx.y] = 1.0;
 
 Is this write coalesced? How many 128 byte cache lines does this write to?
+No, as this write is misaligned. The added "1" to the index causes this command
+to access 33 128-byte cache lines instead of just 32.
 
 
 Question 1.4: Bank Conflicts and Instruction Dependencies (15 points)
@@ -101,6 +126,10 @@ for (int k = 0; k < 128; k += 2) {
 Are there bank conflicts in this code? If so, how many ways is the bank conflict
 (2-way, 4-way, etc)?
 
+If we assume that each matrix value is a float (and thus 4-bytes), then there
+are no bank conflicts as each bank can only hold one value. Thus, simultaneous
+bank accesses would retrieve the same value, leaving the code conflict-free.
+
 (b)
 Expand the inner part of the loop (below)
 
@@ -117,14 +146,38 @@ instruction in your "psuedo-assembly".
 
 Hint: Each line should expand to 5 instructions.
 
+Answer:
+lhs0 = lhs[i + 32 * k];
+rhs0 = rhs[k + 128 * j];
+outputij = output[i + 32 * j];
+outputij += lhs0 * rhs0;
+output[i + 32 * j] = outputij;
+lhs1 = lhs[i + 32 * (k + 1)];
+rhs1 = rhs[(k + 1) + 128 * j];
+outputij = output[i + 32 * j];
+outputij += lhs1 * rhs1;
+output[i + 32 * j] = outputij;
+
 (c)
 Identify pairs of dependent instructions in your answer to part b.
+outputij += lhs0 * rhs0 and outputij += lhs1 * rhs1 must run consecutively
 
 (d)
 Rewrite the code given at the beginning of this problem to minimize instruction
 dependencies. You can add or delete instructions (deleting an instruction is a
 valid way to get rid of a dependency!) but each iteration of the loop must still
 process 2 values of k.
+
+lhs0 = lhs[i + 32 * k];
+rhs0 = rhs[k + 128 * j];
+lhs1 = lhs[i + 32 * (k + 1)];
+rhs1 = rhs[(k + 1) + 128 * j];
+product0 = lhs0 * rhs0;
+product1 = lhs1 * rhs1;
+sum = product0 + product1;
+outputij = output[i + 32 * j];
+outputij = outputij + sum;
+output[i + 32 * j] = outputij;
 
 (e)
 Can you think of any other anything else you can do that might make this code
