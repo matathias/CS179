@@ -35,7 +35,6 @@
  */
 __global__
 void naiveTransposeKernel(const float *input, float *output, int n) {
-  // TODO: do not modify code, just comment on suboptimal accesses
 
   // As each warp handles a 32x4 submatrix, it is impossible for this method to
   // have coalesced writes as the data handled by each warp is spread across
@@ -51,10 +50,6 @@ void naiveTransposeKernel(const float *input, float *output, int n) {
 
 __global__
 void shmemTransposeKernel(const float *input, float *output, int n) {
-  // TODO: Modify transpose kernel to use shared memory. All global memory
-  // reads and writes should be coalesced. Minimize the number of shared
-  // memory bank conflicts (0 bank conflicts should be possible using
-  // padding). Again, comment on all sub-optimal accesses.
 
   __shared__ float data[4160];
   __syncthreads();
@@ -86,11 +81,9 @@ void shmemTransposeKernel(const float *input, float *output, int n) {
 
 __global__
 void optimalTransposeKernel(const float *input, float *output, int n) {
-  // TODO: This should be based off of your shmemTransposeKernel.
-  // Use any optimization tricks discussed so far to improve performance.
-  // Consider ILP and loop unrolling.
 
   __shared__ float data[4160];
+  // removed unnecessary __syncthreads() call
 
   // Calculate the indices
   int i = (threadIdx.x * 4) % 64;
@@ -100,10 +93,11 @@ void optimalTransposeKernel(const float *input, float *output, int n) {
 
   // Coalesced load values into shared memory from global memory, using a stride
   // length of 1 for both memory types.
-    data[i + 65 * j] = input[global_i + n * global_j];
-    data[i + 1 + 65 * j] = input[global_i + 1 + n * global_j];
-    data[i + 2 + 65 * j] = input[global_i + 2 + n * global_j];
-    data[i + 3 + 65 * j] = input[global_i + 3 + n * global_j];
+  // "Unrolled" loop to reduce bounds checking overhead
+  data[i + 65 * j] = input[global_i + n * global_j];
+  data[i + 1 + 65 * j] = input[global_i + 1 + n * global_j];
+  data[i + 2 + 65 * j] = input[global_i + 2 + n * global_j];
+  data[i + 3 + 65 * j] = input[global_i + 3 + n * global_j];
 
   __syncthreads();
 
@@ -113,10 +107,11 @@ void optimalTransposeKernel(const float *input, float *output, int n) {
   // Coalesced write values into global memory from shared memory, using a
   // stride length of 1 for global memory and 65 for shared memory. This use of
   // padding should remove bank conflicts.
-    output[global_i + n * global_j] = data[j + 65 * i];
-    output[global_i + 1 + n * global_j] = data[j + 65 * i + 65];
-    output[global_i + 2 + n * global_j] = data[j + 65 * i + 130];
-    output[global_i + 3 + n * global_j] = data[j + 65 * i + 195];
+  // "Unrolled" loop to reduce bounds checking overhead
+  output[global_i + n * global_j] = data[j + 65 * i];
+  output[global_i + 1 + n * global_j] = data[j + 65 * i + 65];
+  output[global_i + 2 + n * global_j] = data[j + 65 * i + 130];
+  output[global_i + 3 + n * global_j] = data[j + 65 * i + 195];
 }
 
 void cudaTranspose(const float *d_input,
