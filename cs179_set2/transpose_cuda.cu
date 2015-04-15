@@ -75,7 +75,7 @@ void shmemTransposeKernel(const float *input, float *output, int n) {
   // Load data from shared memory into global memory in such a way that
   // transposes the matrix
   for (int iter = 0; iter < 4; iter++) {
-    int ind = shmemLoadStart + (iter * n);
+    int ind = (shmemLoadStart + (iter * n)) % (n*n);
     output[globalLoadStart + iter] = data[ind];
   }
 }
