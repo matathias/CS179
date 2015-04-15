@@ -37,6 +37,9 @@ __global__
 void naiveTransposeKernel(const float *input, float *output, int n) {
   // TODO: do not modify code, just comment on suboptimal accesses
 
+  // As each warp handles a 32x4 submatrix, it is impossible for this method to
+  // have coalesced writes as the data handled by each warp is spread across
+  // different cache lines.
   const int i = threadIdx.x + 64 * blockIdx.x;
   int j = 4 * threadIdx.y + 64 * blockIdx.y;
   const int end_j = j + 4;
@@ -53,14 +56,27 @@ void shmemTransposeKernel(const float *input, float *output, int n) {
   // memory bank conflicts (0 bank conflicts should be possible using
   // padding). Again, comment on all sub-optimal accesses.
 
-  // __shared__ float data[???];
+  __shared__ float data[4096];
+  __syncthreads();
 
-  const int i = threadIdx.x + 64 * blockIdx.x;
-  int j = 4 * threadIdx.y + 64 * blockIdx.y;
-  const int end_j = j + 4;
+  // Load data from global memory into shared memory
+  const int i = 4 * threadIdx.x;
+  int j = 64 * threadIdx.y;
+  int shmemLoadStart = i + j;
+  int globalLoadStart = i + j + (64 * blockIdx.x) + (64 * blockIdx.y);
 
-  for (; j < end_j; j++) {
-    output[j + n * i] = input[i + n * j];
+  // Load from global memory with stride 1 into shared memory with stride 1
+  for (int iter = 0; iter < 4; iter++) {
+    data[shmemLoadStart + iter] = input[globalLoadStart + iter];
+  }
+
+  __syncthreads();
+
+  // Load data from shared memory into global memory in such a way that
+  // transposes the matrix
+  for (int iter = 0; iter < 4; iter++) {
+    int ind = shmemLoadStart + (iter * n);
+    output[globalLoadStart + iter] = data[ind];
   }
 }
 
