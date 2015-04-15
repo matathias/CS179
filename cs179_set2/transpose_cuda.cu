@@ -91,7 +91,6 @@ void optimalTransposeKernel(const float *input, float *output, int n) {
   // Consider ILP and loop unrolling.
 
   __shared__ float data[4160];
-  __syncthreads();
 
   // Calculate the indices
   int i = (threadIdx.x * 4) % 64;
@@ -115,9 +114,9 @@ void optimalTransposeKernel(const float *input, float *output, int n) {
   // stride length of 1 for global memory and 65 for shared memory. This use of
   // padding should remove bank conflicts.
     output[global_i + n * global_j] = data[j + 65 * i];
-    output[global_i + 1 + n * global_j] = data[j + 65 * (i + 1)];
-    output[global_i + 2 + n * global_j] = data[j + 65 * (i + 2)];
-    output[global_i + 3 + n * global_j] = data[j + 65 * (i + 3)];
+    output[global_i + 1 + n * global_j] = data[j + 65 * i + 65];
+    output[global_i + 2 + n * global_j] = data[j + 65 * i + 130];
+    output[global_i + 3 + n * global_j] = data[j + 65 * i + 195];
 }
 
 void cudaTranspose(const float *d_input,
