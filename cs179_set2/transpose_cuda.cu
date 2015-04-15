@@ -101,38 +101,10 @@ void optimalTransposeKernel(const float *input, float *output, int n) {
 
   // Coalesced load values into shared memory from global memory, using a stride
   // length of 1 for both memory types.
-    int in001 = global_i;
-    int in002 = n * global_j;
-    int dat001 = i;
-    int dat002 = 65 * j;
-
-    int in011 = global_i + 1;
-    int in012 = n * global_j;
-    int dat011 = i + 1;
-    int dat012 = 65 * j;
-
-    int in021 = global_i + 2;
-    int in022 = n * global_j;
-    int dat021 = i + 2;
-    int dat022 = 65 * j;
-
-    int in031 = global_i + 3;
-    int in032 = n * global_j;
-    int dat031 = i + 3;
-    int dat032 = 65 * j;
-
-    int in003 = in001 + in002;
-    int dat003 = dat001 + dat002;
-    int in013 = in011 + in012;
-    int dat013 = dat011 + dat012;
-    int in023 = in021 + in022;
-    int dat023 = dat021 + dat022;
-    int in033 = in031 + in032;
-    int dat033 = dat031 + dat032;
-    data[dat003] = input[in003];
-    data[dat013] = input[in013];
-    data[dat023] = input[in023];
-    data[dat033] = input[in033];
+    data[i + 65 * j] = input[global_i + n * global_j];
+    data[i + 1 + 65 * j] = input[global_i + 1 + n * global_j];
+    data[i + 2 + 65 * j] = input[global_i + 2 + n * global_j];
+    data[i + 3 + 65 * j] = input[global_i + 3 + n * global_j];
 
   __syncthreads();
 
@@ -142,34 +114,10 @@ void optimalTransposeKernel(const float *input, float *output, int n) {
   // Coalesced write values into global memory from shared memory, using a
   // stride length of 1 for global memory and 65 for shared memory. This use of
   // padding should remove bank conflicts.
-    dat001 = 65 * i;
-    int out001 = global_i;
-    int out002 = n * global_j;
-
-    dat011 = 65 * (i + 1);
-    int out011 = global_i + 1;
-    int out012 = n * global_j;
-
-    dat021 = 65 * (i + 2);
-    int out021 = global_i + 2;
-    int out022 = n * global_j;
-
-    dat031 = 65 * (i + 3);
-    int out031 = global_i + 3;
-    int out032 = n * global_j;
-
-    dat002 = j + dat001;
-    int out003 = out001 + out002;
-    dat012 = j + dat011;
-    int out013 = out011 + out012;
-    dat022 = j + dat021;
-    int out023 = out021 + out022;
-    dat032 = j + dat031;
-    int out033 = out031 + out032;
-    output[out003] = data[dat002];
-    output[out013] = data[dat012];
-    output[out023] = data[dat022];
-    output[out033] = data[dat032];
+    output[global_i + n * global_j] = data[j + 65 * i];
+    output[global_i + 1 + n * global_j] = data[j + 65 * (i + 1)];
+    output[global_i + 2 + n * global_j] = data[j + 65 * (i + 2)];
+    output[global_i + 3 + n * global_j] = data[j + 65 * (i + 3)];
 }
 
 void cudaTranspose(const float *d_input,
