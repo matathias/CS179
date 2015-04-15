@@ -86,7 +86,6 @@ void shmemTransposeKernel(const float *input, float *output, int n) {
   const int global_i = i + 64 * blockIdx.x;
   int j = (4 * threadIdx.y) + (i / 16);
   const int global_j = j + 64 * blockIdx.y;
-  const int end_i = i + 4;
 
   for (int iter = 0; iter < 4; iter++) {
     data[(i + iter) + 64 * j] = input[(global_i + iter) + n * global_j];
