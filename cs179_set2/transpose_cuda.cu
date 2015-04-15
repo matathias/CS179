@@ -80,7 +80,7 @@ void shmemTransposeKernel(const float *input, float *output, int n) {
       shmemInd = (shmemInd % 4096) + 1;
     }
     output[globalLoadStart + iter] = data[shmemInd];
-    shmemInd += 4096;
+    shmemInd += n;
   }
 }
 
