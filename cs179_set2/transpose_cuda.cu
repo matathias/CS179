@@ -76,7 +76,7 @@ void shmemTransposeKernel(const float *input, float *output, int n) {
   // transposes the matrix
   int shmemInd = 64 * threadIdx.x + 4 * threadIdx.y;
   for (int iter = 0; iter < 4; iter++) {
-    shmemInd += iter * n;
+    shmemInd += iter * 64;
     if (shmemInd % 4096 < shmemInd) {
       shmemInd = (shmemInd % 4096) + 1;
     }
