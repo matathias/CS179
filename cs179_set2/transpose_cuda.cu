@@ -58,7 +58,7 @@ void shmemTransposeKernel(const float *input, float *output, int n) {
 
   __shared__ float data[4096];
   __syncthreads();
-
+/*
   // Load data from global memory into shared memory
   const int i = 4 * threadIdx.x;
   int j = 64 * threadIdx.y;
@@ -81,6 +81,21 @@ void shmemTransposeKernel(const float *input, float *output, int n) {
     }
     output[globalLoadStart + iter] = data[shmemInd];
     shmemInd += n;
+  } */
+  int i = (threadIdx.x * 4) % 64;
+  const int global_i = i + 64 * blockIdx.x;
+  int j = (4 * threadIdx.y) + (i / 16);
+  const int global_j = j + 64 * blockIdx.y;
+  const int end_i = i + 4;
+
+  for (int iter = 0; iter < 4; iter++) {
+    data[(i + iter) + 64 * j] = input[(global_i + iter) + n * global_j];
+  }
+
+  __syncthreads();
+
+  for (int iter = 0; iter < 4; iter++) {
+    output[(global_i + = iter) + n * global_j] = data[i + 64 * (j + iter)];
   }
 }
 
