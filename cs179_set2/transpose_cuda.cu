@@ -77,8 +77,8 @@ void shmemTransposeKernel(const float *input, float *output, int n) {
   global_i = i + 64 * blockIdx.y;
   global_j = j + 64 * blockIdx.x;
   // Coalesced write values into global memory from shared memory, using a
-  // stride length of 1 for global memory and 64 for shared memory. This will
-  // lead to 32-way bank conflicts.
+  // stride length of 1 for global memory and 65 for shared memory. This use of
+  // padding should remove bank conflicts.
   for (int iter = 0; iter < 4; iter++) {
     output[(global_i + iter) + n * global_j] = data[j + 65 * (i + iter)];
   }
@@ -90,12 +90,44 @@ void optimalTransposeKernel(const float *input, float *output, int n) {
   // Use any optimization tricks discussed so far to improve performance.
   // Consider ILP and loop unrolling.
 
-  const int i = threadIdx.x + 64 * blockIdx.x;
-  int j = 4 * threadIdx.y + 64 * blockIdx.y;
-  const int end_j = j + 4;
+  __shared__ float data[4160];
+  __syncthreads();
 
-  for (; j < end_j; j++) {
-    output[j + n * i] = input[i + n * j];
+  // Calculate the indices
+  int i = (threadIdx.x * 4) % 64;
+  int global_i = i + 64 * blockIdx.x;
+  int j = (4 * threadIdx.y) + (threadIdx.x / 16);
+  int global_j = j + 64 * blockIdx.y;
+
+  // Coalesced load values into shared memory from global memory, using a stride
+  // length of 1 for both memory types.
+  for (int iter = 0; iter < 4; iter++) {
+    int in001 = global_i + iter;
+    int in002 = n * global_j;
+    int dat001 = i + iter;
+    int dat002 = 65 * j;
+
+    int in003 = in001 + in002;
+    int dat003 = dat001 + dat002;
+    data[dat003] = input[in003];
+  }
+
+  __syncthreads();
+
+  // Re-calculate the indices for global memory
+  global_i = i + 64 * blockIdx.y;
+  global_j = j + 64 * blockIdx.x;
+  // Coalesced write values into global memory from shared memory, using a
+  // stride length of 1 for global memory and 65 for shared memory. This use of
+  // padding should remove bank conflicts.
+  for (int iter = 0; iter < 4; iter++) {
+    int dat001 = 65 * (i + iter);
+    int out001 = global_i + iter;
+    int out002 = n * global_j;
+
+    int dat002 = j + dat001;
+    int out003 = out001 + out002;
+    output[out003] = data[dat002];
   }
 }
 
