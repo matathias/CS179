@@ -142,29 +142,29 @@ void optimalTransposeKernel(const float *input, float *output, int n) {
   // Coalesced write values into global memory from shared memory, using a
   // stride length of 1 for global memory and 65 for shared memory. This use of
   // padding should remove bank conflicts.
-    int dat001 = 65 * i;
+    dat001 = 65 * i;
     int out001 = global_i;
     int out002 = n * global_j;
 
-    int dat011 = 65 * (i + 1);
+    dat011 = 65 * (i + 1);
     int out011 = global_i + 1;
     int out012 = n * global_j;
 
-    int dat021 = 65 * (i + 2);
+    dat021 = 65 * (i + 2);
     int out021 = global_i + 2;
     int out022 = n * global_j;
 
-    int dat031 = 65 * (i + 3);
+    dat031 = 65 * (i + 3);
     int out031 = global_i + 3;
     int out032 = n * global_j;
 
-    int dat002 = j + dat001;
+    dat002 = j + dat001;
     int out003 = out001 + out002;
-    int dat012 = j + dat011;
+    dat012 = j + dat011;
     int out013 = out011 + out012;
-    int dat022 = j + dat021;
+    dat022 = j + dat021;
     int out023 = out021 + out022;
-    int dat032 = j + dat031;
+    dat032 = j + dat031;
     int out033 = out031 + out032;
     output[out003] = data[dat002];
     output[out013] = data[dat012];
