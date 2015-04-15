@@ -56,47 +56,31 @@ void shmemTransposeKernel(const float *input, float *output, int n) {
   // memory bank conflicts (0 bank conflicts should be possible using
   // padding). Again, comment on all sub-optimal accesses.
 
-  __shared__ float data[4096];
-  __syncthreads();
-/*
-  // Load data from global memory into shared memory
-  const int i = 4 * threadIdx.x;
-  int j = 64 * threadIdx.y;
-  int shmemLoadStart = i + j;
-  int globalLoadStart = i + j + (64 * blockIdx.x) + (64 * blockIdx.y);
-
-  // Load from global memory with stride 1 into shared memory with stride 1
-  for (int iter = 0; iter < 4; iter++) {
-    data[shmemLoadStart + iter] = input[globalLoadStart + iter];
-  }
-
+  __shared__ float data[4160];
   __syncthreads();
 
-  // Load data from shared memory into global memory in such a way that
-  // transposes the matrix
-  int shmemInd = 64 * threadIdx.x + 4 * threadIdx.y;
-  for (int iter = 0; iter < 4; iter++) {
-    if (shmemInd % 4096 < shmemInd) {
-      shmemInd = (shmemInd % 4096) + 1;
-    }
-    output[globalLoadStart + iter] = data[shmemInd];
-    shmemInd += n;
-  } */
+  // Calculate the indices
   int i = (threadIdx.x * 4) % 64;
   int global_i = i + 64 * blockIdx.x;
   int j = (4 * threadIdx.y) + (threadIdx.x / 16);
   int global_j = j + 64 * blockIdx.y;
 
+  // Coalesced load values into shared memory from global memory, using a stride
+  // length of 1 for both memory types.
   for (int iter = 0; iter < 4; iter++) {
-    data[(i + iter) + 64 * j] = input[(global_i + iter) + n * global_j];
+    data[(i + iter) + 65 * j] = input[(global_i + iter) + n * global_j];
   }
 
   __syncthreads();
 
+  // Re-calculate the indices for global memory
   global_i = i + 64 * blockIdx.y;
   global_j = j + 64 * blockIdx.x;
+  // Coalesced write values into global memory from shared memory, using a
+  // stride length of 1 for global memory and 64 for shared memory. This will
+  // lead to 32-way bank conflicts.
   for (int iter = 0; iter < 4; iter++) {
-    output[(global_i + iter) + n * global_j] = data[j + 64 * (i + iter)];
+    output[(global_i + iter) + n * global_j] = data[j + 65 * (i + iter)];
   }
 }
 
