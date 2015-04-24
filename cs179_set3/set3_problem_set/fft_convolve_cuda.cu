@@ -208,7 +208,7 @@ void cudaCallMaximumKernel(const unsigned int blocks,
     //int numFloatsPerThread = padded_length / (blocks * threadsPerBlock);
     //int numBytesShMem = numFloatsPerThread * threadsPerBlock * sizeof(float);
     //cudaMaximumKernel<<< blocks, threadsPerBlock, numBytesShMem >>>
-    cudaMaximumKernel<<< blocks, threadsPerBlock, threadsPerBlock >>>
+    cudaMaximumKernel<<< blocks, threadsPerBlock, threadsPerBlock * sizeof(float) >>>
         (out_data, max_abs_val, padded_length);
 
 }
