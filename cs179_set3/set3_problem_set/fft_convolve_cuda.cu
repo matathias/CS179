@@ -102,6 +102,9 @@ cudaMaximumKernel(cufftComplex *out_data, float *max_abs_val,
     // Figure out how many floats each thread will be handling.
     int numFloats = padded_length / (gridDim.x * blockDim.x);
     
+    // Initialize data to zeros
+    cudaMemset(data, 0, blockDim.x*sizeof(float));
+    
     // Load the data from out_data into shared memory. Each thread only handles
     // numFloats sequential values.
     int index = blockIdx.x * blockDim.x + threadIdx.x * numFloats;
@@ -114,11 +117,11 @@ cudaMaximumKernel(cufftComplex *out_data, float *max_abs_val,
             // We want the absolute value of out_data, not the complex value.
             float real = out_data[index + j].x;
             float imag = out_data[index + j].y;
-            data[threadIdx.x * numFloats + j] = sqrt(real * real + imag * imag);
+            float magnitude = sqrt(real * real + imag * imag);
+            if(data[threadIdx.x] < magnitude) {
+                data[threadIdx.x] = magnitude;
+            }
             //ata[threadIdx.x * numFloats + j] = out_data[index + j].x;
-        }
-        else {
-            data[threadIdx.x * numFloats + j] = 0;
         }
     }
     
@@ -129,7 +132,7 @@ cudaMaximumKernel(cufftComplex *out_data, float *max_abs_val,
     // that each thread will handle only numFloats values. This will be the case
     // in every iteration of the loop - every thread will only compare 
     // numFloats values.
-    int strideLength = blockDim.x;
+    int strideLength = blockDim.x / 2;
     while (strideLength >= 1) {
         int ind = threadIdx.x;
         // If the thread index is less than the stride length, then continue.
@@ -140,7 +143,7 @@ cudaMaximumKernel(cufftComplex *out_data, float *max_abs_val,
         if (ind < strideLength) {
             // Compare numFloats values, each one stride length apart. The max
             // value of these values will end up assigned to data[ind].
-            for (int i = 0; i < numFloats; i++) {
+            for (int i = 0; i < 2; i++) {
                 if (data[ind] < data[ind + (strideLength * i)]) {
                     data[ind] = data[ind + (strideLength * i)];
                 }
@@ -200,9 +203,10 @@ void cudaCallMaximumKernel(const unsigned int blocks,
         
 
     /* TODO 2: Call the max-finding kernel. */
-    int numFloatsPerThread = padded_length / (blocks * threadsPerBlock);
-    int numBytesShMem = numFloatsPerThread * threadsPerBlock * sizeof(float);
-    cudaMaximumKernel<<< blocks, threadsPerBlock, numBytesShMem >>>
+    //int numFloatsPerThread = padded_length / (blocks * threadsPerBlock);
+    //int numBytesShMem = numFloatsPerThread * threadsPerBlock * sizeof(float);
+    //cudaMaximumKernel<<< blocks, threadsPerBlock, numBytesShMem >>>
+    cudaMaximumKernel<<< blocks, threadsPerBlock, threadsPerBlock >>>
         (out_data, max_abs_val, padded_length);
 
 }
