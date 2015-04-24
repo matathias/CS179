@@ -103,11 +103,6 @@ cudaMaximumKernel(cufftComplex *out_data, float *max_abs_val,
     // Figure out how many floats each thread will be handling.
     int numFloats = padded_length / (gridDim.x * blockDim.x) + 1;
     
-    // Initialize data to zeros
-    /*for(int i = 0; i < blockDim.x; i++) {
-        data[i] = 0;
-    }*/
-    
     // Load the data from out_data into shared memory. Each thread only handles
     // numFloats sequential values.
     int index = blockIdx.x * blockDim.x + threadIdx.x * numFloats;
@@ -129,7 +124,10 @@ cudaMaximumKernel(cufftComplex *out_data, float *max_abs_val,
     // that each thread will handle only numFloats values. This will be the case
     // in every iteration of the loop - every thread will only compare 
     // numFloats values.
-    int strideLength = blockDim.x / 2;
+    int strideLength = 2;// blockDim.x / 2;
+    while (strideLength * 2 < blockDim.x) {
+        strideLength = strideLength * 2;
+    }
     while (strideLength >= 1) {
         int ind = threadIdx.x;
         // If the thread index is less than the stride length, then continue.
@@ -137,7 +135,7 @@ cudaMaximumKernel(cufftComplex *out_data, float *max_abs_val,
         // of values that are compared is reduced by a factor of two, and as
         // each thread compares numFloats values, the number of threads that are
         // utilized is also reduced by a factor of two.
-        if (ind < strideLength) {
+        if (ind < strideLength && ind + strideLength < padded_length) {
             // Compare numFloats values, each one stride length apart. The max
             // value of these values will end up assigned to data[ind].
             /*for (int i = 0; i < 2; i++) {
