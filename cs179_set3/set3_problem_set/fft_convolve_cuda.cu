@@ -111,19 +111,12 @@ cudaMaximumKernel(cufftComplex *out_data, float *max_abs_val,
     // numFloats sequential values.
     int index = blockIdx.x * blockDim.x + threadIdx.x * numFloats;
     for (int j = 0; j < numFloats; j++) {
-        // This ensures that we do not get any "out of bounds" errors. If this
-        // block somehow goes off the end of out_data, then we simply set the
-        // corresponding data[] entry to 0 so that it is never selected as a max
-        // value.
-        if (index + j < padded_length) {
-            // We want the absolute value of out_data, not the complex value.
-            float real = out_data[index + j].x;
-            float imag = out_data[index + j].y;
-            float magnitude = sqrt(real * real + imag * imag);
-            if(data[threadIdx.x] < magnitude) {
-                data[threadIdx.x] = magnitude;
-            }
-            //ata[threadIdx.x * numFloats + j] = out_data[index + j].x;
+        // We want the absolute value of out_data, not the complex value.
+        float real = out_data[index + j].x;
+        float imag = out_data[index + j].y;
+        float magnitude = sqrt(real * real + imag * imag);
+        if(data[threadIdx.x] < magnitude) {
+            data[threadIdx.x] = magnitude;
         }
     }
     
@@ -145,10 +138,13 @@ cudaMaximumKernel(cufftComplex *out_data, float *max_abs_val,
         if (ind < strideLength) {
             // Compare numFloats values, each one stride length apart. The max
             // value of these values will end up assigned to data[ind].
-            for (int i = 0; i < 2; i++) {
+            /*for (int i = 0; i < 2; i++) {
                 if (data[ind] < data[ind + (strideLength * i)]) {
                     data[ind] = data[ind + (strideLength * i)];
                 }
+            }*/
+            if (data[ind] < data[ind + strideLength]) {
+                data[ind] = data[ind + strideLength];
             }
         }
         
