@@ -97,7 +97,8 @@ cudaMaximumKernel(cufftComplex *out_data, float *max_abs_val,
     */
     
     // Create the shared memory.
-    __shared__ float data[4096];
+    extern __shared__ __align__(sizeof(float)) unsigned char t_data[];
+    float *data = reinterpret_cast<float *>(t_data);
     
     // Figure out how many floats each thread will be handling.
     int numFloats = padded_length / (gridDim.x * blockDim.x);
@@ -201,8 +202,7 @@ void cudaCallMaximumKernel(const unsigned int blocks,
     /* TODO 2: Call the max-finding kernel. */
     int numFloatsPerThread = padded_length / (blocks * threadsPerBlock);
     int numBytesShMem = numFloatsPerThread * threadsPerBlock * sizeof(float);
-    //cudaMaximumKernel<<<blocks, threadsPerBlock, numBytesShMem>>>
-    cudaMaximumKernel<<<blocks, threadsPerBlock>>>
+    cudaMaximumKernel<<< blocks, threadsPerBlock, numBytesShMem >>>
         (out_data, max_abs_val, padded_length);
 
 }
