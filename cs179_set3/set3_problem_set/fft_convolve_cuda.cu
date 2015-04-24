@@ -97,7 +97,7 @@ cudaMaximumKernel(cufftComplex *out_data, float *max_abs_val,
     */
     
     // Create the shared memory.
-    extern __shared__ float data[];
+    __shared__ float data[2048];
     
     // Figure out how many floats each thread will be handling.
     int numFloats = padded_length / (gridDim.x * blockDim.x);
@@ -112,9 +112,10 @@ cudaMaximumKernel(cufftComplex *out_data, float *max_abs_val,
         // value.
         if (index + j < padded_length) {
             // We want the absolute value of out_data, not the complex value.
-            float real = out_data[index + j].x;
-            float imag = out_data[index + j].y;
-            data[threadIdx.x * numFloats + j] = sqrt(real * real + imag * imag);
+            //float real = out_data[index + j].x;
+            //float imag = out_data[index + j].y;
+            //data[threadIdx.x * numFloats + j] = sqrt(real * real + imag * imag);
+            data[threadIdx.x * numFloats + j] = out_data[index + j].x;
         }
         else {
             data[threadIdx.x * numFloats + j] = 0;
@@ -199,9 +200,9 @@ void cudaCallMaximumKernel(const unsigned int blocks,
         
 
     /* TODO 2: Call the max-finding kernel. */
-    //int numFloatsPerThread = padded_length / (blocks * threadsPerBlock);
-    //int numBytesShMem = numFloatsPerThread * threadsPerBlock * sizeof(float);
-    cudaMaximumKernel<<< blocks, threadsPerBlock, padded_length*sizeof(float)/blocks >>>
+    int numFloatsPerThread = padded_length / (blocks * threadsPerBlock);
+    int numBytesShMem = numFloatsPerThread * threadsPerBlock * sizeof(float);
+    cudaMaximumKernel<<< blocks, threadsPerBlock >>>
         (out_data, max_abs_val, padded_length);
 
 }
