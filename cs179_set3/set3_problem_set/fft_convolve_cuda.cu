@@ -155,8 +155,7 @@ cudaMaximumKernel(cufftComplex *out_data, float *max_abs_val,
     // should now be in data[0]. Use atomicMax to set the value of max_abs_val
     // appropriately.
     if (threadIdx.x == 0) {
-        //printf("Can we even print here?!\n");
-        atomicMax(max_abs_val, data[0]);
+        //atomicMax(max_abs_val, data[0]);
     }
 }
 
