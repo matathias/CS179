@@ -2,6 +2,7 @@
  * Kevin Yuh, 2014 */
 
 #include <cstdio>
+#include <math.h>
 
 #include <cuda_runtime.h>
 #include <cufft.h>
@@ -110,7 +111,10 @@ cudaMaximumKernel(cufftComplex *out_data, float *max_abs_val,
         // corresponding data[] entry to 0 so that it is never selected as a max
         // value.
         if (index + j < padded_length) {
-            data[threadIdx.x * numFloats + j] = out_data[index + j];
+            // We want the absolute value of out_data, not the complex value.
+            float real = out_data[index + j].x;
+            float imag = out_data[index + j].y;
+            data[threadIdx.x * numFloats + j] = sqrt(real * real + imag * imag);
         }
         else {
             data[threadIdx.x * numFloats + j] = 0;
@@ -137,7 +141,7 @@ cudaMaximumKernel(cufftComplex *out_data, float *max_abs_val,
             // value of these values will end up assigned to data[ind].
             for (int i = 0; i < numFloats; i++) {
                 if (data[ind] < data[ind + (strideLength * i)]) {
-                    data[ind] = data[ind + (strideLength * i)]);
+                    data[ind] = data[ind + (strideLength * i)];
                 }
             }
         }
@@ -195,7 +199,7 @@ void cudaCallMaximumKernel(const unsigned int blocks,
     /* TODO 2: Call the max-finding kernel. */
     int numFloatsPerThread = padded_length / (blocks * threadsPerBlock);
     int numBytesShMem = numFloatsPerThread * threadsPerBlock * sizeof(float);
-    cudaMaximumKernal<<<blocks, threadsPerBlock, numBytesShMem>>>
+    cudaMaximumKernel<<<blocks, threadsPerBlock, numBytesShMem>>>
         (out_data, max_abs_val, padded_length);
 
 }
@@ -208,6 +212,6 @@ void cudaCallDivideKernel(const unsigned int blocks,
         const unsigned int padded_length) {
         
     /* TODO 2: Call the division kernel. */
-    cudaDivideKernal<<<blocks, threadsPerBlock>>>
+    cudaDivideKernel<<<blocks, threadsPerBlock>>>
         (out_data, max_abs_val, padded_length);
 }
