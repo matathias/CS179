@@ -94,8 +94,63 @@ cudaMaximumKernel(cufftComplex *out_data, float *max_abs_val,
         compare-float-in-cuda)
 
     */
+    
+    // Create the shared memory.
+    extern __shared__ float data[];
+    
+    // Figure out how many floats each thread will be handling.
+    int numFloats = padded_length / (gridDim.x * blockDim.x);
+    
+    // Load the data from out_data into shared memory. Each thread only handles
+    // numFloats sequential values.
+    int index = blockIdx.x * blockDim.x + threadIdx.x * numFloats;
+    for (int j = 0; j < numFloats; j++) {
+        // This ensures that we do not get any "out of bounds" errors. If this
+        // block somehow goes off the end of out_data, then we simply set the
+        // corresponding data[] entry to 0 so that it is never selected as a max
+        // value.
+        if (index + j < padded_length) {
+            data[threadIdx.x * numFloats + j] = out_data[index + j];
+        }
+        else {
+            data[threadIdx.x * numFloats + j] = 0;
+        }
+    }
+    
+    __syncthreads();
+    
+    // Find the maximum value!
+    // Set the initial stride length to be the number of threads in a block, so
+    // that each thread will handle only numFloats values. This will be the case
+    // in every iteration of the loop - every thread will only compare 
+    // numFloats values.
+    int strideLength = blockDim.x;
+    while (strideLength >= 1) {
+        int ind = threadIdx.x;
+        // If the thread index is less than the stride length, then continue.
+        // This handles the "binary tree" reduction; each iteration, the number
+        // of values that are compared is reduced by a factor of two, and as
+        // each thread compares numFloats values, the number of threads that are
+        // utilized is also reduced by a factor of two.
+        if (ind < strideLength) {
+            // Compare numFloats values, each one stride length apart. The max
+            // value of these values will end up assigned to data[ind].
+            for (int i = 0; i < numFloats; i++) {
+                if (data[ind] < data[ind + (strideLength * i)]) {
+                    data[ind] = data[ind + (strideLength * i)]);
+                }
+            }
+        }
+        
+        // Cut the strideLength down by a factor of two.
+        strideLength = strideLength / 2;
+        __syncthreads();
+    }
 
-
+    // The maximum value over the section of out_data handled by this warp
+    // should now be in data[0]. Use atomicMax to set the value of max_abs_val
+    // appropriately.
+    atomicMax(max_abs_val, data[0]);
 }
 
 __global__
@@ -108,7 +163,13 @@ cudaDivideKernel(cufftComplex *out_data, float *max_abs_val,
 
     This kernel should be quite short.
     */
-
+    unsigned int index = blockIdx.x * blockDim.x + threadIdx.x;
+    while (index < padded_length) {
+        out_data[index].x = out_data[index].x / &max_abs_val;
+        out_data[index].y = out_data[index].y / &max_abs_val;
+        
+        index += blockDim.x * gridDim.x;
+    }
 }
 
 
@@ -132,6 +193,10 @@ void cudaCallMaximumKernel(const unsigned int blocks,
         
 
     /* TODO 2: Call the max-finding kernel. */
+    int numFloatsPerThread = padded_length / (blocks * threadsPerBlock);
+    int numBytesShMem = numFloatsPerThread * threadsPerBlock * sizeof(float);
+    cudaMaximumKernal<<<blocks, threadsPerBlock, numBytesShMem>>>
+        (out_data, max_abs_val, padded_length);
 
 }
 
@@ -143,4 +208,6 @@ void cudaCallDivideKernel(const unsigned int blocks,
         const unsigned int padded_length) {
         
     /* TODO 2: Call the division kernel. */
+    cudaDivideKernal<<<blocks, threadsPerBlock>>>
+        (out_data, max_abs_val, padded_length);
 }
