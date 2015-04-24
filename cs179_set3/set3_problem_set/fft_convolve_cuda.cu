@@ -100,7 +100,7 @@ cudaMaximumKernel(cufftComplex *out_data, float *max_abs_val,
     extern __shared__ float data[];
     
     // Figure out how many floats each thread will be handling.
-    int numFloats = padded_length / (gridDim.x * blockDim.x);
+    int numFloats = padded_length / (gridDim.x * blockDim.x) + 1;
     
     // Initialize data to zeros
     for(int i = 0; i < blockDim.x; i++) {
@@ -115,8 +115,10 @@ cudaMaximumKernel(cufftComplex *out_data, float *max_abs_val,
         //float real = out_data[index + j].x;
         //float imag = out_data[index + j].y;
         //float magnitude = sqrt(real * real + imag * imag);
-        if(data[threadIdx.x] < out_data[index + j].x) {
-            data[threadIdx.x] = out_data[index + j].x;
+        if(index + j < padded_length) {
+            if(data[threadIdx.x] < out_data[index + j].x) {
+                data[threadIdx.x] = out_data[index + j].x;
+            }
         }
     }
     
