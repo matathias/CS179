@@ -575,7 +575,13 @@ int large_gauss_test(int argc, char **argv){
         /* TODO 2: Set it to 0 in preparation for running. 
         (Recommend using cudaMemset) */
         cudaMemset(dev_max_abs_val, 0, sizeof(float));
-
+        
+        err = cudaGetLastError();
+        if  (cudaSuccess != err){
+                cerr << "Error " << cudaGetErrorString(err) << endl;
+        } else {
+                cerr << "No memset error detected" << endl;
+        }
 
         /* NOTE: This is a function in the fft_convolve_cuda.cu file,
         where you'll fill in the kernel call for finding the maximum
@@ -588,7 +594,7 @@ int large_gauss_test(int argc, char **argv){
         if  (cudaSuccess != err){
                 cerr << "Error " << cudaGetErrorString(err) << endl;
         } else {
-                cerr << "No kernel error detected" << endl;
+                cerr << "No maximumKernel error detected" << endl;
         }
 
 
@@ -603,7 +609,7 @@ int large_gauss_test(int argc, char **argv){
         if  (cudaSuccess != err){
                 cerr << "Error " << cudaGetErrorString(err) << endl;
         } else {
-                cerr << "No kernel error detected" << endl;
+                cerr << "No divideKernel error detected" << endl;
         }
 
 
