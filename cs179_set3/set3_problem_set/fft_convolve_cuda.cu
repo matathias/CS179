@@ -109,11 +109,11 @@ cudaMaximumKernel(cufftComplex *out_data, float *max_abs_val,
     for (int j = 0; j < numFloats && index + j < padded_length; j++) {
         // We want the absolute value of out_data, not the complex value.
         float real = abs(out_data[index + j].x);
-        if (j == 0 && j == 1) {
-            data[threadIdx.x + j] = real;
+        if (j == 0) {
+            data[threadIdx.x] = real;
         }
-        else if(data[threadIdx.x + (j % 2)] < real) {
-            data[threadIdx.x + (j % 2)] = real;
+        else if(data[threadIdx.x] < real) {
+            data[threadIdx.x] = real;
         }
     }
     
@@ -124,7 +124,7 @@ cudaMaximumKernel(cufftComplex *out_data, float *max_abs_val,
     // that each thread will handle only numFloats values. This will be the case
     // in every iteration of the loop - every thread will only compare 
     // numFloats values.
-    int strideLength = blockDim.x;
+    int strideLength = blockDim.x / 2;
     
     while (strideLength >= 1) {
         int ind = threadIdx.x;
@@ -194,7 +194,7 @@ void cudaCallMaximumKernel(const unsigned int blocks,
         
 
     /* TODO 2: Call the max-finding kernel. */
-    cudaMaximumKernel<<< blocks, threadsPerBlock, 2 * threadsPerBlock * sizeof(float) >>>
+    cudaMaximumKernel<<< blocks, threadsPerBlock, threadsPerBlock * sizeof(float) >>>
         (out_data, max_abs_val, padded_length);
 
 }
