@@ -112,10 +112,10 @@ cudaMaximumKernel(cufftComplex *out_data, float *max_abs_val,
         // value.
         if (index + j < padded_length) {
             // We want the absolute value of out_data, not the complex value.
-            //float real = out_data[index + j].x;
-            //float imag = out_data[index + j].y;
-            //data[threadIdx.x * numFloats + j] = sqrt(real * real + imag * imag);
-            data[threadIdx.x * numFloats + j] = out_data[index + j].x;
+            float real = out_data[index + j].x;
+            float imag = out_data[index + j].y;
+            data[threadIdx.x * numFloats + j] = sqrt(real * real + imag * imag);
+            //ata[threadIdx.x * numFloats + j] = out_data[index + j].x;
         }
         else {
             data[threadIdx.x * numFloats + j] = 0;
