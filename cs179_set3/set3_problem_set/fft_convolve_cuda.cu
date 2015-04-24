@@ -109,12 +109,11 @@ cudaMaximumKernel(cufftComplex *out_data, float *max_abs_val,
     for (int j = 0; j < numFloats && index + j < padded_length; j++) {
         // We want the absolute value of out_data, not the complex value.
         float real = abs(out_data[index + j].x);
-        //real = gridDim.x; //~test~
-        if (j == 0) {
-            data[threadIdx.x] = real;
+        if (j == 0 && j == 1) {
+            data[threadIdx.x + j] = real;
         }
-        else if(data[threadIdx.x] < real) {
-            data[threadIdx.x] = real;
+        else if(data[threadIdx.x + (j % 2)] < real) {
+            data[threadIdx.x + (j % 2)] = real;
         }
     }
     
@@ -125,7 +124,7 @@ cudaMaximumKernel(cufftComplex *out_data, float *max_abs_val,
     // that each thread will handle only numFloats values. This will be the case
     // in every iteration of the loop - every thread will only compare 
     // numFloats values.
-    int strideLength = blockDim.x / 2;
+    int strideLength = blockDim.x;
     
     while (strideLength >= 1) {
         int ind = threadIdx.x;
@@ -137,11 +136,6 @@ cudaMaximumKernel(cufftComplex *out_data, float *max_abs_val,
         if (ind < strideLength) {
             // Compare numFloats values, each one stride length apart. The max
             // value of these values will end up assigned to data[ind].
-            /*for (int i = 0; i < 2; i++) {
-                if (data[ind] < data[ind + (strideLength * i)]) {
-                    data[ind] = data[ind + (strideLength * i)];
-                }
-            }*/
             if (data[ind] < data[ind + strideLength]) {
                 data[ind] = data[ind + strideLength];
             }
@@ -200,10 +194,7 @@ void cudaCallMaximumKernel(const unsigned int blocks,
         
 
     /* TODO 2: Call the max-finding kernel. */
-    //int numFloatsPerThread = padded_length / (blocks * threadsPerBlock);
-    //int numBytesShMem = numFloatsPerThread * threadsPerBlock * sizeof(float);
-    //cudaMaximumKernel<<< blocks, threadsPerBlock, numBytesShMem >>>
-    cudaMaximumKernel<<< blocks, threadsPerBlock, threadsPerBlock * sizeof(float) >>>
+    cudaMaximumKernel<<< blocks, threadsPerBlock, 2 * threadsPerBlock * sizeof(float) >>>
         (out_data, max_abs_val, padded_length);
 
 }
