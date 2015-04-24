@@ -169,8 +169,8 @@ cudaDivideKernel(cufftComplex *out_data, float *max_abs_val,
     */
     unsigned int index = blockIdx.x * blockDim.x + threadIdx.x;
     while (index < padded_length) {
-        out_data[index].x = out_data[index].x / &max_abs_val;
-        out_data[index].y = out_data[index].y / &max_abs_val;
+        out_data[index].x = out_data[index].x / *max_abs_val;
+        out_data[index].y = out_data[index].y / *max_abs_val;
         
         index += blockDim.x * gridDim.x;
     }
