@@ -103,7 +103,9 @@ cudaMaximumKernel(cufftComplex *out_data, float *max_abs_val,
     int numFloats = padded_length / (gridDim.x * blockDim.x);
     
     // Initialize data to zeros
-    cudaMemset(data, 0, blockDim.x*sizeof(float));
+    for(int i = 0; i < blockDim.x; i++) {
+        data[i] = 0;
+    }
     
     // Load the data from out_data into shared memory. Each thread only handles
     // numFloats sequential values.
