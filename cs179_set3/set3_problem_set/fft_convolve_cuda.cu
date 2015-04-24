@@ -97,7 +97,7 @@ cudaMaximumKernel(cufftComplex *out_data, float *max_abs_val,
     */
     
     // Create the shared memory.
-    extern __shared__ float data[];
+    __shared__ float data[4096];
     
     // Figure out how many floats each thread will be handling.
     int numFloats = padded_length / (gridDim.x * blockDim.x);
@@ -155,7 +155,7 @@ cudaMaximumKernel(cufftComplex *out_data, float *max_abs_val,
     // should now be in data[0]. Use atomicMax to set the value of max_abs_val
     // appropriately.
     if (threadIdx.x == 0) {
-        //atomicMax(max_abs_val, data[0]);
+        atomicMax(max_abs_val, data[0]);
     }
 }
 
@@ -201,7 +201,8 @@ void cudaCallMaximumKernel(const unsigned int blocks,
     /* TODO 2: Call the max-finding kernel. */
     int numFloatsPerThread = padded_length / (blocks * threadsPerBlock);
     int numBytesShMem = numFloatsPerThread * threadsPerBlock * sizeof(float);
-    cudaMaximumKernel<<<blocks, threadsPerBlock, numBytesShMem>>>
+    //cudaMaximumKernel<<<blocks, threadsPerBlock, numBytesShMem>>>
+    cudaMaximumKernel<<<blocks, threadsPerBlock>>>
         (out_data, max_abs_val, padded_length);
 
 }
