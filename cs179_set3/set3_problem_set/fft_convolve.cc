@@ -247,7 +247,7 @@ int large_gauss_test(int argc, char **argv){
 
     Also, unlike in Homework 1, we don't copy our impulse response
     yet, because this is now given to us per-channel. */
-    int paddedLength = N + impluse_length - 1;
+    int paddedLength = N + impulse_length - 1;
     cudaMalloc((void **) &dev_input_data, sizeof(cufftComplex) * paddedLength);
     cudaMalloc((void **) &dev_impulse_v, sizeof(cufftComplex) * paddedLength);
     cudaMalloc((void **) &dev_out_data, sizeof(cufftComplex) * paddedLength);
@@ -416,13 +416,13 @@ int large_gauss_test(int argc, char **argv){
         (See Lecture 9 for details on padding.)
         Set the rest of the memory regions to 0 (recommend using cudaMemset).
         */
-        float *input_padding = (void*) dev_input_data + 
-                               (sizeof(cufftComplex) * N);
-        float *imp_padding = (void*) dev_impulse_v + 
-                             (sizeof(cufftComplex) * impulse_length);
-        cudaMemset(input_padding, 0, paddingLength - N);
-        cudaMemset(imp_padding, 0, paddingLength - impulse_length);
-        cudaMemset(dev_out_data, 0, paddingLength);
+        float *input_padding = (float*) ((void*) dev_input_data + 
+                               (sizeof(cufftComplex) * N));
+        float *imp_padding = (float*) ((void*) dev_impulse_v + 
+                             (sizeof(cufftComplex) * impulse_length));
+        cudaMemset(input_padding, 0, paddedLength - N);
+        cudaMemset(imp_padding, 0, paddedLength - impulse_length);
+        cudaMemset(dev_out_data, 0, paddedLength);
 
 
         /* TODO: Create a cuFFT plan for the forward and inverse transforms. 
