@@ -105,11 +105,11 @@ cudaMaximumKernel(cufftComplex *out_data, float *max_abs_val,
     
     // Load the data from out_data into shared memory. Each thread only handles
     // numFloats sequential values.
-    int index = blockIdx.x * blockDim.x + threadIdx.x * numFloats;
+    int index = blockIdx.x * blockDim.x * numFloats + threadIdx.x * numFloats;
     for (int j = 0; j < numFloats && index + j < padded_length; j++) {
         // We want the absolute value of out_data, not the complex value.
         float real = abs(out_data[index + j].x);
-        real = index + j; //~test~
+        //real = gridDim.x; //~test~
         if (j == 0) {
             data[threadIdx.x] = real;
         }
