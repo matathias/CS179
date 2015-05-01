@@ -82,6 +82,11 @@ What is a good, parallelizable way to check whether "F is not all false" at each
 
 (Hint: If we store "false" as 0, and "true" as 1 within the frontier array, what happens to the array's sum?)
 
+If "false" is stored as 0 and "true" is stored as 1 then the array's sum will be
+the number of true elements within the array. If the array's sum is 0, then the
+entire array is false -- so at each iteration, F simply needs to be checked for
+a non-zero sum to see if it is all false or not.
+
 
 
 1.3 	(10 pts)
@@ -91,6 +96,19 @@ Can you think of another way to check whether "F is not all false"? What are the
 
 (Hint: In the GPU pseudocode, what part of the code has to be executed to set an element of F to true? Can you add some code there?)
 
+We could add a single boolean variable "fNotFalse" that is set to false just 
+before every call to the GPU. Then, within the GPU code, if the 
+"if X[j] is false" statement is both reached and evaluates to true, then 
+fNotFalse is set to true. This means that the CPU would only have to make a
+single check against a single variable to see if F is all false or not, which
+would speed up the check. On the other hand, it is more memory to use and is
+another command for the GPU to run, trivial though it may be.
+
+The use of such a variable would be better for large and sparse graphs, where
+finding the sum of F could take a significant amount of time. On the other hand,
+there is not much to gain from this method if the graph is dense and very
+inter-connected, as then the GPU would be setting fNotFalse to true so often
+that finding the sum of F instead might be faster.
 
 
 
@@ -135,6 +153,17 @@ How do you expect our GPU-accelerated PET reconstruction performance to compare 
 
 (Hint 2: In X-ray CT reconstruction, we were able to use texture memory to cache sinogram reads. Does that change here?)
 
+In the case of PET reconstruction, there may be times when different threads
+attempt to access the same pixel. This is an atomically unsafe operation;
+accounting for this will make the PET reconstruction slower than the X-ray CT,
+as with CT every thread is accessing its own (x,y) pixel and thus does not need
+to worry about syncing threads or other such considerations. PET reconstruction
+can still use texture memory, however -- instead of organizing the memory by
+pixels, we can set up a 3D representation, with two of the dimensions being
+recorded by the location_measurement_xxx variable and the third dimension being
+the time variable.
+
+In short, I suspect PET reconstruction would take longer than X-ray CT.
 
 
 
