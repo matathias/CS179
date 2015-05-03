@@ -50,6 +50,89 @@ void checkCUDAKernelError()
 
 }
 
+/* Basic ramp filter. Scale all frequencies linearly. */
+__global__ void cudaFrequencyKernal(cufftComplex *out_data, int length) {
+    unsigned int index = blockIdx.x * blockDim.x + threadIdx.x;
+    while (index < length) {
+        float scaleFactor;
+        // We need to account for the fact that the highest amplitude is at
+        // length / 2
+        if (index < (length / 2)) {
+            scaleFactor = ((float) index) / (length / 2); 
+        }
+        else {
+            scaleFactor = ((float) (length - index)) / (length / 2);
+        }
+        cufftComplex temp = out_data[index];
+        temp.x = temp.x * scaleFactor;
+        temp.y = temp.y * scaleFactor;
+        
+        out_data[index] = temp;
+        
+        index += blockDim.x * gridDim.x;
+    }
+}
+
+/* Convert an array of complex values to an array of real values. */
+__global__ void cudaComplexToRealKernal(cufftComplex *in_data,
+                                         float *out_data,
+                                         int length) {
+    unsigned int index = blockIdx.x * blockDim.x + threadIdx.x;
+    while (index < length) {
+        cufftComplex in = in_data[index];
+        float real = in.x;
+        //float imag = in.y;
+        //float absValue = sqrt((real * real) + (imag * imag));
+        
+        out_data[index] = real; //absValue;
+        
+        index += blockDim.x * gridDim.x;
+    }
+}
+
+/* Backproject the sinogram to an image. */
+__global__ void cudaBackprojectionKernal(float *in_data, float *out_data,
+                                          int nAngles, int sin_width,
+                                          int image_dim) {
+    unsigned int index = blockIdx.x * blockDim.x + threadIdx.x;
+    while (index < (image_dim * image_dim)) {
+        // Get the pixel (x,y) coordinate from the index value
+        int x_image = index / image_dim;
+        int y_image = index % image_dim;
+        // Get the geometric (x,y) coordinate from the pixel coordinate
+        int x_geo = x_image - (image_dim / 2);
+        int y_geo = (image_dim / 2) - y_image;
+        
+        // For all theta in the sinogram...
+        for (int i = 0; i < nAngles; i++) {
+            float d;
+            // Handle the edges cases of theta = 0 and theta = pi/2
+            if(i == 0) {
+                d = (float) x_geo;
+            }
+            else if (i == nAngles / 2) {
+                d = (float) y_geo;
+            }
+            else {
+                float theta = PI * (((float) i) / ((float) nAngles));
+                float m = -1 * cos(theta) / sin(theta);
+                float x_i = ((float) (y_geo - m * x_geo)) / ((-1 / m) - m);
+                float y_i = (-1 / m) * x_i;
+                d = sqrt((x_i * x_i) + (y_i * y_i));
+                // Center the index
+                if (((-1 / m) > 0 && x_i < 0) || ((-1 / m) < 0 && x_i > 0)) {
+                    d *= -1;
+                }
+                d = truncf(d);
+            }
+            // Now that we have d, add the right value to the image array
+            out_data[x_image * image_dim + y_image] += in_data[i * sin_width + d];
+        }
+        
+        index += blockDim.x * gridDim.x;
+    }
+}
+
 
 
 
@@ -128,6 +211,13 @@ int main(int argc, char** argv){
 
     /* TODO: Allocate memory for all GPU storage above, copy input sinogram
     over to dev_sinogram_cmplx. */
+    int sinogram_size = nAngles * sinogram_width);
+    cudaMalloc((void **) &dev_sinogram_cmplx, sizeof(cufftComplex) * sinogram_size);
+    cudaMalloc((void **) &dev_sinogram_float, sizeof(float) * sinogram_size);
+               
+    cudaMemcpy(dev_sinogram_cmplx, sinogram_host, 
+               sizeof(cufftComplex) sinogram_size, 
+               cudaMemcpyHostToDevice);
 
 
     /* TODO 1: Implement the high-pass filter:
@@ -140,6 +230,26 @@ int main(int argc, char** argv){
         Note: If you want to deal with real-to-complex and complex-to-real
         transforms in cuFFT, you'll have to slightly change our code above.
     */
+    cufftHandle plan;
+    int batch = 1;
+    cufftPlan1d(&plan, sinogram_size, CUFFT_C2C, batch);
+    
+    // Run the forward DFT
+    cufftExecC2C(plan, dev_sinogram_cmplx, dev_sinogram_cmplx, CUFFT_FORWARD);
+    
+    // Apply basic ramp filter
+    cudaFrequencyKernal<<<nBlocks, threadsPerBlock>>>
+                        (dev_sinogram_cmplx, sinogram_size);
+    
+    // Run the inverse DFT
+    cufftExecC2C(plan, dev_sinogram_cmplx, dev_sinogram_cmplx, CUFFT_INVERSE);
+    
+    // Extract the real components to floats
+    cudaComplexToRealKernal<<<nBlocks, threadsPerBlock>>>
+                        (dev_sinogram_cmplx, dev_sinogram_float, sinogram_size);
+                        
+    // Free the original sinogram
+    cudaFree(dev_sinogram_cmplx);
 
 
     /* TODO 2: Implement backprojection.
@@ -148,6 +258,22 @@ int main(int argc, char** argv){
         - Copy the reconstructed image back to output_host.
         - Free all remaining memory on the GPU.
     */
+    cudaMalloc((void **) &output_dev, sizeof(float) * width * height);
+    cudaMemset(output_dev, 0, sizeof(float) * width * height);
+    
+    // Run the Backprojection kernal
+    cudaBackprojectionKernal<<<nBlocks, threadsPerBlock>>>(dev_sinogram_float,
+                                                           output_dev, 
+                                                           nAngles,
+                                                           sinogram_width, 
+                                                           width);
+                                                           
+    // Copy the reconstructed image back to host
+    cudaMemcpy(output_host, output_dev, sizeof(float) * width * height, cudaMemcpyDeviceToHost);
+    
+    // Free the remaining GPU memory
+    cudaFree(dev_sinogram_float);
+    cudaFree(output_dev);
 
     
     /* Export image data. */
