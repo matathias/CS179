@@ -120,10 +120,14 @@ __global__ void cudaBackprojectionKernal(float *in_data, float *out_data,
                 if (((-1 / m) > 0 && x_i < 0) || ((-1 / m) < 0 && x_i > 0)) {
                     d *= -1;
                 }
-                d = truncf(d);
+                //d = truncf(d);
             }
+            // d is the distance from the center line, so we need to offset d by
+            // this much
+            d += sin_width / 2.0;
+            d = truncf(d);
             // Now that we have d, add the right value to the image array
-            out_data[x_image * image_dim + y_image] += in_data[(int)d * sin_width + i];
+            out_data[x_image * image_dim + y_image] += in_data[i * sin_width + (int)d];
         }
         
         index += blockDim.x * gridDim.x;
