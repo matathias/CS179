@@ -80,11 +80,8 @@ __global__ void cudaComplexToRealKernal(cufftComplex *in_data,
     unsigned int index = blockIdx.x * blockDim.x + threadIdx.x;
     while (index < length) {
         cufftComplex in = in_data[index];
-        float real = in.x;
-        float imag = in.y;
-        float absValue = sqrt((real * real) + (imag * imag));
         
-        out_data[index] = absValue;
+        out_data[index] = in.x;
         
         index += blockDim.x * gridDim.x;
     }
@@ -106,7 +103,7 @@ __global__ void cudaBackprojectionKernal(float *in_data, float *out_data,
         // For all theta in the sinogram...
         for (int i = 0; i < nAngles; i++) {
             float d;
-            // Handle the edges cases of theta = 0 and theta = pi/2
+            // Handle the edges cases of theta = 0 and theta = PI/2
             if(i == 0) {
                 d = (float) x_geo;
             }
@@ -126,7 +123,7 @@ __global__ void cudaBackprojectionKernal(float *in_data, float *out_data,
                 d = truncf(d);
             }
             // Now that we have d, add the right value to the image array
-            out_data[x_image * image_dim + y_image] += in_data[i * sin_width + (int)d];
+            out_data[x_image * image_dim + y_image] += in_data[(int)d * sin_width + i];
         }
         
         index += blockDim.x * gridDim.x;
