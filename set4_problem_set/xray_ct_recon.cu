@@ -81,10 +81,10 @@ __global__ void cudaComplexToRealKernal(cufftComplex *in_data,
     while (index < length) {
         cufftComplex in = in_data[index];
         float real = in.x;
-        //float imag = in.y;
-        //float absValue = sqrt((real * real) + (imag * imag));
+        float imag = in.y;
+        float absValue = sqrt((real * real) + (imag * imag));
         
-        out_data[index] = real; //absValue;
+        out_data[index] = absValue;
         
         index += blockDim.x * gridDim.x;
     }
@@ -238,8 +238,8 @@ int main(int argc, char** argv){
     cufftExecC2C(plan, dev_sinogram_cmplx, dev_sinogram_cmplx, CUFFT_FORWARD);
     
     // Apply basic ramp filter
-    //cudaFrequencyKernal<<<nBlocks, threadsPerBlock>>>
-    //                    (dev_sinogram_cmplx, sinogram_size);
+    cudaFrequencyKernal<<<nBlocks, threadsPerBlock>>>
+                        (dev_sinogram_cmplx, sinogram_size);
     
     // Run the inverse DFT
     cufftExecC2C(plan, dev_sinogram_cmplx, dev_sinogram_cmplx, CUFFT_INVERSE);
