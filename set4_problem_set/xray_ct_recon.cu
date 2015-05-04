@@ -126,7 +126,7 @@ __global__ void cudaBackprojectionKernal(float *in_data, float *out_data,
                 d = truncf(d);
             }
             // Now that we have d, add the right value to the image array
-            out_data[x_image * image_dim + y_image] += in_data[i * sin_width + d];
+            out_data[x_image * image_dim + y_image] += in_data[i * sin_width + (int)d];
         }
         
         index += blockDim.x * gridDim.x;
@@ -211,12 +211,12 @@ int main(int argc, char** argv){
 
     /* TODO: Allocate memory for all GPU storage above, copy input sinogram
     over to dev_sinogram_cmplx. */
-    int sinogram_size = nAngles * sinogram_width);
+    int sinogram_size = nAngles * sinogram_width;
     cudaMalloc((void **) &dev_sinogram_cmplx, sizeof(cufftComplex) * sinogram_size);
     cudaMalloc((void **) &dev_sinogram_float, sizeof(float) * sinogram_size);
                
     cudaMemcpy(dev_sinogram_cmplx, sinogram_host, 
-               sizeof(cufftComplex) sinogram_size, 
+               sizeof(cufftComplex) * sinogram_size, 
                cudaMemcpyHostToDevice);
 
 
