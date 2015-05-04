@@ -238,8 +238,8 @@ int main(int argc, char** argv){
     cufftExecC2C(plan, dev_sinogram_cmplx, dev_sinogram_cmplx, CUFFT_FORWARD);
     
     // Apply basic ramp filter
-    cudaFrequencyKernal<<<nBlocks, threadsPerBlock>>>
-                        (dev_sinogram_cmplx, sinogram_size);
+    //cudaFrequencyKernal<<<nBlocks, threadsPerBlock>>>
+    //                    (dev_sinogram_cmplx, sinogram_size);
     
     // Run the inverse DFT
     cufftExecC2C(plan, dev_sinogram_cmplx, dev_sinogram_cmplx, CUFFT_INVERSE);
