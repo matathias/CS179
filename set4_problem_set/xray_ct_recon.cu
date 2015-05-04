@@ -94,8 +94,8 @@ __global__ void cudaBackprojectionKernal(float *in_data, float *out_data,
     unsigned int index = blockIdx.x * blockDim.x + threadIdx.x;
     while (index < (image_dim * image_dim)) {
         // Get the pixel (x,y) coordinate from the index value
-        int x_image = index / image_dim;
-        int y_image = index % image_dim;
+        int y_image = index / image_dim;
+        int x_image = index % image_dim;
         // Get the geometric (x,y) coordinate from the pixel coordinate
         int x_geo = x_image - (image_dim / 2);
         int y_geo = (image_dim / 2) - y_image;
@@ -127,7 +127,7 @@ __global__ void cudaBackprojectionKernal(float *in_data, float *out_data,
             d += sin_width / 2.0;
             d = truncf(d);
             // Now that we have d, add the right value to the image array
-            out_data[x_image * image_dim + y_image] += in_data[i * sin_width + (int)d];
+            out_data[y_image * image_dim + x_image] += in_data[i * sin_width + (int)d];
         }
         
         index += blockDim.x * gridDim.x;
