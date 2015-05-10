@@ -120,7 +120,6 @@ __global__ void cudaBackprojectionKernal(float *in_data, float *out_data,
                 if (((-1 / m) > 0 && x_i < 0) || ((-1 / m) < 0 && x_i > 0)) {
                     d *= -1;
                 }
-                //d = truncf(d);
             }
             // d is the distance from the center line, so we need to offset d by
             // this much
