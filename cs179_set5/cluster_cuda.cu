@@ -1,5 +1,6 @@
 #include <cassert>
 #include <cuda_runtime.h>
+#include <float.h>
 #include "cluster_cuda.cuh"
 
 // This assumes address stores the average of n elements atomically updates
@@ -59,7 +60,40 @@ float squared_distance(float *a, float *b, int stride, int size) {
 __global__
 void sloppyClusterKernel(float *clusters, int *cluster_counts, int k, 
                           float *data, int *output, int batch_size) {
-  // TODO: write me
+    // TODO: write me
+    // Access one element of the batch at a time...
+    unsigned int index = blockIdx.x * blockDim.x + threadIdx.x;
+    while (index < batch_size) {
+        float *this_review = data[index * REVIEW_DIM];
+        
+        // Find the closest cluster
+        int closest_cluster = 0;
+        float smallest_distance = FLT_MAX;
+        for (int i = 0; i < k; i++) {
+            float *cluster = clusters[i * REVIEW_DIM];
+            float distance = squared_distance(this_review, cluster, 1, REVIEW_DIM);
+            if (distance < smallest_distance) {
+                closest_cluster = i;
+                smallest_distance = distance;
+            }
+        }
+        
+        // Assign this_review to the closest cluster
+        output[index] = closest_cluster;
+        
+        // update said cluster
+        float *cluster = clusters[closest_cluster * REVIEW_DIM];
+        int cluster_size = cluster_counts[closest_cluster];
+        for (int i = 0; i < REVIEW_DIM; i++) {
+            float newAvg = atomicUpdateAverage(cluster[i], cluster_size, this_review[i]);
+            cluster[i] = newAvg;
+        }
+        
+        // Update the cluster size
+        cluster_counts[closest_cluster] = cluster_size + 1;        
+        
+        index += blockDim.x * gridDim.x;
+    }
 }
 
 
