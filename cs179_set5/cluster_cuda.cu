@@ -85,8 +85,7 @@ void sloppyClusterKernel(float *clusters, int *cluster_counts, int k,
         float *cluster = clusters[closest_cluster * REVIEW_DIM];
         int cluster_size = cluster_counts[closest_cluster];
         for (int i = 0; i < REVIEW_DIM; i++) {
-            float newAvg = atomicUpdateAverage(cluster[i], cluster_size, this_review[i]);
-            cluster[i] = newAvg;
+            atomicUpdateAverage(cluster[i], cluster_size, this_review[i]);
         }
         
         // Update the cluster size
