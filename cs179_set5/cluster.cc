@@ -247,7 +247,7 @@ void cluster(istream& in_stream, int k, int batch_size) {
   printf("Single batch latency: %f seconds\n\n", singleBatchTime);
   
   // Print the bandwidth used in the final copy
-  printf("\nDevice to Host cluster_counts bandwidth (GB/s): %f\n", cCountBand);
+  printf("Device to Host cluster_counts bandwidth (GB/s): %f\n", cCountBand);
   printf("Device to Host clusters bandwidth (GB/s):       %f\n", clusterBand);
 
   // free cluster data
@@ -269,8 +269,8 @@ void cluster(istream& in_stream, int k, int batch_size) {
 }
 
 int main(int argc, char** argv) {
-  int k = 5;
-  int batch_size = 32;
+  int k = 50;
+  int batch_size = 2048;
 
   if (argc == 1) {
     cluster(cin, k, batch_size);
