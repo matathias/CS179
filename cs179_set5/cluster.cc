@@ -116,6 +116,8 @@ void cluster(istream& in_stream, int k, int batch_size) {
   // initialize cluster counts to 0
   gpuErrChk(cudaMemset(d_cluster_counts, 0, k * sizeof(int)));
   
+  float classification_time = -1;
+  
   // TODO: allocate copy buffers and streams
   int numStreams = 2;
   cudaStream_t s[numStreams];
@@ -137,6 +139,9 @@ void cluster(istream& in_stream, int k, int batch_size) {
   int *d_output;
   gpuErrChk(cudaMalloc(&d_output, numStreams * batch_size * sizeof(int)));
 
+  // Record how long it takes to classify everything
+  START_TIMER();
+  
   // main loop to process input lines (each line corresponds to a review)
   int review_idx = 0;
   for (string review_str; getline(in_stream, review_str); review_idx++) {
@@ -152,16 +157,37 @@ void cluster(istream& in_stream, int k, int batch_size) {
     if (review_idx % batch_size == batch_size - 1) {
         int stream_idx = (review_idx / batch_size) % numStreams;
         int offset = stream_idx * batch_size;
+        // events for timing
+        cudaEvent_t startEvent, stopEvent;
         // Copy H->D, call kernal, copy D->H
+        gpuErrChk(cudaEventRecord(startEvent, 0));
         gpuErrChk(cudaMemcpyAsync(&d_data[offset], &data[offset], 
                                   batch_size * REVIEW_DIM * sizeof(float), 
                                   cudaMemcpyHostToDevice, s[stream_idx]));
+        gpuErrChk(cudaEventRecord(stopEvent, 0));
+        gpuErrChk(cudaEventSynchronize(stopEvent));
+        
+        // Print the bandwidth used for the H->D copy
+        float time;
+        gpuErrChk(cudaEventElapsedTime(&time, startEvent, stopEvent));
+        printf("  Host to Device bandwidth (GB/s): %f\n",
+               batch_size * REVIEW_DIM * sizeof(float) * 1e-6 / time);
+                                  
         cudaCluster(d_clusters, d_cluster_counts, k, 
                     &d_data[offset], &d_output[offset], batch_size, 
                     s[stream_idx]);
+                    
+        gpuErrChk(cudaEventRecord(startEvent, 0));
         gpuErrChk(cudaMemcpyAsync(&output[offset], &d_output[offset], 
                                   batch_size * sizeof(float), 
                                   cudaMemcpyDeviceToHost, s[stream_idx]));
+        gpuErrChk(cudaEventRecord(stopEvent, 0));
+        gpuErrChk(cudaEventSynchronize(stopEvent));
+        
+        // Print the bandwidth used for the D->H copy
+        gpuErrChk(cudaEventElapsedTime(&time, startEvent, stopEvent));
+        printf("  Device to Host bandwidth (GB/s): %f\n",
+               batch_size * sizeof(float) * 1e-6 / time);
                         
         //initialize the printerArg struct
         struct printerArg *stream_printer = 
@@ -180,6 +206,8 @@ void cluster(istream& in_stream, int k, int batch_size) {
 
   // wait for everything to end on GPU before final summary
   gpuErrChk(cudaDeviceSynchronize());
+  
+  STOP_RECORD_TIMER(classification_time);
 
   // retrieve final cluster locations and counts
   int *cluster_counts = new int[k];
@@ -197,6 +225,12 @@ void cluster(istream& in_stream, int k, int batch_size) {
     }
     printf("]\n\n");
   }
+  
+  // Print how long classification took
+  cout << "Classification time: " << classification_time << " milliseconds" << endl;
+  cout << "Number of reviews:   " << review_idx << endl;
+  float rev_per_sec = review_idx / (classification_time / 1000);
+  cout << "Reviews per second:  " << rev_per_sec << endl;
 
   // free cluster data
   gpuErrChk(cudaFree(d_clusters));
