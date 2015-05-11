@@ -167,10 +167,10 @@ void cluster(istream& in_stream, int k, int batch_size) {
                         
         printf("3\n");
         //initialize the printerArg struct
-        struct printerArg *stream_printer = {review_idx - batch_size, batch_size, &output[offset]};
-//        stream_printer->review_idx_start = review_idx - batch_size;
-//        stream_printer->batch_size = batch_size;
-//        stream_printer->cluster_assignments = &output[offset];
+        struct printerArg *stream_printer = (printerArg *) malloc(sizeof(printerArg));
+        stream_printer->review_idx_start = review_idx - batch_size;
+        stream_printer->batch_size = batch_size;
+        stream_printer->cluster_assignments = &output[offset];
         
         printf("4\n");
         // Set a callback to printerCallback
