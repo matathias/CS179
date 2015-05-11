@@ -156,9 +156,9 @@ void cluster(istream& in_stream, int k, int batch_size) {
         gpuErrChk(cudaMemcpyAsync(&d_data[offset], &data[offset], 
                                   batch_size * REVIEW_DIM * sizeof(float), 
                                   cudaMemcpyHostToDevice, s[stream_idx]));
-        gpuErrChk(cudaCluster(d_clusters, d_cluster_counts, k, 
-                              &d_data[offset], &d_output[offset], batch_size, 
-                              s[stream_idx]));
+        cudaCluster(d_clusters, d_cluster_counts, k, 
+                    &d_data[offset], &d_output[offset], batch_size, 
+                    s[stream_idx]);
         gpuErrChk(cudaMemcpyAsync(&output[offset], &d_output[offset], 
                                   batch_size * sizeof(float), 
                                   cudaMemcpyDeviceToHost, s[stream_idx]));
