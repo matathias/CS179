@@ -64,13 +64,13 @@ void sloppyClusterKernel(float *clusters, int *cluster_counts, int k,
     // Access one element of the batch at a time...
     unsigned int index = blockIdx.x * blockDim.x + threadIdx.x;
     while (index < batch_size) {
-        float *this_review = data[index * REVIEW_DIM];
+        float *this_review = data[REVIEW_DIM * index];
         
         // Find the closest cluster
         int closest_cluster = 0;
         float smallest_distance = FLT_MAX;
         for (int i = 0; i < k; i++) {
-            float *cluster = clusters[i * REVIEW_DIM];
+            float *cluster = clusters[REVIEW_DIM * i];
             float distance = squared_distance(this_review, cluster, 1, REVIEW_DIM);
             if (distance < smallest_distance) {
                 closest_cluster = i;
@@ -82,7 +82,7 @@ void sloppyClusterKernel(float *clusters, int *cluster_counts, int k,
         output[index] = closest_cluster;
         
         // update said cluster
-        float *cluster = clusters[closest_cluster * REVIEW_DIM];
+        float *cluster = clusters[REVIEW_DIM * closest_cluster];
         int cluster_size = cluster_counts[closest_cluster];
         for (int i = 0; i < REVIEW_DIM; i++) {
             atomicUpdateAverage(cluster[i], cluster_size, this_review[i]);
