@@ -237,7 +237,7 @@ void cluster(istream& in_stream, int k, int batch_size) {
   }
   
   // Print how long classification took
-  printf("Total classification time: %f milliseconds\n", classification_time);
+  printf("Total classification time: %f seconds\n", classification_time / 1000);
   printf("Number of reviews:         %d\n", review_idx);
   printf("Reviews per second:        %f\n\n", 
          review_idx * 1000 / classification_time );
@@ -270,7 +270,7 @@ void cluster(istream& in_stream, int k, int batch_size) {
 
 int main(int argc, char** argv) {
   int k = 50;
-  int batch_size = 2048;
+  int batch_size = 1024;
 
   if (argc == 1) {
     cluster(cin, k, batch_size);
