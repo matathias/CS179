@@ -175,6 +175,8 @@ void cluster(istream& in_stream, int k, int batch_size) {
         cudaStreamAddCallback(s[stream_idx], 
                               printerCallback, 
                               stream_printer, 0);
+                              
+        free(stream_printer);
     }
   }
 
