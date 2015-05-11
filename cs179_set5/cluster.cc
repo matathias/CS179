@@ -223,7 +223,7 @@ void cluster(istream& in_stream, int k, int batch_size) {
 		       cudaMemcpyDeviceToHost));
   gpuErrChk(cudaEventRecord(stopEvent, 0));
   gpuErrChk(cudaEventSynchronize(stopEvent));
-  gpuErrChk(cudaElapsedTime(&time, startEvent, stopEvent));
+  gpuErrChk(cudaEventElapsedTime(&time, startEvent, stopEvent));
   cCountBand = k * sizeof(int) * 1e-6 / time;
   
   gpuErrChk(cudaEventRecord(startEvent, 0));
@@ -231,7 +231,7 @@ void cluster(istream& in_stream, int k, int batch_size) {
 		       cudaMemcpyDeviceToHost));
   gpuErrChk(cudaEventRecord(stopEvent, 0));
   gpuErrChk(cudaEventSynchronize(stopEvent));
-  gpuErrChk(cudaElapsedTime(&time, startEvent, stopEvent));
+  gpuErrChk(cudaEventElapsedTime(&time, startEvent, stopEvent));
   clusterBand = k * REVIEW_DIM * sizeof(int) * 1e-6 / time;
 
   // print cluster summaries
@@ -246,12 +246,12 @@ void cluster(istream& in_stream, int k, int batch_size) {
   
   // Print how long classification took
   printf("Classification time: %f milliseconds\n", classification_time);
-  printf("Number of reviews:   %f\n", review_idx);
-  float rev_per_sec = review_idx / (classification_time / 1000);
+  printf("Number of reviews:   %d\n", review_idx);
+  //float rev_per_sec = review_idx / (classification_time / 1000);
   printf("Reviews per second:  %f\n", review_idx * 1000 / classification_time );
   
   // Print the bandwidth used in the final copy
-  printf("Device to Host cluster_counts bandwidth (GB/s): %f\n", cCountBand);
+  printf("\nDevice to Host cluster_counts bandwidth (GB/s): %f\n", cCountBand);
   printf("Device to Host clusters bandwidth (GB/s):       %f\n", clusterBand);
 
   // free cluster data
