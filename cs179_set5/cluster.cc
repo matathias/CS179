@@ -139,7 +139,6 @@ void cluster(istream& in_stream, int k, int batch_size) {
 
   // main loop to process input lines (each line corresponds to a review)
   int review_idx = 0;
-  printf("1\n");
   for (string review_str; getline(in_stream, review_str); review_idx++) {
     // TODO: readLSAReview into appropriate storage
     int data_idx = review_idx % (batch_size * numStreams);
@@ -151,7 +150,6 @@ void cluster(istream& in_stream, int k, int batch_size) {
     
     // -1 is to account for the fact that review_idx is 0-indexed.
     if (review_idx % batch_size == batch_size - 1) {
-        printf("2\n");
         int stream_idx = (review_idx / batch_size) % numStreams;
         int offset = stream_idx * batch_size;
         // Copy H->D, call kernal, copy D->H
@@ -165,22 +163,20 @@ void cluster(istream& in_stream, int k, int batch_size) {
                                   batch_size * sizeof(float), 
                                   cudaMemcpyDeviceToHost, s[stream_idx]));
                         
-        printf("3\n");
         //initialize the printerArg struct
-        struct printerArg *stream_printer = (printerArg *) malloc(sizeof(printerArg));
-        stream_printer->review_idx_start = review_idx - batch_size;
+        struct printerArg *stream_printer = 
+                                      (printerArg *) malloc(sizeof(printerArg));
+        // review_idx is 0-indexed, so we have to account for that
+        stream_printer->review_idx_start = (review_idx + 1) - batch_size;
         stream_printer->batch_size = batch_size;
         stream_printer->cluster_assignments = &output[offset];
         
-        printf("4\n");
         // Set a callback to printerCallback
         cudaStreamAddCallback(s[stream_idx], 
                               printerCallback, 
                               stream_printer, 0);
-        printf("5\n");
     }
   }
-  printf("6\n");
 
   // wait for everything to end on GPU before final summary
   gpuErrChk(cudaDeviceSynchronize());
