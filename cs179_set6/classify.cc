@@ -79,17 +79,105 @@ void readLSAReview(string review_str, float *output, int stride) {
 void classify(istream& in_stream, int batch_size) {
   // TODO: randomly initialize weights, allocate and initialize buffers on
   //       host & device
+  float *weights = malloc(sizeof(float) * (REVIEW_DIM + 1));
+  gaussianFill(weights, batch_size);
+  
+  // Allocate memory on host for LSAReviews
+  float *data = new float[batch_size * (REVIEW_DIM + 1)];
+  
+  // Allocate memory on device for LSAReviews
+  float *d_data;
+  gpuErrChk(cudaMalloc(&d_data, batch_size * (REVIEW_DIM + 1) *
+                                sizeof(float)));
+                                
+  // Allocate memory on device for weights
+  float *d_weights;
+  gpuErrChk(cudaMalloc(&d_weights, sizeof(float) * REVIEW_DIM));
+  
+  int step_size = 1;
+  float classification_time = -1;
 
   // main loop to process input lines (each line corresponds to a review)
   int review_idx = 0;
+  int batch_number = 0;
+  
+  // Record how long the entire process takes, to compare how long IO takes to
+  // how long the kernal takes
+  START_TIMER();
+  
   for (string review_str; getline(in_stream, review_str); review_idx++) {
     // TODO: process review_str with readLSAReview
+    int data_idx = review_idx % batch_size;
+    readLSAReview(review_str, &data[data_idx], 1);
 
     // TODO: if batch is full, call kernel
+    // -1 is to account for the fact that review_idx is 0-indexed.
+    if (review_idx % batch_size == batch_size - 1) {
+        int offset = stream_idx * batch_size;
+        
+        // Copy H->D, call kernal, copy D->H
+        gpuErrChk(cudaEventRecord(start, 0));
+        gpuErrChk(cudaMemcpy(&d_data, &data, 
+                             batch_size * (REVIEW_DIM + 1) * sizeof(float), 
+                             cudaMemcpyHostToDevice));
+        gpuErrChk(cudaMemcpy(&d_weights, &weights, REVIEW_DIM * sizeof(float),
+                             cudaMemcpyHostToDevice));
+                                  
+        float errors = cudaClassify(d_data, batch_size, step_size, d_weights);
+                    
+        gpuErrChk(cudaMemcpy(&weights, &d_weights, REVIEW_DIM * sizeof(float), 
+                             cudaMemcpyDeviceToHost);
+        gpuErrChk(cudaEventRecord(stop, 0));
+        
+        // Print the batch number and the error rate
+        printf("\nBatch Number: %d\n", batch_number);
+        printf("Batch Error Rate: %f%\n", errors * 100);
+        
+        
+        batch_number++;
+    }
+    
   }
+  
+  // We aren't doing any streams shenanigans currently, but just in case...
+  gpuErrChk(cudaDeviceSynchronize());
+  
+  STOP_RECORD_TIMER(classification_time);
+  
+  // Transform classification_time into seconds from milliseconds
+  classification_time = classification_time / 1000;
+  
+  // Find the elapsed time for the kernal
+  float time;
+  gpuErrChk(cudaEventElapsedTime(&time, start, stop));
+  
+  // Transform time into seconds from milliseconds
+  time = time / 1000;
+  
+  // Calculate the kernal throughput
+  float throughput = batch_size / time;
 
   // TODO: print out weights
+  printf("\nWeights:\n[");
+  for (int i = 0; i < REVIEW_DIM; i++) {
+    printf("%.4e,", weights[i]);
+  }
+  printf("]\n\n");
+  
+  // Print out the timing and throughput data
+  printf("Time to classify all reviews:  %f seconds\n", classification_time);
+  printf("Batch size:                    %d\n", batch_size);
+  printf("Number of batches:             %d\n", batch_number);
+  printf("Single kernal latency:         %f\n", time);
+  printf("Kernal Throughput (batches/s): %f\n", throughput);
+  
   // TODO: free all memory
+  free(weights);
+  delete[] data;
+  gpuErrChk(cudaFree(d_weights));
+  gpuErrChk(cudaFree(d_data));
+  gpuErrChk(cudaEventDestroy(start));
+  gpuErrchk(cudaEventDestroy(stop));
 }
 
 int main(int argc, char** argv) {

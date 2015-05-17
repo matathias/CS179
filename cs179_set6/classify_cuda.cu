@@ -21,6 +21,68 @@ __global__
 void trainLogRegKernel(float *data, int batch_size, int step_size,
 		       float *weights, float *errors) {
   // TODO: write me
+  extern __shared__ float shData[];
+  // Copy weights into shared memory (the first row of data[])
+  unsigned int index = threadIdx.x;
+  while (index < REVIEW_DIM) {
+    shData[index] = weights[index]
+    shData[index + REVIEW_DIM] = 0;
+    index += blockDim.x;
+  }
+  
+  __syncThreads();
+  
+  // Access one element of the batch at a time
+  unsigned int batch_index = blockIdx.x * blockDim.x + threadIdx.x;
+  while (batch_index < batch_size) {
+    float *this_review = &data[(REVIEW_DIM + 1) * batch_index];
+    float y_n = this_review[REVIEW_DIM];
+    float wTxN = 0;
+    
+    // First calculate w^T * x_n
+    for (int i = 0; i < REVIEW_DIM; i++) {
+        wTxN += shData[i] * this_review[i];
+    }
+    
+    // Use this value as a prediction to calculate the error value
+    // if wTxN * y_n is positive, then they have the same sign. Otherwise they
+    // don't, and a misclassification error has occured.
+    if (wTxN * y_n < 0) {
+        atomicAdd(errors, 1);
+    }
+    
+    // Now calculate 1 + exp(y_n * w^T * x_n)
+    float divisor = 1 + exp(y_n * wTxN);
+    
+    // Throw in the (-1 / N) factor
+    divisor = batch_size * divisor / -1;
+    
+    // Now calculate the (y_n * x_n) part. Divide each individual value by
+    // divisor and store in the appropriate location in shData, which will be
+    // the second row (the first row is occupied by the weights)
+    for (int i = 0; i < REVIEW_DIM; i++) {
+        float val = y_n * this_review[i];
+        val = val / divisor;
+        shDara[REVIEW_DIM + i] += val;
+    }
+    
+    batch_index += blockDim.x * gridDim.x;
+  }
+  
+  __syncThreads();
+  // Add the thread's gradient contribution to the weights and return
+  index = threadIdx.x;
+  while (index < REVIEW_DIM) {
+    // The gradient contribution is on the second row of data
+    atomicAdd(&weights[index], -1 * step_size * shData[index + REVIEW_DIM]);
+    index += blockDim.x;
+  }
+  
+  // We only want to divide errors by the batch size once...
+  index = blockIdx.x * blockDim.x + threadIdx.x;
+  if (index == 1) {
+    &errors = &errors / batch_size;
+  }
 }
 
 /*
@@ -34,7 +96,7 @@ float cudaClassify(float *data, int batch_size,
 
   // grid_size = CEIL(batch_size / block_size)
   int grid_size = (batch_size + block_size - 1) / block_size;
-  int shmem_bytes = 0;
+  int shmem_bytes = REVIEW_DIM * 2 * sizeof(float);
 
   float *d_errors;
   cudaMalloc(&d_errors, sizeof(float));
