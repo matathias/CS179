@@ -188,7 +188,7 @@ void classify(istream& in_stream, int batch_size) {
 }
 
 int main(int argc, char** argv) {
-  int batch_size = 1;
+  int batch_size = 32;
   
   if (argc == 1) {
     classify(cin, batch_size);
