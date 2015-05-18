@@ -79,7 +79,6 @@ void readLSAReview(string review_str, float *output, int stride) {
 void classify(istream& in_stream, int batch_size) {
   // TODO: randomly initialize weights, allocate and initialize buffers on
   //       host & device
-  printf("Entered classify()\n");
   
   cudaEvent_t stopEvent, startEvent;
   gpuErrChk(cudaEventCreate(&startEvent));
@@ -120,6 +119,7 @@ void classify(istream& in_stream, int batch_size) {
     // -1 is to account for the fact that review_idx is 0-indexed.
     if (review_idx % batch_size == batch_size - 1) {
         // Copy H->D, call kernal, copy D->H
+        printf("a...\n");
         gpuErrChk(cudaMemcpy(d_data, data, 
                              batch_size * (REVIEW_DIM + 1) * sizeof(float), 
                              cudaMemcpyHostToDevice));
