@@ -187,7 +187,7 @@ void classify(istream& in_stream, int batch_size) {
 }
 
 int main(int argc, char** argv) {
-  int batch_size = 65536;
+  int batch_size = 2048;
   
   if (argc == 1) {
     classify(cin, batch_size);
