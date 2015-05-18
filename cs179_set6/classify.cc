@@ -79,7 +79,7 @@ void readLSAReview(string review_str, float *output, int stride) {
 void classify(istream& in_stream, int batch_size) {
   // TODO: randomly initialize weights, allocate and initialize buffers on
   //       host & device
-  float *weights = malloc(sizeof(float) * (REVIEW_DIM + 1));
+  float *weights = (float*)malloc(sizeof(float) * (REVIEW_DIM + 1));
   gaussianFill(weights, batch_size);
   
   // Allocate memory on host for LSAReviews
@@ -113,8 +113,6 @@ void classify(istream& in_stream, int batch_size) {
     // TODO: if batch is full, call kernel
     // -1 is to account for the fact that review_idx is 0-indexed.
     if (review_idx % batch_size == batch_size - 1) {
-        int offset = stream_idx * batch_size;
-        
         // Copy H->D, call kernal, copy D->H
         gpuErrChk(cudaEventRecord(start, 0));
         gpuErrChk(cudaMemcpy(&d_data, &data, 
@@ -126,7 +124,7 @@ void classify(istream& in_stream, int batch_size) {
         float errors = cudaClassify(d_data, batch_size, step_size, d_weights);
                     
         gpuErrChk(cudaMemcpy(&weights, &d_weights, REVIEW_DIM * sizeof(float), 
-                             cudaMemcpyDeviceToHost);
+                             cudaMemcpyDeviceToHost));
         gpuErrChk(cudaEventRecord(stop, 0));
         
         // Print the batch number and the error rate
@@ -177,7 +175,7 @@ void classify(istream& in_stream, int batch_size) {
   gpuErrChk(cudaFree(d_weights));
   gpuErrChk(cudaFree(d_data));
   gpuErrChk(cudaEventDestroy(start));
-  gpuErrchk(cudaEventDestroy(stop));
+  gpuErrChk(cudaEventDestroy(stop));
 }
 
 int main(int argc, char** argv) {
