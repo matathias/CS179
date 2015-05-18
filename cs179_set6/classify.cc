@@ -100,7 +100,7 @@ void classify(istream& in_stream, int batch_size) {
   float *d_weights;
   gpuErrChk(cudaMalloc(&d_weights, sizeof(float) * REVIEW_DIM));
   
-  int step_size = 1;
+  int step_size = 0.1;
   float classification_time = -1;
 
   // main loop to process input lines (each line corresponds to a review)
@@ -120,26 +120,19 @@ void classify(istream& in_stream, int batch_size) {
     // -1 is to account for the fact that review_idx is 0-indexed.
     if (review_idx % batch_size == batch_size - 1) {
         // Copy H->D, call kernal, copy D->H
-        printf("1\n");
         gpuErrChk(cudaEventRecord(startEvent, 0));
-        printf("2\n");
         gpuErrChk(cudaMemcpy(d_data, data, 
                              batch_size * (REVIEW_DIM + 1) * sizeof(float), 
                              cudaMemcpyHostToDevice));
-        printf("3\n");
         gpuErrChk(cudaMemcpy(d_weights, weights, REVIEW_DIM * sizeof(float),
                              cudaMemcpyHostToDevice));
-        printf("4\n");
                                   
         float errors = cudaClassify(d_data, batch_size, step_size, d_weights);
         errors = errors * 100; //turn it into a percentage
-        printf("5\n");
                     
         gpuErrChk(cudaMemcpy(weights, d_weights, REVIEW_DIM * sizeof(float), 
                              cudaMemcpyDeviceToHost));
-        printf("6\n");
         gpuErrChk(cudaEventRecord(stopEvent, 0));
-        printf("7\n");
         
         // Print the batch number and the error rate
         printf("\nBatch Number: %d\n", batch_number);
@@ -176,11 +169,14 @@ void classify(istream& in_stream, int batch_size) {
   printf("]\n\n");
   
   // Print out the timing and throughput data
-  printf("Time to classify all reviews:  %f seconds\n", classification_time);
-  printf("Batch size:                    %d\n", batch_size);
-  printf("Number of batches:             %d\n", batch_number);
-  printf("Single kernal latency:         %f\n", time);
-  printf("Kernal Throughput (batches/s): %f\n", throughput);
+  printf("Time to classify all reviews:      %f seconds\n",classification_time);
+  printf("Batch size:                        %d\n", batch_size);
+  printf("Number of batches:                 %d\n", batch_number);
+  printf("Single kernal latency:             %f\n", time);
+  printf("Kernal Throughput (reviews/s):     %f\n", throughput);
+  printf("Total kernal latency (calculated): %f\n", time * batch_number);
+  printf("IO time (calculated):              %f\n", classification_time - 
+                                                    (time * batch_number));
   
   // TODO: free all memory
   free(weights);
