@@ -86,7 +86,7 @@ void classify(istream& in_stream, int batch_size) {
   printf("b\n");
   
   // Allocate memory on host for LSAReviews
-  float *data = new float[batch_size * (REVIEW_DIM + 1)];
+  float *data = (float*)malloc(sizeof(float) * batch_size * (REVIEW_DIM + 1));//new float[batch_size * (REVIEW_DIM + 1)];
   printf("c\n");
   
   // Allocate memory on device for LSAReviews
