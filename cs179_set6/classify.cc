@@ -87,8 +87,8 @@ void classify(istream& in_stream, int batch_size) {
   
   printf("a\n");
   
-  float *weights = (float*)malloc(sizeof(float) * (REVIEW_DIM + 1));
-  gaussianFill(weights, batch_size);
+  float *weights = (float*)malloc(sizeof(float) * REVIEW_DIM);
+  gaussianFill(weights, REVIEW_DIM);
   printf("b\n");
   
   // Allocate memory on host for LSAReviews
