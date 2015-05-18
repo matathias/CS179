@@ -79,7 +79,8 @@ void readLSAReview(string review_str, float *output, int stride) {
 void classify(istream& in_stream, int batch_size) {
   // TODO: randomly initialize weights, allocate and initialize buffers on
   //       host & device
-  printf("a");
+  printf("Entered classify()\n");
+  
   float *weights = (float*)malloc(sizeof(float) * (REVIEW_DIM + 1));
   gaussianFill(weights, batch_size);
   printf("b");
@@ -143,7 +144,7 @@ void classify(istream& in_stream, int batch_size) {
         
         // Print the batch number and the error rate
         printf("\nBatch Number: %d\n", batch_number);
-        printf("Batch Error Rate: %f%\n", errors);
+        printf("Batch Error Rate: %f% \n", errors);
         
         
         batch_number++;
@@ -198,16 +199,12 @@ int main(int argc, char** argv) {
   printf("argc: %d\n", argc);
   
   if (argc == 1) {
-    printf("blah1\n");
     classify(cin, batch_size);
   } else if (argc == 2) {
-    printf("blah2\n");
     ifstream ifs(argv[1]);
-    printf("blah3\n");
     stringstream buffer;
-    printf("blah4\n");
     buffer << ifs.rdbuf();
-    printf("blah5\n");
+    printf("About to enter classify()...\n");
     classify(buffer, batch_size);
   }
 }
