@@ -52,17 +52,14 @@ void trainLogRegKernel(float *data, int batch_size, int step_size,
     }
     
     // Now calculate 1 + exp(y_n * w^T * x_n)
-    float divisor = 1 + exp(y_n * wTxN);
-    
-    // Throw in the (-1 / N) factor
-    divisor = batch_size * divisor / -1;
+    float factor = 1.0 + exp(y_n * wTxN);
     
     // Now calculate the (y_n * x_n) part. Divide each individual value by
     // divisor and store in the appropriate location in shData, which will be
     // the second row (the first row is occupied by the weights)
     for (int i = 0; i < REVIEW_DIM; i++) {
         float val = y_n * this_review[i];
-        val = val / divisor;
+        val = (val / factor) * (-1.0 / ((float) batch_size));
         shData[REVIEW_DIM + i] += val;
     }
     
@@ -107,7 +104,8 @@ float cudaClassify(float *data, int batch_size,
                                                             step_size,
                                                             weights,
                                                             d_errors);
-
+  
+  //*d_errors = *d_errors / batch_size;
   float h_errors = -1.0;
   cudaMemcpy(&h_errors, d_errors, sizeof(float), cudaMemcpyDefault);
   cudaFree(d_errors);
