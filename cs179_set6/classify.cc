@@ -114,22 +114,30 @@ void classify(istream& in_stream, int batch_size) {
     // -1 is to account for the fact that review_idx is 0-indexed.
     if (review_idx % batch_size == batch_size - 1) {
         // Copy H->D, call kernal, copy D->H
+        printf("1");
         gpuErrChk(cudaEventRecord(start, 0));
+        printf("2");
         gpuErrChk(cudaMemcpy(&d_data, &data, 
                              batch_size * (REVIEW_DIM + 1) * sizeof(float), 
                              cudaMemcpyHostToDevice));
+        printf("3");
         gpuErrChk(cudaMemcpy(&d_weights, &weights, REVIEW_DIM * sizeof(float),
                              cudaMemcpyHostToDevice));
+        printf("4");
                                   
         float errors = cudaClassify(d_data, batch_size, step_size, d_weights);
+        errors = errors * 100; //turn it into a percentage
+        printf("5");
                     
         gpuErrChk(cudaMemcpy(&weights, &d_weights, REVIEW_DIM * sizeof(float), 
                              cudaMemcpyDeviceToHost));
+        printf("6");
         gpuErrChk(cudaEventRecord(stop, 0));
+        printf("7");
         
         // Print the batch number and the error rate
         printf("\nBatch Number: %d\n", batch_number);
-        printf("Batch Error Rate: %f%\n", errors * 100);
+        printf("Batch Error Rate: %f%\n", errors);
         
         
         batch_number++;
