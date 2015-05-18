@@ -85,26 +85,20 @@ void classify(istream& in_stream, int batch_size) {
   gpuErrChk(cudaEventCreate(&startEvent));
   gpuErrChk(cudaEventCreate(&stopEvent));
   
-  printf("a\n");
-  
   float *weights = (float*)malloc(sizeof(float) * REVIEW_DIM);
   gaussianFill(weights, REVIEW_DIM);
-  printf("b\n");
   
   // Allocate memory on host for LSAReviews
   float *data = (float*)malloc(sizeof(float) * batch_size * (REVIEW_DIM + 1));
-  printf("c\n");
   
   // Allocate memory on device for LSAReviews
   float *d_data;
   gpuErrChk(cudaMalloc(&d_data, batch_size * (REVIEW_DIM + 1) *
                                 sizeof(float)));
-  printf("d\n");
                                 
   // Allocate memory on device for weights
   float *d_weights;
   gpuErrChk(cudaMalloc(&d_weights, sizeof(float) * REVIEW_DIM));
-  printf("e\n");
   
   int step_size = 1;
   float classification_time = -1;
@@ -112,7 +106,6 @@ void classify(istream& in_stream, int batch_size) {
   // main loop to process input lines (each line corresponds to a review)
   int review_idx = 0;
   int batch_number = 0;
-  printf("f\n");
   
   // Record how long the entire process takes, to compare how long IO takes to
   // how long the kernal takes
@@ -130,11 +123,11 @@ void classify(istream& in_stream, int batch_size) {
         printf("1\n");
         gpuErrChk(cudaEventRecord(startEvent, 0));
         printf("2\n");
-        gpuErrChk(cudaMemcpy(&d_data, &data, 
+        gpuErrChk(cudaMemcpy(d_data, data, 
                              batch_size * (REVIEW_DIM + 1) * sizeof(float), 
                              cudaMemcpyHostToDevice));
         printf("3\n");
-        gpuErrChk(cudaMemcpy(&d_weights, &weights, REVIEW_DIM * sizeof(float),
+        gpuErrChk(cudaMemcpy(d_weights, weights, REVIEW_DIM * sizeof(float),
                              cudaMemcpyHostToDevice));
         printf("4\n");
                                   
@@ -142,7 +135,7 @@ void classify(istream& in_stream, int batch_size) {
         errors = errors * 100; //turn it into a percentage
         printf("5\n");
                     
-        gpuErrChk(cudaMemcpy(&weights, &d_weights, REVIEW_DIM * sizeof(float), 
+        gpuErrChk(cudaMemcpy(weights, d_weights, REVIEW_DIM * sizeof(float), 
                              cudaMemcpyDeviceToHost));
         printf("6\n");
         gpuErrChk(cudaEventRecord(stopEvent, 0));
