@@ -194,13 +194,20 @@ void classify(istream& in_stream, int batch_size) {
 
 int main(int argc, char** argv) {
   int batch_size = 2048;
-
+  
+  printf("argc: %d\n", argc);
+  
   if (argc == 1) {
+    printf("blah1\n");
     classify(cin, batch_size);
   } else if (argc == 2) {
+    printf("blah2\n");
     ifstream ifs(argv[1]);
+    printf("blah3\n");
     stringstream buffer;
+    printf("blah4\n");
     buffer << ifs.rdbuf();
+    printf("blah5\n");
     classify(buffer, batch_size);
   }
 }
