@@ -25,7 +25,7 @@ void trainLogRegKernel(float *data, int batch_size, int step_size,
   // Copy weights into shared memory (the first row of data[])
   unsigned int index = threadIdx.x;
   while (index < REVIEW_DIM) {
-    shData[index] = weights[index]
+    shData[index] = weights[index];
     shData[index + REVIEW_DIM] = 0;
     index += blockDim.x;
   }
