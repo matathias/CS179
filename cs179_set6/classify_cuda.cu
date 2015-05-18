@@ -76,10 +76,10 @@ void trainLogRegKernel(float *data, int batch_size, int step_size,
   }
   
   // We only want to divide errors by the batch size once...
-  index = blockIdx.x * blockDim.x + threadIdx.x;
+  /*index = blockIdx.x * blockDim.x + threadIdx.x;
   if (index == 1) {
     *errors = *errors / batch_size;
-  }
+  }*/
 }
 
 /*
@@ -104,7 +104,7 @@ float cudaClassify(float *data, int batch_size,
                                                             step_size,
                                                             weights,
                                                             d_errors);
-  
+  *d_errors = *d_errors / batch_size;
   float h_errors = -1.0;
   cudaMemcpy(&h_errors, d_errors, sizeof(float), cudaMemcpyDefault);
   cudaFree(d_errors);
