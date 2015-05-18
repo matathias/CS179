@@ -30,7 +30,7 @@ void trainLogRegKernel(float *data, int batch_size, int step_size,
     index += blockDim.x;
   }
   
-  __syncThreads();
+  __syncthreads();
   
   // Access one element of the batch at a time
   unsigned int batch_index = blockIdx.x * blockDim.x + threadIdx.x;
@@ -63,13 +63,13 @@ void trainLogRegKernel(float *data, int batch_size, int step_size,
     for (int i = 0; i < REVIEW_DIM; i++) {
         float val = y_n * this_review[i];
         val = val / divisor;
-        shDara[REVIEW_DIM + i] += val;
+        shData[REVIEW_DIM + i] += val;
     }
     
     batch_index += blockDim.x * gridDim.x;
   }
   
-  __syncThreads();
+  __syncthreads();
   // Add the thread's gradient contribution to the weights and return
   index = threadIdx.x;
   while (index < REVIEW_DIM) {
@@ -81,7 +81,7 @@ void trainLogRegKernel(float *data, int batch_size, int step_size,
   // We only want to divide errors by the batch size once...
   index = blockIdx.x * blockDim.x + threadIdx.x;
   if (index == 1) {
-    &errors = &errors / batch_size;
+    *errors = *errors / batch_size;
   }
 }
 
