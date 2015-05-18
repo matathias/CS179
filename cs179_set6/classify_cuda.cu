@@ -105,7 +105,6 @@ float cudaClassify(float *data, int batch_size,
                                                             weights,
                                                             d_errors);
   
-  //*d_errors = *d_errors / batch_size;
   float h_errors = -1.0;
   cudaMemcpy(&h_errors, d_errors, sizeof(float), cudaMemcpyDefault);
   cudaFree(d_errors);

@@ -100,7 +100,7 @@ void classify(istream& in_stream, int batch_size) {
   float *d_weights;
   gpuErrChk(cudaMalloc(&d_weights, sizeof(float) * REVIEW_DIM));
   
-  int step_size = 3;
+  int step_size = 5;
   float classification_time = -1;
 
   // main loop to process input lines (each line corresponds to a review)
