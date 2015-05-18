@@ -113,7 +113,7 @@ void classify(istream& in_stream, int batch_size) {
   
   for (string review_str; getline(in_stream, review_str); review_idx++) {
     // TODO: process review_str with readLSAReview
-    int data_idx = review_idx % batch_size;
+    int data_idx = (review_idx % batch_size) * (REVIEW_DIM + 1);
     readLSAReview(review_str, &data[data_idx], 1);
 
     // TODO: if batch is full, call kernel
@@ -136,7 +136,7 @@ void classify(istream& in_stream, int batch_size) {
         
         // Print the batch number and the error rate
         printf("\nBatch Number: %d\n", batch_number);
-        printf("Batch Error Rate: %f percent\n", errors);
+        printf("Batch Error Rate: %f%%\n", errors);
         
         batch_number++;
     }
