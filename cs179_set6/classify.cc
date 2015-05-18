@@ -81,12 +81,18 @@ void classify(istream& in_stream, int batch_size) {
   //       host & device
   printf("Entered classify()\n");
   
+  cudaEvent_t stopEvent, startEvent;
+  gpuErrChk(cudaEventCreate(&startEvent));
+  gpuErrChk(cudaEventCreate(&stopEvent));
+  
+  printf("a\n");
+  
   float *weights = (float*)malloc(sizeof(float) * (REVIEW_DIM + 1));
   gaussianFill(weights, batch_size);
   printf("b\n");
   
   // Allocate memory on host for LSAReviews
-  float *data = (float*)malloc(sizeof(float) * batch_size * (REVIEW_DIM + 1));//new float[batch_size * (REVIEW_DIM + 1)];
+  float *data = (float*)malloc(sizeof(float) * batch_size * (REVIEW_DIM + 1));
   printf("c\n");
   
   // Allocate memory on device for LSAReviews
@@ -122,7 +128,7 @@ void classify(istream& in_stream, int batch_size) {
     if (review_idx % batch_size == batch_size - 1) {
         // Copy H->D, call kernal, copy D->H
         printf("1\n");
-        gpuErrChk(cudaEventRecord(start, 0));
+        gpuErrChk(cudaEventRecord(startEvent, 0));
         printf("2\n");
         gpuErrChk(cudaMemcpy(&d_data, &data, 
                              batch_size * (REVIEW_DIM + 1) * sizeof(float), 
@@ -139,13 +145,12 @@ void classify(istream& in_stream, int batch_size) {
         gpuErrChk(cudaMemcpy(&weights, &d_weights, REVIEW_DIM * sizeof(float), 
                              cudaMemcpyDeviceToHost));
         printf("6\n");
-        gpuErrChk(cudaEventRecord(stop, 0));
+        gpuErrChk(cudaEventRecord(stopEvent, 0));
         printf("7\n");
         
         // Print the batch number and the error rate
         printf("\nBatch Number: %d\n", batch_number);
-        printf("Batch Error Rate: %f% \n", errors);
-        
+        printf("Batch Error Rate: %f percent\n", errors);
         
         batch_number++;
     }
@@ -162,7 +167,7 @@ void classify(istream& in_stream, int batch_size) {
   
   // Find the elapsed time for the kernal
   float time;
-  gpuErrChk(cudaEventElapsedTime(&time, start, stop));
+  gpuErrChk(cudaEventElapsedTime(&time, startEvent, stopEvent));
   
   // Transform time into seconds from milliseconds
   time = time / 1000;
@@ -186,17 +191,15 @@ void classify(istream& in_stream, int batch_size) {
   
   // TODO: free all memory
   free(weights);
-  delete[] data;
+  free(data);
   gpuErrChk(cudaFree(d_weights));
   gpuErrChk(cudaFree(d_data));
-  gpuErrChk(cudaEventDestroy(start));
-  gpuErrChk(cudaEventDestroy(stop));
+  gpuErrChk(cudaEventDestroy(startEvent));
+  gpuErrChk(cudaEventDestroy(stopEvent));
 }
 
 int main(int argc, char** argv) {
   int batch_size = 2048;
-  
-  printf("argc: %d\n", argc);
   
   if (argc == 1) {
     classify(cin, batch_size);
@@ -204,7 +207,6 @@ int main(int argc, char** argv) {
     ifstream ifs(argv[1]);
     stringstream buffer;
     buffer << ifs.rdbuf();
-    printf("About to enter classify()...\n");
     classify(buffer, batch_size);
   }
 }
