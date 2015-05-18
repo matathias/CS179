@@ -119,7 +119,6 @@ void classify(istream& in_stream, int batch_size) {
     // -1 is to account for the fact that review_idx is 0-indexed.
     if (review_idx % batch_size == batch_size - 1) {
         // Copy H->D, call kernal, copy D->H
-        printf("a...\n");
         gpuErrChk(cudaMemcpy(d_data, data, 
                              batch_size * (REVIEW_DIM + 1) * sizeof(float), 
                              cudaMemcpyHostToDevice));
@@ -188,7 +187,7 @@ void classify(istream& in_stream, int batch_size) {
 }
 
 int main(int argc, char** argv) {
-  int batch_size = 65536;
+  int batch_size = 2048;
   
   if (argc == 1) {
     classify(cin, batch_size);
