@@ -79,20 +79,25 @@ void readLSAReview(string review_str, float *output, int stride) {
 void classify(istream& in_stream, int batch_size) {
   // TODO: randomly initialize weights, allocate and initialize buffers on
   //       host & device
+  printf("a");
   float *weights = (float*)malloc(sizeof(float) * (REVIEW_DIM + 1));
   gaussianFill(weights, batch_size);
+  printf("b");
   
   // Allocate memory on host for LSAReviews
   float *data = new float[batch_size * (REVIEW_DIM + 1)];
+  printf("c");
   
   // Allocate memory on device for LSAReviews
   float *d_data;
   gpuErrChk(cudaMalloc(&d_data, batch_size * (REVIEW_DIM + 1) *
                                 sizeof(float)));
+  printf("d");
                                 
   // Allocate memory on device for weights
   float *d_weights;
   gpuErrChk(cudaMalloc(&d_weights, sizeof(float) * REVIEW_DIM));
+  printf("e");
   
   int step_size = 1;
   float classification_time = -1;
@@ -100,6 +105,7 @@ void classify(istream& in_stream, int batch_size) {
   // main loop to process input lines (each line corresponds to a review)
   int review_idx = 0;
   int batch_number = 0;
+  printf("f");
   
   // Record how long the entire process takes, to compare how long IO takes to
   // how long the kernal takes
