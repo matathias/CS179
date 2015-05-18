@@ -83,22 +83,22 @@ void classify(istream& in_stream, int batch_size) {
   
   float *weights = (float*)malloc(sizeof(float) * (REVIEW_DIM + 1));
   gaussianFill(weights, batch_size);
-  printf("b");
+  printf("b\n");
   
   // Allocate memory on host for LSAReviews
   float *data = new float[batch_size * (REVIEW_DIM + 1)];
-  printf("c");
+  printf("c\n");
   
   // Allocate memory on device for LSAReviews
   float *d_data;
   gpuErrChk(cudaMalloc(&d_data, batch_size * (REVIEW_DIM + 1) *
                                 sizeof(float)));
-  printf("d");
+  printf("d\n");
                                 
   // Allocate memory on device for weights
   float *d_weights;
   gpuErrChk(cudaMalloc(&d_weights, sizeof(float) * REVIEW_DIM));
-  printf("e");
+  printf("e\n");
   
   int step_size = 1;
   float classification_time = -1;
@@ -106,7 +106,7 @@ void classify(istream& in_stream, int batch_size) {
   // main loop to process input lines (each line corresponds to a review)
   int review_idx = 0;
   int batch_number = 0;
-  printf("f");
+  printf("f\n");
   
   // Record how long the entire process takes, to compare how long IO takes to
   // how long the kernal takes
@@ -121,26 +121,26 @@ void classify(istream& in_stream, int batch_size) {
     // -1 is to account for the fact that review_idx is 0-indexed.
     if (review_idx % batch_size == batch_size - 1) {
         // Copy H->D, call kernal, copy D->H
-        printf("1");
+        printf("1\n");
         gpuErrChk(cudaEventRecord(start, 0));
-        printf("2");
+        printf("2\n");
         gpuErrChk(cudaMemcpy(&d_data, &data, 
                              batch_size * (REVIEW_DIM + 1) * sizeof(float), 
                              cudaMemcpyHostToDevice));
-        printf("3");
+        printf("3\n");
         gpuErrChk(cudaMemcpy(&d_weights, &weights, REVIEW_DIM * sizeof(float),
                              cudaMemcpyHostToDevice));
-        printf("4");
+        printf("4\n");
                                   
         float errors = cudaClassify(d_data, batch_size, step_size, d_weights);
         errors = errors * 100; //turn it into a percentage
-        printf("5");
+        printf("5\n");
                     
         gpuErrChk(cudaMemcpy(&weights, &d_weights, REVIEW_DIM * sizeof(float), 
                              cudaMemcpyDeviceToHost));
-        printf("6");
+        printf("6\n");
         gpuErrChk(cudaEventRecord(stop, 0));
-        printf("7");
+        printf("7\n");
         
         // Print the batch number and the error rate
         printf("\nBatch Number: %d\n", batch_number);
