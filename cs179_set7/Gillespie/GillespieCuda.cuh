@@ -1,4 +1,10 @@
 
+#include <cstdio>
+#include <math.h>
+
+#include <cuda_runtime.h>
+#include <curand_kernel.h>
+#include <time.h>
 
 void callGillespieKernel(int *productionStates, 
                          int *old_concentrations, int *new_concentrations,

@@ -7,14 +7,15 @@
 
 
 #include <cuda_runtime.h>
+#include <curand_kernel.h>
 #include <time.h>
 #include <algorithm>
 
 #include "GillespieCuda.cuh"
 
-#define SimulationCount 1000
-#define NumTimePoints   1000
-#define NumSeconds      100
+#define SimulationCount 1000f
+#define NumTimePoints   1000f
+#define NumSeconds      100f
 
 int main(int argc, char* argv[]) {
     
@@ -35,14 +36,14 @@ int main(int argc, char* argv[]) {
     
     // Allocate the gpu's data
     int *d_productionStates, *d_concentrations;
-    int *d_oldConcentrations, *d_newConcentratons;
+    int *d_oldConcentrations, *d_newConcentrations;
     float *d_times, *d_randomTimeSteps, *d_randomProbs;
     float *d_expectations, *d_variance;
     int *d_done;
     curandState_t *d_states;
     
     cudaMalloc(&d_productionStates, SimulationCount * sizeof(int));
-    cudaMalloc(&d_concentations, SimulationCount * NumTimePoints * sizeof(int));
+    cudaMalloc(&d_concentrations, SimulationCount * NumTimePoints * sizeof(int));
     cudaMalloc(&d_oldConcentrations, SimulationCount * sizeof(int));
     cudaMalloc(&d_newConcentrations, SimulationCount * sizeof(int));
     cudaMalloc(&d_times, SimulationCount * sizeof(float));
