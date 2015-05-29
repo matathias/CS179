@@ -37,7 +37,7 @@ int main(int argc, char* argv[]) {
     float *expectations = (float*)malloc(NumTimePoints * sizeof(float));
     float *variance = (float*)malloc(NumTimePoints * sizeof(float));
     int *done = (int*)malloc(sizeof(int));
-    *done = 0;
+    memset(done, 0, sizeof(int));
     
     // Allocate the gpu's data
     int *d_productionStates, *d_concentrations;
@@ -75,8 +75,10 @@ int main(int argc, char* argv[]) {
     printf("Done value: %d\n", *done);
     float *o_times = (float*)malloc(SimulationCount * sizeof(float));
     cudaError_t err;
+    cudaGetLastError(); //clear out the error buffer...
     while(*done == 0) {
-        *done = 1;
+        //*done = 1;
+        memset(done, 1, sizeof(int));
         cudaMemcpy(d_done, done, sizeof(int), cudaMemcpyHostToDevice);
         
         err = cudaGetLastError();
@@ -107,7 +109,7 @@ int main(int argc, char* argv[]) {
                 cerr << "No memcpy error detected" << endl;
         }
         
-        for (int i = 0; i < SimulationCount; i+=50){
+        for (int i = 0; i < SimulationCount; i+=100){
             printf("Time for simulation %d: %f\n", i, o_times[i]);
         }
         
