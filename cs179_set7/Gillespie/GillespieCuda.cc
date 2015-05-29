@@ -84,6 +84,7 @@ int main(int argc, char* argv[]) {
         
         // Copy d_done into done so we can know whether to stop or continue
         cudaMemcpy(done, d_done, sizeof(int), cudaMemcpyDeviceToHost);
+        printf("Done value (loop): %d\n", *done);
         
         // point d_oldConcentrations to d_newConcentrations and vice versa
         int *tmp = d_oldConcentrations;
