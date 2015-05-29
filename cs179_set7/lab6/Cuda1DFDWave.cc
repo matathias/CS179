@@ -59,7 +59,6 @@ int main(int argc, char* argv[]) {
   const float courantSquared = courant * courant;
   const float dx = 1./numberOfIntervals;
   const float dt = courant * dx;
-  printf("dt: %f\t dx: %f\n", dt, dx);
 
 
 
@@ -193,9 +192,12 @@ int main(int argc, char* argv[]) {
         The right boundary conditon will be 0 at the last position
         for all times t */
         float right_boundary_value = 0;
-        cudaMemcpy(&new_data[0], &left_boundary_value, sizeof(float), 
+        //cudaMemcpy(&new_data[0], &left_boundary_value, sizeof(float), 
+        cudaMemcpy(&d_data[((timestepIndex + 1) % 3) * numberOfNodes], &left_boundary_value, sizeof(float)
                    cudaMemcpyHostToDevice);
-        cudaMemcpy(&new_data[numberOfNodes-1], &right_boundary_value, 
+        //cudaMemcpy(&new_data[numberOfNodes-1], &right_boundary_value, 
+        cudaMemcpy(&d_data[((timestepIndex + 1) % 3) * numberOfNodes + numberOfNodes - 1],
+                    &right_boundary_value,
                    sizeof(float), cudaMemcpyHostToDevice);
         
         // Check if we need to write a file
@@ -210,8 +212,7 @@ int main(int argc, char* argv[]) {
             // points to the most recently calculated data
             cudaMemcpy(file_output, new_data, numberOfNodes * sizeof(float), 
                        cudaMemcpyDeviceToHost);
-            printf("dt: %f\t dx: %f\n", dt, dx);
-            
+                       
             printf("writing an output file\n");
             // make a filename
             char filename[500];
@@ -231,8 +232,6 @@ int main(int argc, char* argv[]) {
     /* TODO: Clean up GPU memory */
     cudaFree(d_data);
     delete[] file_output;
-  
-  
 }
   
   printf("You can now turn the output files into pictures by running "
