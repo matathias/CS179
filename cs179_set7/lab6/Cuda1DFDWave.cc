@@ -188,7 +188,7 @@ int main(int argc, char* argv[]) {
             left_boundary_value = 0;
         }
         
-        float constant = ((courant * courant * dt * dt) / (dx * dx));
+        float constant = courant * courant; //((courant * courant * dt * dt) / (dx * dx));
         waveEquation(old_data, current_data, new_data, numberOfNodes, constant,
                      left_boundary_value, blocks, threadsPerBlock);
         

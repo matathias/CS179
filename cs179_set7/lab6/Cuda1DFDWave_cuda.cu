@@ -21,7 +21,7 @@ void waveEquationKernal(float *old_data, float *current_data, float *new_data,
     // This is to make sure that thread index 0 can still move on to the
     // next thread at blockDim.x * gridDim.x
     if (index == 0) {
-        new_data[index] = left_boundary;
+        new_data[0] = left_boundary;
         new_data[numberOfNodes - 1] = 0;
         index += blockDim.x * gridDim.x;
     }
