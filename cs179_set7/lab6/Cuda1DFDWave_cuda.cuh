@@ -11,7 +11,7 @@
 If you have any functions in your .cu file that need to be
 accessed from the outside, declare them here */
 void waveEquation(float *old_data, float *current_data, float *new_data,
-                  int numberOfNodes, float constant,
+                  int numberOfNodes, float constant, float left_boundary,
                   int blocks, int threadsPerBlock);
 
 #endif // CUDA_1D_FD_WAVE_CUDA_CUH
