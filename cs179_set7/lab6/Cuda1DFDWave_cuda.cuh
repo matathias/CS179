@@ -10,6 +10,7 @@
 /* TODO: This is a CUDA header file.
 If you have any functions in your .cu file that need to be
 accessed from the outside, declare them here */
-
+void waveEquationKernal(float *old_data, float *current_data, float *new_data,
+                        int numberOfNodes, float c, float dt, float dx);
 
 #endif // CUDA_1D_FD_WAVE_CUDA_CUH

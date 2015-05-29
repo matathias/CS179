@@ -153,6 +153,13 @@ int main(int argc, char* argv[]) {
 
     /* TODO: Create GPU memory for your calculations. 
     As an initial condition at time 0, zero out your memory as well. */
+    float *d_data;
+    cudaMalloc(&d_data, 3 * numberOfNodes * sizeof(float));
+    cudaMemset(&d_data, 0, 3 * numberOfNodes * sizeof(float));
+    
+    /*float *d_output;
+    cudaMalloc(&d_output, numberOfNodes * sizeof(float));
+    cudaMemset(&d_output, 0, numberOfNodes * sizeof(float));*/
     
     
     // Looping through all times t = 0, ..., t_max
@@ -164,9 +171,20 @@ int main(int argc, char* argv[]) {
                  timestepIndex, 100 * timestepIndex / float(numberOfTimesteps));
         }
         
+        float *old_data = d_data[((timestepIndex - 1) % 3) * numberOfNodes];
+        float *current_data = d_data[((timestepIndex) % 3) * numberOfNodes];
+        float *new_data = d_data[((timestepIndex + 1) % 3) * numberOfNodes];
+        
         
         /* TODO: Call a kernel to solve the problem (you'll need to make
         the kernel in the .cu file) */
+        waveEquationKernal<<<maxBlcoks, threadsPerBlock>>>(old_data, 
+                                                           current_data,
+                                                           new_data,
+                                                           numberOfNodes,
+                                                           courant,
+                                                           dt,
+                                                           dx);
 
         
         //Left boundary condition on the CPU - a sum of sine waves
@@ -182,6 +200,11 @@ int main(int argc, char* argv[]) {
         /* TODO: Apply left and right boundary conditions on the GPU. 
         The right boundary conditon will be 0 at the last position
         for all times t */
+        float right_boundary_value = 0;
+        cudaMemcpy(&new_data[0], &left_boundary_value, sizeof(float), 
+                   cudaMemcpyHostToDevice);
+        cudaMemcpy(&new_data[numberOfNodes-1], &right_boundary_value, 
+                   sizeof(float), cudaMemcpyHostToDevice);
         
         // Check if we need to write a file
         if (CUDATEST_WRITE_ENABLED == true && numberOfOutputFiles > 0 &&
@@ -190,6 +213,11 @@ int main(int argc, char* argv[]) {
             
             
             /* TODO: Copy data from GPU back to the CPU in file_output */
+            // We copy from new_data instead of current_data becuase the
+            // pointers have not been updated yet; that is, "new_data" currently
+            // points to the most recently calculated data
+            cudaMemcpy(file_output, new_data, numberOfNodes * sizeof(float), 
+                       cudaMemcpyDeviceToHost);
             
             printf("writing an output file\n");
             // make a filename
@@ -208,6 +236,8 @@ int main(int argc, char* argv[]) {
     
     
     /* TODO: Clean up GPU memory */
+    cudaFree(d_data);
+    delete[] file_output;
   
   
 }
