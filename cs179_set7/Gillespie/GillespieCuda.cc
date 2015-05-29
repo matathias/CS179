@@ -31,7 +31,7 @@ int main(int argc, char* argv[]) {
     // Allocate the cpu's data
     float *expectations = (float*)malloc(NumTimePoints * sizeof(float));
     float *variance = (float*)malloc(NumTimePoints * sizeof(float));
-    int *done = (float*)malloc(sizeof(int));
+    int *done = (int*)malloc(sizeof(int));
     *done = 0;
     
     // Allocate the gpu's data
@@ -109,7 +109,7 @@ int main(int argc, char* argv[]) {
     free(done);
     
     cudaFree(d_productionStates);
-    cudaFree(d_concentations);
+    cudaFree(d_concentrations);
     cudaFree(d_oldConcentrations);
     cudaFree(d_newConcentrations);
     cudaFree(d_times);
