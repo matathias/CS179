@@ -11,6 +11,7 @@
 #include <curand.h>
 #include <curand_kernel.h>
 #include <time.h>
+#include <sys/time.h>
 #include <algorithm>
 
 #include "GillespieCuda.cuh"
