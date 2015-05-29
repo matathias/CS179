@@ -3,8 +3,6 @@
 #include <math.h>
 
 #include <cuda_runtime.h>
-#include <curand_kernel.h>
-#include <time.h>
 
 #include "GillespieCuda.cuh"
 
@@ -168,6 +166,7 @@ void behaviorKernel(int *concentrations, float *expectations,
     }
 }
 
+/* Wrapper functions. Not actually sure why I did it this way but whatever */
 void callGillespieKernel(int *productionStates, 
                          int *old_concentrations, int *new_concentrations,
                          float *times, float *randomTimeSteps,

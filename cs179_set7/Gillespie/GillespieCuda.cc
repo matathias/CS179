@@ -4,12 +4,10 @@
 #include <cmath>
 #include <vector>
 #include <fstream>
-#include <iostream>
 
 
 #include <cuda_runtime.h>
 #include <curand.h>
-#include <curand_kernel.h>
 #include <time.h>
 #include <sys/time.h>
 #include <algorithm>
@@ -21,10 +19,6 @@
 #define NumSeconds      100
 
 #define DEBUG 1
-
-using std::cerr;
-using std::cout;
-using std::endl;
 
 #define gpuErrChk(ans) { gpuAssert((ans), __FILE__, __LINE__); }
 inline void gpuAssert(cudaError_t code,
@@ -100,17 +94,22 @@ int main(int argc, char* argv[]) {
         done[0] = 1;
         gpuErrChk(cudaMemcpy(d_done, done, sizeof(int), cudaMemcpyHostToDevice));
         
-        //time_t t;
-        //time(&t);
+        // Use microseconds as our RNG seed
+        // We specify our own seed because the curand functions do not seem to
+        // use the same seed on every iteration of this loop, which causes...
+        // problems.
         struct timeval tv;
         gettimeofday(&tv, NULL);
         unsigned long t = (unsigned long)tv.tv_usec;
         
+        // Create random numbers to use for calculating timesteps
         curandGenerator_t gen_timeSteps;
         curandCreateGenerator(&gen_timeSteps, CURAND_RNG_PSEUDO_DEFAULT);
         curandSetPseudoRandomGeneratorSeed(gen_timeSteps, t);
         curandGenerateUniform(gen_timeSteps, d_randomTimeSteps, SimulationCount);
         
+        // Create random numbers to use for calculating the probability of
+        // the different transitions
         curandGenerator_t gen_randomProbs;
         curandCreateGenerator(&gen_randomProbs, CURAND_RNG_PSEUDO_DEFAULT);
         curandSetPseudoRandomGeneratorSeed(gen_randomProbs, t + 10);
@@ -124,12 +123,22 @@ int main(int argc, char* argv[]) {
         
 #if DEBUG
         // Let's see what's in the gpu...
-        gpuErrChk(cudaMemcpy(o_times, d_times, SimulationCount * sizeof(float), cudaMemcpyDeviceToHost));
-        gpuErrChk(cudaMemcpy(o_oldCon, d_oldConcentrations, SimulationCount * sizeof(float), cudaMemcpyDeviceToHost));
-        gpuErrChk(cudaMemcpy(o_newCon, d_newConcentrations, SimulationCount * sizeof(float), cudaMemcpyDeviceToHost));
-        gpuErrChk(cudaMemcpy(o_randP, d_randomProbs, SimulationCount * sizeof(float), cudaMemcpyDeviceToHost));
-        gpuErrChk(cudaMemcpy(o_randT, d_randomTimeSteps, SimulationCount * sizeof(float), cudaMemcpyDeviceToHost));
+        gpuErrChk(cudaMemcpy(o_times, d_times, SimulationCount * sizeof(float), 
+                             cudaMemcpyDeviceToHost));
+        gpuErrChk(cudaMemcpy(o_oldCon, d_oldConcentrations, 
+                             SimulationCount * sizeof(float), 
+                             cudaMemcpyDeviceToHost));
+        gpuErrChk(cudaMemcpy(o_newCon, d_newConcentrations, 
+                             SimulationCount * sizeof(float), 
+                             cudaMemcpyDeviceToHost));
+        gpuErrChk(cudaMemcpy(o_randP, d_randomProbs, 
+                             SimulationCount * sizeof(float), 
+                             cudaMemcpyDeviceToHost));
+        gpuErrChk(cudaMemcpy(o_randT, d_randomTimeSteps, 
+                             SimulationCount * sizeof(float), 
+                             cudaMemcpyDeviceToHost));
         
+        // Print out values so we can see what's going on
         for (int i = 0; i < SimulationCount; i+=100){
             printf("Time for simulation %d: %f\n", i, o_times[i]);
             printf("\tOld Concentration: %d\n", o_oldCon[i]);
