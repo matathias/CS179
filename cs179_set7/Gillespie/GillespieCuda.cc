@@ -19,7 +19,7 @@
 #define NumTimePoints   1000
 #define NumSeconds      100
 
-#define DEBUG 1
+#define DEBUG 0
 
 using std::cerr;
 using std::cout;
