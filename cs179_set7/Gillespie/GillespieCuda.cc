@@ -118,6 +118,9 @@ int main(int argc, char* argv[]) {
                            SimulationCount, 
                            (float) NumTimePoints / (float) NumSeconds,
                            NumSeconds, d_done, blocks, threadsPerBlock);
+                           
+        // Let's see if the data is copied correctly from newConcentrations to
+        // concentrations
         
         // Copy d_done into done so we can know whether to stop or continue
         gpuErrChk(cudaMemcpy(done, d_done, sizeof(int), cudaMemcpyDeviceToHost));
@@ -142,9 +145,9 @@ int main(int argc, char* argv[]) {
     
     // Print out the expectations and concentrations
 #if DEBUG
-    for (int i = 0; i < 20; i++) {
+    for (int i = NumTimePoints-20; i < NumTimePoints; i++) {
 #else
-    for (int i = 0; i < NumTimePoints/10; i++) {
+    for (int i = 0; i < NumTimePoints; i++) {
 #endif
         float timestamp = i * ((float) NumSeconds / (float) NumTimePoints);
         printf("TIME (s): %4.1f\t Expectation: %f\t Variance: %f\n",
