@@ -87,7 +87,11 @@ int main(int argc, char* argv[]) {
     // timesteps are variable. We will stop when the value of done is still 1
     // after resampleKernel is run.
     printf("Done value: %d\n", done[0]);
+#if DEBUG
     float *o_times = (float*)malloc(SimulationCount * sizeof(float));
+    int *o_oldCon = (int*)malloc(SimulationCount * sizeof(float));
+    int *o_newCon = (int*)malloc(SimulationCount * sizeof(float));
+#endif
     while(done[0] == 0) {
         done[0] = 1;
         gpuErrChk(cudaMemcpy(d_done, done, sizeof(int), cudaMemcpyHostToDevice));
@@ -98,11 +102,17 @@ int main(int argc, char* argv[]) {
                             threadsPerBlock);
         
         // Let's see what's in d_times...
+#if DEBUG
         gpuErrChk(cudaMemcpy(o_times, d_times, SimulationCount * sizeof(float), cudaMemcpyDeviceToHost));
+        gpuErrChk(cudaMemcpy(o_oldCon, d_oldConcentrations, SimulationCount * sizeof(float), cudaMemcpyDeviceToHost);
+        gpuErrChk(cudaMemcpy(o_newCon, d_newConcentrations, SimulationCound * sizeof(float), cudaMemcpyDeviceToHost);
         
         for (int i = 0; i < SimulationCount; i+=100){
             printf("Time for simulation %d: %f\n", i, o_times[i]);
+            printf("\tOld Concentration: %d\n", o_oldCon[i]);
+            printf("\tNew Concentration: %d\n", o_newCon[i]);
         }
+#endif
         
         callResampleKernel(d_concentrations, d_newConcentrations, d_times,
                            SimulationCount, 
