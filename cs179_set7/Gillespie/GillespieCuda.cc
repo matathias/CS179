@@ -95,7 +95,7 @@ int main(int argc, char* argv[]) {
         cudaMemcpy(done, d_done, SimulationCount * sizeof(int), cudaMemcpyDeviceToHost);
         doneSum = 0;
         for (int i = 0; i < SimulationCount; i++) {
-            if (doneSum[i] != 0)
+            if (done[i] != 0)
                 doneSum++;
         }
         printf("Done value (loop): %d\n", doneSum);
