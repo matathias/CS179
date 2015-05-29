@@ -46,7 +46,7 @@ int main(int argc, char* argv[]) {
     float *expectations = (float*)malloc(NumTimePoints * sizeof(float));
     float *variance = (float*)malloc(NumTimePoints * sizeof(float));
     int *done = (int*)malloc(sizeof(int));
-    memset(done, 0, sizeof(int));
+    done[0] = 0;
     
     // Allocate the gpu's data
     int *d_productionStates, *d_concentrations;
@@ -200,5 +200,4 @@ int main(int argc, char* argv[]) {
     gpuErrChk(cudaFree(d_expectations));
     gpuErrChk(cudaFree(d_variance));
     gpuErrChk(cudaFree(d_done));
-    gpuErrChk(cudaFree(d_states));
 }
