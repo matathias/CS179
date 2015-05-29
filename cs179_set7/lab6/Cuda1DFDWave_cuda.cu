@@ -13,9 +13,9 @@
 /* TODO: You'll need a kernel here, as well as any helper functions
 to call it */
 
-//__global__
+__global__
 void waveEquationKernal(float *old_data, float *current_data, float *new_data,
-                        int numberOfNodes, float c, float dt, float dx) {
+                        int numberOfNodes, float constant) {
     
     unsigned int index = blockIdx.x * blockDim.x + threadIdx.x;
     while (index > 0 && index < numberOfNodes - 1) {
@@ -24,11 +24,21 @@ void waveEquationKernal(float *old_data, float *current_data, float *new_data,
         //                           (c*dt/dx)^2 * (y_x+1,t - 2*y_x,t + y_x-1,t)
         new_data[index] = 2 * current_data[index] - 
                           old_data[index] + 
-                          ((c * c * dt * dt) / (dx * dx)) *
+                          constant *
                           (current_data[index + 1] -
                            2 * current_data[index] +
                            current_data[index - 1]);
         
         index += blockDim.x * gridDim.x;
     }
+}
+
+void waveEquation(float *old_data, float *current_data, float *new_data,
+                  int numberOfNodes, float c, float dt, float dx,
+                  int blocks, int threadsPerBlock) {
+
+    float constant = ((c * c * dt * dt) / (dx * dx));
+    waveEquationKernal<<<blocks, threadsPerBlock>>>(old_data, current_data,
+                                                    new_data, numberOfNodes,
+                                                    constant);
 }

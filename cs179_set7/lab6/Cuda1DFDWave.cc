@@ -171,20 +171,16 @@ int main(int argc, char* argv[]) {
                  timestepIndex, 100 * timestepIndex / float(numberOfTimesteps));
         }
         
-        float *old_data = d_data[((timestepIndex - 1) % 3) * numberOfNodes];
-        float *current_data = d_data[((timestepIndex) % 3) * numberOfNodes];
-        float *new_data = d_data[((timestepIndex + 1) % 3) * numberOfNodes];
+        float *old_data = &d_data[((timestepIndex - 1) % 3) * numberOfNodes];
+        float *current_data = &d_data[((timestepIndex) % 3) * numberOfNodes];
+        float *new_data = &d_data[((timestepIndex + 1) % 3) * numberOfNodes];
         
         
         /* TODO: Call a kernel to solve the problem (you'll need to make
         the kernel in the .cu file) */
-        waveEquationKernal<<<maxBlcoks, threadsPerBlock>>>(old_data, 
-                                                           current_data,
-                                                           new_data,
-                                                           numberOfNodes,
-                                                           courant,
-                                                           dt,
-                                                           dx);
+        //waveEquationKernal<<<blocks, threadsPerBlock>>>(old_data, 
+        waveEquation(old_data, current_data, new_data, numberOfNodes, courant,
+                     dt, dx, blocks, threadsPerBlock);
 
         
         //Left boundary condition on the CPU - a sum of sine waves
