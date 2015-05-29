@@ -59,6 +59,7 @@ int main(int argc, char* argv[]) {
   const float courantSquared = courant * courant;
   const float dx = 1./numberOfIntervals;
   const float dt = courant * dx;
+  printf("dt: %f\t dx: %f\n", dt, dx);
 
 
 
@@ -209,6 +210,7 @@ int main(int argc, char* argv[]) {
             // points to the most recently calculated data
             cudaMemcpy(file_output, new_data, numberOfNodes * sizeof(float), 
                        cudaMemcpyDeviceToHost);
+            printf("dt: %f\t dx: %f\n", dt, dx);
             
             printf("writing an output file\n");
             // make a filename
