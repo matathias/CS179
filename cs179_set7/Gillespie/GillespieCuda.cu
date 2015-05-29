@@ -182,6 +182,14 @@ void randomNumberKernel(curandState_t *state, float *randoms, float numRandoms){
     }
 }
 
+/*
+ * This kernel sets up the curand states for the random kernel above.
+ */
+__global__
+void setupCurandKernel(curandState_t *state, unsigned long seed) {
+    curand_init(seed, 0, 0, state);
+}
+
 void callGillespieKernel(int *productionStates, 
                          int *old_concentrations, int *new_concentrations,
                          float *times, float *randomTimeSteps,
@@ -192,8 +200,12 @@ void callGillespieKernel(int *productionStates,
     time_t t;
     time(&t);
     
-    curand_init((unsigned long) t, 0, 0, &state[0]);
-    curand_init(((unsigned long) t) + 10, 0, 0, &state[1]);
+    setupCurandKernel<<<blocks, threadsPerBlock>>>(&state[0], 
+                                                   (unsigned long) t);
+    setupCurandKernel<<<blocks, threadsPerBlock>>>(&state[1], 
+                                                   ((unsigned long) t) + 10);
+    //curand_init((unsigned long) t, 0, 0, &state[0]);
+    //curand_init(((unsigned long) t) + 10, 0, 0, &state[1]);
     
     // Fill randomTimeSteps and randomProbs with random values
     randomNumberKernel<<<blocks, threadsPerBlock>>>(&state[0], randomTimeSteps, 
