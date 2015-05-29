@@ -83,6 +83,11 @@ int main(int argc, char* argv[]) {
         
         // Copy d_done into done so we can know whether to stop or continue
         cudaMemcpy(done, d_done, sizeof(int), cudaMemcpyDeviceToHost);
+        
+        // point d_oldConcentrations to d_newConcentrations and vice versa
+        int *tmp = d_oldConcentrations;
+        d_oldConcentrations = d_newConcentrations;
+        d_newConcentrations = tmp;
     }
     
     // Find the expectation and variance of the concentrations
@@ -99,7 +104,7 @@ int main(int argc, char* argv[]) {
     // Print out the expectations and concentrations
     for (int i = 0; i < NumTimePoints; i++) {
         float timestamp = i * ((float) NumSeconds / (float) NumTimePoints);
-        printf("TIME (s): %f\t Expectation: %f\t Variance: %f\n",
+        printf("TIME (s): %4.1f\t Expectation: %f\t Variance: %f\n",
                 timestamp, expectations[i], variance[i]);
     }
     
