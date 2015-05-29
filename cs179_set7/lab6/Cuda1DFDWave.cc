@@ -157,10 +157,6 @@ int main(int argc, char* argv[]) {
     cudaMalloc(&d_data, 3 * numberOfNodes * sizeof(float));
     cudaMemset(&d_data, 0, 3 * numberOfNodes * sizeof(float));
     
-    /*float *d_output;
-    cudaMalloc(&d_output, numberOfNodes * sizeof(float));
-    cudaMemset(&d_output, 0, numberOfNodes * sizeof(float));*/
-    
     
     // Looping through all times t = 0, ..., t_max
     for (size_t timestepIndex = 0; timestepIndex < numberOfTimesteps;
@@ -178,7 +174,6 @@ int main(int argc, char* argv[]) {
         
         /* TODO: Call a kernel to solve the problem (you'll need to make
         the kernel in the .cu file) */
-        //waveEquationKernal<<<blocks, threadsPerBlock>>>(old_data, 
         waveEquation(old_data, current_data, new_data, numberOfNodes, courant,
                      dt, dx, blocks, threadsPerBlock);
 
