@@ -13,7 +13,7 @@
 /* TODO: You'll need a kernel here, as well as any helper functions
 to call it */
 
-__global__
+//__global__
 void waveEquationKernal(float *old_data, float *current_data, float *new_data,
                         int numberOfNodes, float c, float dt, float dx) {
     
