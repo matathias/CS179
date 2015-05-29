@@ -76,9 +76,9 @@ int main(int argc, char* argv[]) {
     float *o_times = (float*)malloc(SimulationCount * sizeof(float));
     cudaError_t err;
     cudaGetLastError(); //clear out the error buffer...
-    while(*done == 0) {
-        //*done = 1;
-        memset(done, 1, sizeof(int));
+    while(done[0] == 0) {
+        done[0] = 1;
+        //memset(done, 1, sizeof(int));
         cudaMemcpy(d_done, done, sizeof(int), cudaMemcpyHostToDevice);
         
         err = cudaGetLastError();
