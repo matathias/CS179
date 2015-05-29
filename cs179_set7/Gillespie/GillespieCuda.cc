@@ -18,7 +18,11 @@
 #define NumTimePoints   1000
 #define NumSeconds      100
 
-#define DEBUG 1
+// Triggers whether or not a bunch of data is printed to the console, to help
+// determine what values the gpu is working with. Also triggers the use of
+// significantly more memory and several more cudaMemcpy calls, so is
+// undoubtably slower than regular running.
+#define DEBUG 0
 
 #define gpuErrChk(ans) { gpuAssert((ans), __FILE__, __LINE__); }
 inline void gpuAssert(cudaError_t code,
