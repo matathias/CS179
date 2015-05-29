@@ -174,10 +174,6 @@ int main(int argc, char* argv[]) {
         
         /* TODO: Call a kernel to solve the problem (you'll need to make
         the kernel in the .cu file) */
-        //float constant = ((c * c * dt * dt) / (dx * dx));
-        //waveEquation(old_data, current_data, new_data, numberOfNodes, constant,
-        //             blocks, threadsPerBlock);
-
         
         //Left boundary condition on the CPU - a sum of sine waves
         const float t = timestepIndex * dt;
@@ -196,14 +192,7 @@ int main(int argc, char* argv[]) {
         /* TODO: Apply left and right boundary conditions on the GPU. 
         The right boundary conditon will be 0 at the last position
         for all times t */
-        //float right_boundary_value = 0;
-        //cudaMemcpy(&new_data[0], &left_boundary_value, sizeof(float), 
-        //cudaMemcpy(&d_data[((timestepIndex + 1) % 3) * numberOfNodes], &left_boundary_value, sizeof(float),
-        //           cudaMemcpyHostToDevice);
-        //cudaMemcpy(&new_data[numberOfNodes-1], &right_boundary_value, 
-        //cudaMemcpy(&d_data[((timestepIndex + 1) % 3) * numberOfNodes + numberOfNodes - 1],
-        //            &right_boundary_value,
-        //           sizeof(float), cudaMemcpyHostToDevice);
+        // This is done in the kernal.
         
         // Check if we need to write a file
         if (CUDATEST_WRITE_ENABLED == true && numberOfOutputFiles > 0 &&
