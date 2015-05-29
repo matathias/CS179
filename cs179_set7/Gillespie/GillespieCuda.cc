@@ -99,12 +99,17 @@ int main(int argc, char* argv[]) {
         done[0] = 1;
         gpuErrChk(cudaMemcpy(d_done, done, sizeof(int), cudaMemcpyHostToDevice));
         
+        time_t t;
+        time(&t);
+        
         curandGenerator_t gen_timeSteps;
         curandCreateGenerator(&gen_timeSteps, CURAND_RNG_PSEUDO_DEFAULT);
+        curandSetPseudoRandomGeneratorSeed(gen_timeSteps, (unsigned long) t);
         curandGenerateUniform(gen_timeSteps, d_randomTimeSteps, SimulationCount);
         
         curandGenerator_t gen_randomProbs;
         curandCreateGenerator(&gen_randomProbs, CURAND_RNG_PSEUDO_DEFAULT);
+        curandSetPseudoRandomGeneratorSeed(gen_randomProbs, ((unsigned long) t + 10));
         curandGenerateUniform(gen_randomProbs, d_randomProbs, SimulationCount);
         
         callGillespieKernel(d_productionStates, d_oldConcentrations,
