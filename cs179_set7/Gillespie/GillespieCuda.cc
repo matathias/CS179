@@ -128,14 +128,14 @@ int main(int argc, char* argv[]) {
         }
     
     // Initialize everything to 0 that needs to be set to 0
-    cudaMemset(&d_productionStates, 0, SimulationCount * sizeof(int));
+    cudaMemset(d_productionStates, 0, SimulationCount * sizeof(int));
         err = cudaGetLastError();
         if  (cudaSuccess != err){
                 cerr << "Error " << cudaGetErrorString(err) << endl;
         } else {
                 cerr << "No memset error detected" << endl;
         }
-    cudaMemset(&d_concentrations, 0, SimulationCount * NumTimePoints 
+    cudaMemset(d_concentrations, 0, SimulationCount * NumTimePoints 
                                      * sizeof(int));
         err = cudaGetLastError();
         if  (cudaSuccess != err){
@@ -143,21 +143,21 @@ int main(int argc, char* argv[]) {
         } else {
                 cerr << "No memset error detected" << endl;
         }
-    cudaMemset(&d_oldConcentrations, 0, SimulationCount * sizeof(int));
+    cudaMemset(d_oldConcentrations, 0, SimulationCount * sizeof(int));
         err = cudaGetLastError();
         if  (cudaSuccess != err){
                 cerr << "Error " << cudaGetErrorString(err) << endl;
         } else {
                 cerr << "No memset error detected" << endl;
         }
-    cudaMemset(&d_newConcentrations, 0, SimulationCount * sizeof(int));
+    cudaMemset(d_newConcentrations, 0, SimulationCount * sizeof(int));
         err = cudaGetLastError();
         if  (cudaSuccess != err){
                 cerr << "Error " << cudaGetErrorString(err) << endl;
         } else {
                 cerr << "No memset error detected" << endl;
         }
-    cudaMemset(&d_times, 0, SimulationCount * sizeof(int));
+    cudaMemset(d_times, 0, SimulationCount * sizeof(int));
         err = cudaGetLastError();
         if  (cudaSuccess != err){
                 cerr << "Error " << cudaGetErrorString(err) << endl;
