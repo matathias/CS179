@@ -18,9 +18,23 @@
 #define NumTimePoints   1000
 #define NumSeconds      100
 
+#define DEBUG 1
+
 using std::cerr;
 using std::cout;
 using std::endl;
+
+#define gpuErrChk(ans) { gpuAssert((ans), __FILE__, __LINE__); }
+inline void gpuAssert(cudaError_t code,
+                      const char *file,
+                      int line,
+                      bool abort=true) {
+  if (code != cudaSuccess) {
+    fprintf(stderr,"GPUassert: %s %s %d\n",
+            cudaGetErrorString(code), file, line);
+    exit(code);
+  }
+}
 
 int main(int argc, char* argv[]) {
     
@@ -30,9 +44,6 @@ int main(int argc, char* argv[]) {
     }
     const unsigned int threadsPerBlock = atoi(argv[1]);
     const unsigned int blocks = atoi(argv[2]);
-    
-    cudaError_t err;
-    
     
     /***** Allocate all the data~ *****/
     // Allocate the cpu's data
@@ -49,121 +60,26 @@ int main(int argc, char* argv[]) {
     int *d_done;
     curandState_t *d_states;
     
-    cudaMalloc(&d_productionStates, SimulationCount * sizeof(int));
-        err = cudaGetLastError();
-        if  (cudaSuccess != err){
-                cerr << "Error " << cudaGetErrorString(err) << endl;
-        } else {
-                cerr << "No malloc error detected" << endl;
-        }
-    cudaMalloc(&d_concentrations, SimulationCount * NumTimePoints * sizeof(int));
-        err = cudaGetLastError();
-        if  (cudaSuccess != err){
-                cerr << "Error " << cudaGetErrorString(err) << endl;
-        } else {
-                cerr << "No malloc error detected" << endl;
-        }
-    cudaMalloc(&d_oldConcentrations, SimulationCount * sizeof(int));
-        err = cudaGetLastError();
-        if  (cudaSuccess != err){
-                cerr << "Error " << cudaGetErrorString(err) << endl;
-        } else {
-                cerr << "No malloc error detected" << endl;
-        }
-    cudaMalloc(&d_newConcentrations, SimulationCount * sizeof(int));
-        err = cudaGetLastError();
-        if  (cudaSuccess != err){
-                cerr << "Error " << cudaGetErrorString(err) << endl;
-        } else {
-                cerr << "No malloc error detected" << endl;
-        }
-    cudaMalloc(&d_times, SimulationCount * sizeof(float));
-        err = cudaGetLastError();
-        if  (cudaSuccess != err){
-                cerr << "Error " << cudaGetErrorString(err) << endl;
-        } else {
-                cerr << "No malloc error detected" << endl;
-        }
-    cudaMalloc(&d_randomTimeSteps, SimulationCount * sizeof(float));
-        err = cudaGetLastError();
-        if  (cudaSuccess != err){
-                cerr << "Error " << cudaGetErrorString(err) << endl;
-        } else {
-                cerr << "No malloc error detected" << endl;
-        }
-    cudaMalloc(&d_randomProbs, SimulationCount * sizeof(float));
-        err = cudaGetLastError();
-        if  (cudaSuccess != err){
-                cerr << "Error " << cudaGetErrorString(err) << endl;
-        } else {
-                cerr << "No malloc error detected" << endl;
-        }
-    cudaMalloc(&d_expectations, NumTimePoints * sizeof(float));
-        err = cudaGetLastError();
-        if  (cudaSuccess != err){
-                cerr << "Error " << cudaGetErrorString(err) << endl;
-        } else {
-                cerr << "No malloc error detected" << endl;
-        }
-    cudaMalloc(&d_variance, NumTimePoints * sizeof(float));
-        err = cudaGetLastError();
-        if  (cudaSuccess != err){
-                cerr << "Error " << cudaGetErrorString(err) << endl;
-        } else {
-                cerr << "No malloc error detected" << endl;
-        }
-    cudaMalloc(&d_done, sizeof(int));
-        err = cudaGetLastError();
-        if  (cudaSuccess != err){
-                cerr << "Error " << cudaGetErrorString(err) << endl;
-        } else {
-                cerr << "No malloc error detected" << endl;
-        }
-    cudaMalloc(&d_states, 2 * sizeof(curandState_t));
-        err = cudaGetLastError();
-        if  (cudaSuccess != err){
-                cerr << "Error " << cudaGetErrorString(err) << endl;
-        } else {
-                cerr << "No malloc error detected" << endl;
-        }
+    gpuErrChk(cudaMalloc(&d_productionStates, SimulationCount * sizeof(int)));
+    gpuErrChk(cudaMalloc(&d_concentrations, 
+                         SimulationCount * NumTimePoints * sizeof(int)));
+    gpuErrChk(cudaMalloc(&d_oldConcentrations, SimulationCount * sizeof(int)));
+    gpuErrChk(cudaMalloc(&d_newConcentrations, SimulationCount * sizeof(int)));
+    gpuErrChk(cudaMalloc(&d_times, SimulationCount * sizeof(float)));
+    gpuErrChk(cudaMalloc(&d_randomTimeSteps, SimulationCount * sizeof(float)));
+    gpuErrChk(cudaMalloc(&d_randomProbs, SimulationCount * sizeof(float)));
+    gpuErrChk(cudaMalloc(&d_expectations, NumTimePoints * sizeof(float)));
+    gpuErrChk(cudaMalloc(&d_variance, NumTimePoints * sizeof(float)));
+    gpuErrChk(cudaMalloc(&d_done, sizeof(int)));
+    gpuErrChk(cudaMalloc(&d_states, 2 * sizeof(curandState_t)));
     
     // Initialize everything to 0 that needs to be set to 0
-    cudaMemset(d_productionStates, 0, SimulationCount * sizeof(int));
-        err = cudaGetLastError();
-        if  (cudaSuccess != err){
-                cerr << "Error " << cudaGetErrorString(err) << endl;
-        } else {
-                cerr << "No memset error detected" << endl;
-        }
-    cudaMemset(d_concentrations, 0, SimulationCount * NumTimePoints 
-                                     * sizeof(int));
-        err = cudaGetLastError();
-        if  (cudaSuccess != err){
-                cerr << "Error " << cudaGetErrorString(err) << endl;
-        } else {
-                cerr << "No memset error detected" << endl;
-        }
-    cudaMemset(d_oldConcentrations, 0, SimulationCount * sizeof(int));
-        err = cudaGetLastError();
-        if  (cudaSuccess != err){
-                cerr << "Error " << cudaGetErrorString(err) << endl;
-        } else {
-                cerr << "No memset error detected" << endl;
-        }
-    cudaMemset(d_newConcentrations, 0, SimulationCount * sizeof(int));
-        err = cudaGetLastError();
-        if  (cudaSuccess != err){
-                cerr << "Error " << cudaGetErrorString(err) << endl;
-        } else {
-                cerr << "No memset error detected" << endl;
-        }
-    cudaMemset(d_times, 0, SimulationCount * sizeof(int));
-        err = cudaGetLastError();
-        if  (cudaSuccess != err){
-                cerr << "Error " << cudaGetErrorString(err) << endl;
-        } else {
-                cerr << "No memset error detected" << endl;
-        }
+    gpuErrChk(cudaMemset(d_productionStates, 0, SimulationCount * sizeof(int)));
+    gpuErrChk(cudaMemset(d_concentrations, 0, SimulationCount * NumTimePoints 
+                                              * sizeof(int)));
+    gpuErrChk(cudaMemset(d_oldConcentrations, 0, SimulationCount * sizeof(int)));
+    gpuErrChk(cudaMemset(d_newConcentrations, 0, SimulationCount * sizeof(int)));
+    gpuErrChk(cudaMemset(d_times, 0, SimulationCount * sizeof(int)));
     
     
     /***** Start the simulations *****/
@@ -172,64 +88,29 @@ int main(int argc, char* argv[]) {
     // after resampleKernel is run.
     printf("Done value: %d\n", done[0]);
     float *o_times = (float*)malloc(SimulationCount * sizeof(float));
-    //cudaGetLastError(); //clear out the error buffer
     while(done[0] == 0) {
         done[0] = 1;
-        //memset(done, 1, sizeof(int));
-        cudaMemcpy(d_done, done, sizeof(int), cudaMemcpyHostToDevice);
+        gpuErrChk(cudaMemcpy(d_done, done, sizeof(int), cudaMemcpyHostToDevice));
         
-        err = cudaGetLastError();
-        if  (cudaSuccess != err){
-                cerr << "Error " << cudaGetErrorString(err) << endl;
-        } else {
-                cerr << "No memcpy error detected" << endl;
-        }
-        
-        callGillespieKernel(d_productionStates, d_oldConcentrations,
+        gpuErrChk(callGillespieKernel(d_productionStates, d_oldConcentrations,
                             d_newConcentrations, d_times, d_randomTimeSteps,
                             d_randomProbs, d_states, SimulationCount, blocks,
-                            threadsPerBlock);
-                            
-        err = cudaGetLastError();
-        if  (cudaSuccess != err){
-                cerr << "Error " << cudaGetErrorString(err) << endl;
-        } else {
-                cerr << "No Gillespie kernel error detected" << endl;
-        }
+                            threadsPerBlock));
         
         // Let's see what's in d_times...
-        /*cudaMemcpy(o_times, d_times, SimulationCount * sizeof(float), cudaMemcpyDeviceToHost);
-        err = cudaGetLastError();
-        if  (cudaSuccess != err){
-                cerr << "Error " << cudaGetErrorString(err) << endl;
-        } else {
-                cerr << "No memcpy error detected" << endl;
-        }
+        gpuErrChk(cudaMemcpy(o_times, d_times, SimulationCount * sizeof(float), cudaMemcpyDeviceToHost));
         
         for (int i = 0; i < SimulationCount; i+=100){
             printf("Time for simulation %d: %f\n", i, o_times[i]);
-        }*/
+        }
         
-        callResampleKernel(d_concentrations, d_newConcentrations, d_times,
+        gpuErrChk(callResampleKernel(d_concentrations, d_newConcentrations, d_times,
                            SimulationCount, 
                            (float) NumTimePoints / (float) NumSeconds,
-                           NumSeconds, d_done, blocks, threadsPerBlock);
-        
-        err = cudaGetLastError();
-        if  (cudaSuccess != err){
-                cerr << "Error " << cudaGetErrorString(err) << endl;
-        } else {
-                cerr << "No resample kernel error detected" << endl;
-        }
+                           NumSeconds, d_done, blocks, threadsPerBlock));
         
         // Copy d_done into done so we can know whether to stop or continue
-        cudaMemcpy(done, d_done, sizeof(int), cudaMemcpyDeviceToHost);
-        err = cudaGetLastError();
-        if  (cudaSuccess != err){
-                cerr << "Error " << cudaGetErrorString(err) << endl;
-        } else {
-                cerr << "No memcpy error detected" << endl;
-        }
+        gpuErrChk(cudaMemcpy(done, d_done, sizeof(int), cudaMemcpyDeviceToHost));
         printf("Done value (loop): %d\n", done[0]);
         
         // point d_oldConcentrations to d_newConcentrations and vice versa
@@ -239,18 +120,22 @@ int main(int argc, char* argv[]) {
     }
     
     // Find the expectation and variance of the concentrations
-    callBehaviorKernel(d_concentrations, d_expectations, d_variance,
-                       SimulationCount, NumTimePoints, blocks, threadsPerBlock);
+    gpuErrChk(callBehaviorKernel(d_concentrations, d_expectations, d_variance,
+                       SimulationCount, NumTimePoints, blocks, threadsPerBlock));
     
     /***** Output the results *****/
     // Copy data back to the host
-    cudaMemcpy(expectations, d_expectations, NumTimePoints * sizeof(float), 
-               cudaMemcpyDeviceToHost);
-    cudaMemcpy(variance, d_variance, NumTimePoints * sizeof(float), 
-               cudaMemcpyDeviceToHost);
+    gpuErrChk(cudaMemcpy(expectations, d_expectations, NumTimePoints * sizeof(float), 
+               cudaMemcpyDeviceToHost));
+    gpuErrChk(cudaMemcpy(variance, d_variance, NumTimePoints * sizeof(float), 
+               cudaMemcpyDeviceToHost));
     
     // Print out the expectations and concentrations
+#if DEBUG
+    for (int i = 0; i < 20; i++) {
+#else
     for (int i = 0; i < NumTimePoints/10; i++) {
+#endif
         float timestamp = i * ((float) NumSeconds / (float) NumTimePoints);
         printf("TIME (s): %4.1f\t Expectation: %f\t Variance: %f\n",
                 timestamp, expectations[i], variance[i]);
@@ -261,15 +146,15 @@ int main(int argc, char* argv[]) {
     free(variance);
     free(done);
     
-    cudaFree(d_productionStates);
-    cudaFree(d_concentrations);
-    cudaFree(d_oldConcentrations);
-    cudaFree(d_newConcentrations);
-    cudaFree(d_times);
-    cudaFree(d_randomTimeSteps);
-    cudaFree(d_randomProbs);
-    cudaFree(d_expectations);
-    cudaFree(d_variance);
-    cudaFree(d_done);
-    cudaFree(d_states);
+    gpuErrChk(cudaFree(d_productionStates));
+    gpuErrChk(cudaFree(d_concentrations));
+    gpuErrChk(cudaFree(d_oldConcentrations));
+    gpuErrChk(cudaFree(d_newConcentrations));
+    gpuErrChk(cudaFree(d_times));
+    gpuErrChk(cudaFree(d_randomTimeSteps));
+    gpuErrChk(cudaFree(d_randomProbs));
+    gpuErrChk(cudaFree(d_expectations));
+    gpuErrChk(cudaFree(d_variance));
+    gpuErrChk(cudaFree(d_done));
+    gpuErrChk(cudaFree(d_states));
 }
