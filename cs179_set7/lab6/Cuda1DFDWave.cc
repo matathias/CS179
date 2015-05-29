@@ -193,7 +193,7 @@ int main(int argc, char* argv[]) {
         for all times t */
         float right_boundary_value = 0;
         //cudaMemcpy(&new_data[0], &left_boundary_value, sizeof(float), 
-        cudaMemcpy(&d_data[((timestepIndex + 1) % 3) * numberOfNodes], &left_boundary_value, sizeof(float)
+        cudaMemcpy(&d_data[((timestepIndex + 1) % 3) * numberOfNodes], &left_boundary_value, sizeof(float),
                    cudaMemcpyHostToDevice);
         //cudaMemcpy(&new_data[numberOfNodes-1], &right_boundary_value, 
         cudaMemcpy(&d_data[((timestepIndex + 1) % 3) * numberOfNodes + numberOfNodes - 1],
