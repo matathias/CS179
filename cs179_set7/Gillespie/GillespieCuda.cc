@@ -4,6 +4,7 @@
 #include <cmath>
 #include <vector>
 #include <fstream>
+#include <iostream>
 
 
 #include <cuda_runtime.h>
@@ -16,6 +17,10 @@
 #define SimulationCount 1000
 #define NumTimePoints   1000
 #define NumSeconds      100
+
+using std::cerr;
+using std::cout;
+using std::endl;
 
 int main(int argc, char* argv[]) {
     
