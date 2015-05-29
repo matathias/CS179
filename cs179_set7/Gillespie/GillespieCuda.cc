@@ -31,8 +31,10 @@ int main(int argc, char* argv[]) {
     // Allocate the cpu's data
     float *expectations = (float*)malloc(NumTimePoints * sizeof(float));
     float *variance = (float*)malloc(NumTimePoints * sizeof(float));
-    int *done = (int*)malloc(sizeof(int));
-    *done = 0;
+    int *done = (int*)malloc(SimulationCount * sizeof(int));
+    //*done = 0;
+    memset(done, 0, SimulationCount * sizeof(int));
+    int doneSum = 1;
     
     // Allocate the gpu's data
     int *d_productionStates, *d_concentrations;
@@ -51,7 +53,7 @@ int main(int argc, char* argv[]) {
     cudaMalloc(&d_randomProbs, SimulationCount * sizeof(float));
     cudaMalloc(&d_expectations, NumTimePoints * sizeof(float));
     cudaMalloc(&d_variance, NumTimePoints * sizeof(float));
-    cudaMalloc(&d_done, sizeof(int));
+    cudaMalloc(&d_done, SimulationCount * sizeof(int));
     cudaMalloc(&d_states, 2 * sizeof(curandState_t));
     
     // Initialize everything to 0 that needs to be set to 0
@@ -69,9 +71,9 @@ int main(int argc, char* argv[]) {
     // after resampleKernel is run.
     printf("Done value: %d\n", *done);
     float *o_times = (float*)malloc(SimulationCount * sizeof(float));
-    while(*done == 0) {
-        *done = 1;
-        cudaMemcpy(d_done, done, sizeof(int), cudaMemcpyHostToDevice);
+    while(doneSum > 0) {
+        //*done = 1;
+        cudaMemcpy(d_done, done, SimulationCount * sizeof(int), cudaMemcpyHostToDevice);
         
         callGillespieKernel(d_productionStates, d_oldConcentrations,
                             d_newConcentrations, d_times, d_randomTimeSteps,
@@ -90,8 +92,13 @@ int main(int argc, char* argv[]) {
                            NumSeconds, d_done, blocks, threadsPerBlock);
         
         // Copy d_done into done so we can know whether to stop or continue
-        cudaMemcpy(done, d_done, sizeof(int), cudaMemcpyDeviceToHost);
-        printf("Done value (loop): %d\n", *done);
+        cudaMemcpy(done, d_done, SimulationCount * sizeof(int), cudaMemcpyDeviceToHost);
+        doneSum = 0;
+        for (int i = 0; i < SimulationCount; i++) {
+            if (doneSum[i] != 0)
+                doneSum++;
+        }
+        printf("Done value (loop): %d\n", doneSum);
         
         // point d_oldConcentrations to d_newConcentrations and vice versa
         int *tmp = d_oldConcentrations;
