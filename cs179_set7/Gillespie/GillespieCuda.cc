@@ -19,7 +19,7 @@
 #define NumTimePoints   1000
 #define NumSeconds      100
 
-#define DEBUG 0
+#define DEBUG 1
 
 using std::cerr;
 using std::cout;
@@ -87,8 +87,8 @@ int main(int argc, char* argv[]) {
     // Loop from time 0 to time NumSeconds; we use a while loop because the
     // timesteps are variable. We will stop when the value of done is still 1
     // after resampleKernel is run.
-    printf("Done value: %d\n", done[0]);
 #if DEBUG
+    printf("Done value: %d\n", done[0]);
     float *o_times = (float*)malloc(SimulationCount * sizeof(float));
     int *o_oldCon = (int*)malloc(SimulationCount * sizeof(float));
     int *o_newCon = (int*)malloc(SimulationCount * sizeof(float));

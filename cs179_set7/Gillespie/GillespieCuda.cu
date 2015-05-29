@@ -127,7 +127,7 @@ void resampleKernel(int *concentrations, int *new_concentrations,
 }
 
 /* This kernel calculates the expected concentration and variance at every
- * timepoints.
+ * timepoint.
  *
  * concentrations is a 2D array containing the concentration of every simulation
  * at every timepoint.
