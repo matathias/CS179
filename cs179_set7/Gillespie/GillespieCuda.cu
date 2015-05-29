@@ -37,7 +37,7 @@ void singleGillespieKernel(int *productionStates, int *old_concentrations,
     while (index < numSimulations) {
         float rate;
         if (productionStates[index]) { // Production is active
-            rate = Koff + b + old_concentratons[index] * g;
+            rate = Koff + b + old_concentrations[index] * g;
             if (randomProbs[index] < Koff / rate) {
                 // If the random number is less than Koff/rate
                 productionStates[index] = 0; // production becomes inactive
@@ -57,7 +57,7 @@ void singleGillespieKernel(int *productionStates, int *old_concentrations,
         }
         else { // Production is inactive
             rate = Kon + old_concentrations[index] * g;
-            if (randomProbs[indx] < Kon / rate) {
+            if (randomProbs[index] < Kon / rate) {
                 // If the system becomes active...
                 productionStates[index] = 1;
                 new_concentrations[index] = old_concentrations[index];
@@ -172,7 +172,7 @@ void behaviorKernel(int *concentrations, float *expectations,
  * distribution between 0 and 1.
  */
 __global__
-randomNumberKernel(curandState_t *state, float *randoms, float numRandoms) {
+void randomNumberKernel(curandState_t *state, float *randoms, float numRandoms){
     unsigned int index = blockIdx.x * blockDim.x + threadIdx.x;
     
     while (index < numRandoms) {
@@ -192,8 +192,8 @@ void callGillespieKernel(int *productionStates,
     time_t t;
     time(&t);
     
-    curand_init((unsigned long) t, 0, 0, state[0]);
-    curand_init(((unsigned long) t) + 10, 0, 0, state[1]);
+    curand_init((unsigned long) t, 0, 0, &state[0]);
+    curand_init(((unsigned long) t) + 10, 0, 0, &state[1]);
     
     // Fill randomTimeSteps and randomProbs with random values
     randomNumberKernel<<<blocks, threadsPerBlock>>>(&state[0], randomTimeSteps, 
