@@ -40,7 +40,7 @@ void waveEquation(float *old_data, float *current_data, float *new_data,
                   int numberOfNodes, float c, float dt, float dx,
                   int blocks, int threadsPerBlock) {
 
-    float constant = c * c; //((c * c * dt * dt) / (dx * dx));
+    float constant = ((c * c * dt * dt) / (dx * dx));
     waveEquationKernal<<<blocks, threadsPerBlock>>>(old_data, current_data,
                                                     new_data, numberOfNodes,
                                                     constant);
