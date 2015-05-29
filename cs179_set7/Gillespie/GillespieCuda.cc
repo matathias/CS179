@@ -92,10 +92,10 @@ int main(int argc, char* argv[]) {
         done[0] = 1;
         gpuErrChk(cudaMemcpy(d_done, done, sizeof(int), cudaMemcpyHostToDevice));
         
-        gpuErrChk(callGillespieKernel(d_productionStates, d_oldConcentrations,
+        callGillespieKernel(d_productionStates, d_oldConcentrations,
                             d_newConcentrations, d_times, d_randomTimeSteps,
                             d_randomProbs, d_states, SimulationCount, blocks,
-                            threadsPerBlock));
+                            threadsPerBlock);
         
         // Let's see what's in d_times...
         gpuErrChk(cudaMemcpy(o_times, d_times, SimulationCount * sizeof(float), cudaMemcpyDeviceToHost));
@@ -104,10 +104,10 @@ int main(int argc, char* argv[]) {
             printf("Time for simulation %d: %f\n", i, o_times[i]);
         }
         
-        gpuErrChk(callResampleKernel(d_concentrations, d_newConcentrations, d_times,
+        callResampleKernel(d_concentrations, d_newConcentrations, d_times,
                            SimulationCount, 
                            (float) NumTimePoints / (float) NumSeconds,
-                           NumSeconds, d_done, blocks, threadsPerBlock));
+                           NumSeconds, d_done, blocks, threadsPerBlock);
         
         // Copy d_done into done so we can know whether to stop or continue
         gpuErrChk(cudaMemcpy(done, d_done, sizeof(int), cudaMemcpyDeviceToHost));
@@ -120,8 +120,8 @@ int main(int argc, char* argv[]) {
     }
     
     // Find the expectation and variance of the concentrations
-    gpuErrChk(callBehaviorKernel(d_concentrations, d_expectations, d_variance,
-                       SimulationCount, NumTimePoints, blocks, threadsPerBlock));
+    callBehaviorKernel(d_concentrations, d_expectations, d_variance,
+                       SimulationCount, NumTimePoints, blocks, threadsPerBlock);
     
     /***** Output the results *****/
     // Copy data back to the host
