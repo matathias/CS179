@@ -31,6 +31,8 @@ int main(int argc, char* argv[]) {
     const unsigned int threadsPerBlock = atoi(argv[1]);
     const unsigned int blocks = atoi(argv[2]);
     
+    cudaError_t err;
+    
     
     /***** Allocate all the data~ *****/
     // Allocate the cpu's data
@@ -48,24 +50,120 @@ int main(int argc, char* argv[]) {
     curandState_t *d_states;
     
     cudaMalloc(&d_productionStates, SimulationCount * sizeof(int));
+        err = cudaGetLastError();
+        if  (cudaSuccess != err){
+                cerr << "Error " << cudaGetErrorString(err) << endl;
+        } else {
+                cerr << "No malloc error detected" << endl;
+        }
     cudaMalloc(&d_concentrations, SimulationCount * NumTimePoints * sizeof(int));
+        err = cudaGetLastError();
+        if  (cudaSuccess != err){
+                cerr << "Error " << cudaGetErrorString(err) << endl;
+        } else {
+                cerr << "No malloc error detected" << endl;
+        }
     cudaMalloc(&d_oldConcentrations, SimulationCount * sizeof(int));
+        err = cudaGetLastError();
+        if  (cudaSuccess != err){
+                cerr << "Error " << cudaGetErrorString(err) << endl;
+        } else {
+                cerr << "No malloc error detected" << endl;
+        }
     cudaMalloc(&d_newConcentrations, SimulationCount * sizeof(int));
+        err = cudaGetLastError();
+        if  (cudaSuccess != err){
+                cerr << "Error " << cudaGetErrorString(err) << endl;
+        } else {
+                cerr << "No malloc error detected" << endl;
+        }
     cudaMalloc(&d_times, SimulationCount * sizeof(float));
+        err = cudaGetLastError();
+        if  (cudaSuccess != err){
+                cerr << "Error " << cudaGetErrorString(err) << endl;
+        } else {
+                cerr << "No malloc error detected" << endl;
+        }
     cudaMalloc(&d_randomTimeSteps, SimulationCount * sizeof(float));
+        err = cudaGetLastError();
+        if  (cudaSuccess != err){
+                cerr << "Error " << cudaGetErrorString(err) << endl;
+        } else {
+                cerr << "No malloc error detected" << endl;
+        }
     cudaMalloc(&d_randomProbs, SimulationCount * sizeof(float));
+        err = cudaGetLastError();
+        if  (cudaSuccess != err){
+                cerr << "Error " << cudaGetErrorString(err) << endl;
+        } else {
+                cerr << "No malloc error detected" << endl;
+        }
     cudaMalloc(&d_expectations, NumTimePoints * sizeof(float));
+        err = cudaGetLastError();
+        if  (cudaSuccess != err){
+                cerr << "Error " << cudaGetErrorString(err) << endl;
+        } else {
+                cerr << "No malloc error detected" << endl;
+        }
     cudaMalloc(&d_variance, NumTimePoints * sizeof(float));
+        err = cudaGetLastError();
+        if  (cudaSuccess != err){
+                cerr << "Error " << cudaGetErrorString(err) << endl;
+        } else {
+                cerr << "No malloc error detected" << endl;
+        }
     cudaMalloc(&d_done, sizeof(int));
+        err = cudaGetLastError();
+        if  (cudaSuccess != err){
+                cerr << "Error " << cudaGetErrorString(err) << endl;
+        } else {
+                cerr << "No malloc error detected" << endl;
+        }
     cudaMalloc(&d_states, 2 * sizeof(curandState_t));
+        err = cudaGetLastError();
+        if  (cudaSuccess != err){
+                cerr << "Error " << cudaGetErrorString(err) << endl;
+        } else {
+                cerr << "No malloc error detected" << endl;
+        }
     
     // Initialize everything to 0 that needs to be set to 0
     cudaMemset(&d_productionStates, 0, SimulationCount * sizeof(int));
+        err = cudaGetLastError();
+        if  (cudaSuccess != err){
+                cerr << "Error " << cudaGetErrorString(err) << endl;
+        } else {
+                cerr << "No memset error detected" << endl;
+        }
     cudaMemset(&d_concentrations, 0, SimulationCount * NumTimePoints 
                                      * sizeof(int));
+        err = cudaGetLastError();
+        if  (cudaSuccess != err){
+                cerr << "Error " << cudaGetErrorString(err) << endl;
+        } else {
+                cerr << "No memset error detected" << endl;
+        }
     cudaMemset(&d_oldConcentrations, 0, SimulationCount * sizeof(int));
+        err = cudaGetLastError();
+        if  (cudaSuccess != err){
+                cerr << "Error " << cudaGetErrorString(err) << endl;
+        } else {
+                cerr << "No memset error detected" << endl;
+        }
     cudaMemset(&d_newConcentrations, 0, SimulationCount * sizeof(int));
+        err = cudaGetLastError();
+        if  (cudaSuccess != err){
+                cerr << "Error " << cudaGetErrorString(err) << endl;
+        } else {
+                cerr << "No memset error detected" << endl;
+        }
     cudaMemset(&d_times, 0, SimulationCount * sizeof(int));
+        err = cudaGetLastError();
+        if  (cudaSuccess != err){
+                cerr << "Error " << cudaGetErrorString(err) << endl;
+        } else {
+                cerr << "No memset error detected" << endl;
+        }
     
     
     /***** Start the simulations *****/
@@ -74,8 +172,7 @@ int main(int argc, char* argv[]) {
     // after resampleKernel is run.
     printf("Done value: %d\n", done[0]);
     float *o_times = (float*)malloc(SimulationCount * sizeof(float));
-    cudaError_t err;
-    cudaGetLastError(); //clear out the error buffer
+    //cudaGetLastError(); //clear out the error buffer
     while(done[0] == 0) {
         done[0] = 1;
         //memset(done, 1, sizeof(int));
