@@ -68,6 +68,7 @@ int main(int argc, char* argv[]) {
     // timesteps are variable. We will stop when the value of done is still 1
     // after resampleKernel is run.
     printf("Done value: %d\n", *done);
+    float *o_times = (float*)malloc(SimulationCount * sizeof(float));
     while(*done == 0) {
         *done = 1;
         cudaMemcpy(d_done, done, sizeof(int), cudaMemcpyHostToDevice);
@@ -76,6 +77,12 @@ int main(int argc, char* argv[]) {
                             d_newConcentrations, d_times, d_randomTimeSteps,
                             d_randomProbs, d_states, SimulationCount, blocks,
                             threadsPerBlock);
+                            
+        // Let's see what's in d_times...
+        cudaMemcpy(o_times, d_times, SimulationCount * sizeof(float));
+        for (int i = 0; i < SimulationCount; i+=50){
+            printf("Time for simulation %d: %f\n", i, o_times[i]);
+        }
                             
         callResampleKernel(d_concentrations, d_newConcentrations, d_times,
                            SimulationCount, 

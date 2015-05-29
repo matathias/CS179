@@ -204,8 +204,6 @@ void callGillespieKernel(int *productionStates,
                                                    (unsigned long) t);
     setupCurandKernel<<<blocks, threadsPerBlock>>>(&state[1], 
                                                    ((unsigned long) t) + 10);
-    //curand_init((unsigned long) t, 0, 0, &state[0]);
-    //curand_init(((unsigned long) t) + 10, 0, 0, &state[1]);
     
     // Fill randomTimeSteps and randomProbs with random values
     randomNumberKernel<<<blocks, threadsPerBlock>>>(&state[0], randomTimeSteps, 
