@@ -67,7 +67,8 @@ int main(int argc, char* argv[]) {
     // Loop from time 0 to time NumSeconds; we use a while loop because the
     // timesteps are variable. We will stop when the value of done is still 1
     // after resampleKernel is run.
-    while(! *done) {
+    printf("Done value: %d\n", *done);
+    while(*done == 0) {
         *done = 1;
         cudaMemcpy(d_done, done, sizeof(int), cudaMemcpyHostToDevice);
         
