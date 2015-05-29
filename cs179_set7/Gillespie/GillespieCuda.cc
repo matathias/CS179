@@ -79,7 +79,7 @@ int main(int argc, char* argv[]) {
                             threadsPerBlock);
                             
         // Let's see what's in d_times...
-        cudaMemcpy(o_times, d_times, SimulationCount * sizeof(float));
+        cudaMemcpy(o_times, d_times, SimulationCount * sizeof(float), cudaMemcpyDeviceToHost);
         for (int i = 0; i < SimulationCount; i+=50){
             printf("Time for simulation %d: %f\n", i, o_times[i]);
         }
