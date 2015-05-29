@@ -31,10 +31,8 @@ int main(int argc, char* argv[]) {
     // Allocate the cpu's data
     float *expectations = (float*)malloc(NumTimePoints * sizeof(float));
     float *variance = (float*)malloc(NumTimePoints * sizeof(float));
-    int *done = (int*)malloc(SimulationCount * sizeof(int));
-    //*done = 0;
-    memset(done, 0, SimulationCount * sizeof(int));
-    int doneSum = 1;
+    int *done = (int*)malloc(sizeof(int));
+    *done = 0;
     
     // Allocate the gpu's data
     int *d_productionStates, *d_concentrations;
@@ -53,7 +51,7 @@ int main(int argc, char* argv[]) {
     cudaMalloc(&d_randomProbs, SimulationCount * sizeof(float));
     cudaMalloc(&d_expectations, NumTimePoints * sizeof(float));
     cudaMalloc(&d_variance, NumTimePoints * sizeof(float));
-    cudaMalloc(&d_done, SimulationCount * sizeof(int));
+    cudaMalloc(&d_done, sizeof(int));
     cudaMalloc(&d_states, 2 * sizeof(curandState_t));
     
     // Initialize everything to 0 that needs to be set to 0
@@ -71,34 +69,65 @@ int main(int argc, char* argv[]) {
     // after resampleKernel is run.
     printf("Done value: %d\n", *done);
     float *o_times = (float*)malloc(SimulationCount * sizeof(float));
-    while(doneSum > 0) {
-        //*done = 1;
-        cudaMemcpy(d_done, done, SimulationCount * sizeof(int), cudaMemcpyHostToDevice);
+    cudaError_t err;
+    while(*done == 0) {
+        *done = 1;
+        cudaMemcpy(d_done, done, sizeof(int), cudaMemcpyHostToDevice);
+        
+        err = cudaGetLastError();
+        if  (cudaSuccess != err){
+                cerr << "Error " << cudaGetErrorString(err) << endl;
+        } else {
+                cerr << "No memcpy error detected" << endl;
+        }
         
         callGillespieKernel(d_productionStates, d_oldConcentrations,
                             d_newConcentrations, d_times, d_randomTimeSteps,
                             d_randomProbs, d_states, SimulationCount, blocks,
                             threadsPerBlock);
                             
+        err = cudaGetLastError();
+        if  (cudaSuccess != err){
+                cerr << "Error " << cudaGetErrorString(err) << endl;
+        } else {
+                cerr << "No Gillespie kernel error detected" << endl;
+        }
+        
         // Let's see what's in d_times...
         cudaMemcpy(o_times, d_times, SimulationCount * sizeof(float), cudaMemcpyDeviceToHost);
+        err = cudaGetLastError();
+        if  (cudaSuccess != err){
+                cerr << "Error " << cudaGetErrorString(err) << endl;
+        } else {
+                cerr << "No memcpy error detected" << endl;
+        }
+        
         for (int i = 0; i < SimulationCount; i+=50){
             printf("Time for simulation %d: %f\n", i, o_times[i]);
         }
-                            
+        
+                    
         callResampleKernel(d_concentrations, d_newConcentrations, d_times,
                            SimulationCount, 
                            (float) NumTimePoints / (float) NumSeconds,
                            NumSeconds, d_done, blocks, threadsPerBlock);
         
-        // Copy d_done into done so we can know whether to stop or continue
-        cudaMemcpy(done, d_done, SimulationCount * sizeof(int), cudaMemcpyDeviceToHost);
-        doneSum = 0;
-        for (int i = 0; i < SimulationCount; i++) {
-            if (done[i] != 0)
-                doneSum++;
+        err = cudaGetLastError();
+        if  (cudaSuccess != err){
+                cerr << "Error " << cudaGetErrorString(err) << endl;
+        } else {
+                cerr << "No resample kernel error detected" << endl;
         }
-        printf("Done value (loop): %d\n", doneSum);
+        
+        // Copy d_done into done so we can know whether to stop or continue
+        cudaMemcpy(done, d_done, sizeof(int), cudaMemcpyDeviceToHost);
+        err = cudaGetLastError();
+        if  (cudaSuccess != err){
+                cerr << "Error " << cudaGetErrorString(err) << endl;
+        } else {
+                cerr << "No memcpy error detected" << endl;
+        }
+        printf("Done value (loop): %d\n", *done);
         
         // point d_oldConcentrations to d_newConcentrations and vice versa
         int *tmp = d_oldConcentrations;

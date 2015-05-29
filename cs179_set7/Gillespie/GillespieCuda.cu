@@ -112,7 +112,7 @@ void resampleKernel(int *concentrations, int *new_concentrations,
         // Otherwise, skip updates for this simulation.
         if (times[index] < endTime) {
             // A thread is still executing, so we are NOT done
-            done[index] = 1;
+            *done = 0;
             
             // Get the timestep in seconds and transform this into an index for 
             // the concentrations array (which is 2D)
