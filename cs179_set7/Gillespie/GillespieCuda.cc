@@ -130,7 +130,9 @@ int main(int argc, char* argv[]) {
         
         // Copy d_done into done so we can know whether to stop or continue
         gpuErrChk(cudaMemcpy(done, d_done, sizeof(int), cudaMemcpyDeviceToHost));
+#if DEBUG
         printf("Done value (loop): %d\n", done[0]);
+#endif
         
         // point d_oldConcentrations to d_newConcentrations and vice versa
         int *tmp = d_oldConcentrations;
