@@ -13,6 +13,10 @@
 
 #include "GillespieCuda.cuh"
 
+#define SimulationCount 1000
+#define NumTimePoints   1000
+#define NumSeconds      100
+
 int main(int argc, char* argv[]) {
     
     if (argc < 3){
@@ -22,16 +26,12 @@ int main(int argc, char* argv[]) {
     const unsigned int threadsPerBlock = atoi(argv[1]);
     const unsigned int blocks = atoi(argv[2]);
     
-    static int const SimulationCount = 1000;
-    static int const NumTimePoints = 1000;
-    static int const NumSeconds = 100;
-    
     
     /***** Allocate all the data~ *****/
     // Allocate the cpu's data
-    float *expectations = malloc(NumTimePoints * sizeof(float));
-    float *variance = malloc(NumTimePoints * sizeof(float));
-    int *done = malloc(sizeof(int));
+    float *expectations = (float*)malloc(NumTimePoints * sizeof(float));
+    float *variance = (float*)malloc(NumTimePoints * sizeof(float));
+    int *done = (float*)malloc(sizeof(int));
     *done = 0;
     
     // Allocate the gpu's data
