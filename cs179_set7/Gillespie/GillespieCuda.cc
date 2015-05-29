@@ -105,7 +105,7 @@ int main(int argc, char* argv[]) {
 #if DEBUG
         gpuErrChk(cudaMemcpy(o_times, d_times, SimulationCount * sizeof(float), cudaMemcpyDeviceToHost));
         gpuErrChk(cudaMemcpy(o_oldCon, d_oldConcentrations, SimulationCount * sizeof(float), cudaMemcpyDeviceToHost));
-        gpuErrChk(cudaMemcpy(o_newCon, d_newConcentrations, SimulationCound * sizeof(float), cudaMemcpyDeviceToHost));
+        gpuErrChk(cudaMemcpy(o_newCon, d_newConcentrations, SimulationCount * sizeof(float), cudaMemcpyDeviceToHost));
         
         for (int i = 0; i < SimulationCount; i+=100){
             printf("Time for simulation %d: %f\n", i, o_times[i]);
