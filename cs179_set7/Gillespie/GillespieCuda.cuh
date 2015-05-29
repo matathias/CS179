@@ -7,8 +7,7 @@
 void callGillespieKernel(int *productionStates, 
                          int *old_concentrations, int *new_concentrations,
                          float *times, float *randomTimeSteps,
-                         float *randomProbs, curandState_t *state,
-                         int numSimulations,
+                         float *randomProbs, int numSimulations,
                          int blocks, int threadsPerBlock);
 
 void callResampleKernel(int *concentrations, int *new_concentrations,

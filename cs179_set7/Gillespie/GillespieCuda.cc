@@ -54,7 +54,6 @@ int main(int argc, char* argv[]) {
     float *d_times, *d_randomTimeSteps, *d_randomProbs;
     float *d_expectations, *d_variance;
     int *d_done;
-    curandState_t *d_states;
     
     gpuErrChk(cudaMalloc(&d_productionStates, SimulationCount * sizeof(int)));
     gpuErrChk(cudaMalloc(&d_concentrations, 
@@ -67,7 +66,6 @@ int main(int argc, char* argv[]) {
     gpuErrChk(cudaMalloc(&d_expectations, NumTimePoints * sizeof(float)));
     gpuErrChk(cudaMalloc(&d_variance, NumTimePoints * sizeof(float)));
     gpuErrChk(cudaMalloc(&d_done, sizeof(int)));
-    gpuErrChk(cudaMalloc(&d_states, 2 * sizeof(curandState_t)));
     
     // Initialize everything to 0 that needs to be set to 0
     gpuErrChk(cudaMemset(d_productionStates, 0, SimulationCount * sizeof(int)));
@@ -117,7 +115,7 @@ int main(int argc, char* argv[]) {
         
         callGillespieKernel(d_productionStates, d_oldConcentrations,
                             d_newConcentrations, d_times, d_randomTimeSteps,
-                            d_randomProbs, d_states, SimulationCount, blocks,
+                            d_randomProbs, SimulationCount, blocks,
                             threadsPerBlock);
         
         
