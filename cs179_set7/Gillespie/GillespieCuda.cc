@@ -102,7 +102,7 @@ int main(int argc, char* argv[]) {
                cudaMemcpyDeviceToHost);
     
     // Print out the expectations and concentrations
-    for (int i = 0; i < NumTimePoints; i++) {
+    for (int i = 0; i < NumTimePoints/10; i++) {
         float timestamp = i * ((float) NumSeconds / (float) NumTimePoints);
         printf("TIME (s): %4.1f\t Expectation: %f\t Variance: %f\n",
                 timestamp, expectations[i], variance[i]);
