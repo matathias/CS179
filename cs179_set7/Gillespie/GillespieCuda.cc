@@ -8,6 +8,7 @@
 
 
 #include <cuda_runtime.h>
+#include <curand.h>
 #include <curand_kernel.h>
 #include <time.h>
 #include <algorithm>
@@ -96,6 +97,11 @@ int main(int argc, char* argv[]) {
         done[0] = 1;
         gpuErrChk(cudaMemcpy(d_done, done, sizeof(int), cudaMemcpyHostToDevice));
         
+        curandGenerator_t gen;
+        curandCreateGenerator(&gen, CURANT_RNG_PSEUDO_DEFAULT);
+        curandGenerateUniform(gen, d_randomTimeSteps, SimulationCount);
+        curandGenerateUniform(gen, d_randomProbs, SimulationCount);
+        
         callGillespieKernel(d_productionStates, d_oldConcentrations,
                             d_newConcentrations, d_times, d_randomTimeSteps,
                             d_randomProbs, d_states, SimulationCount, blocks,
@@ -118,9 +124,6 @@ int main(int argc, char* argv[]) {
                            SimulationCount, 
                            (float) NumTimePoints / (float) NumSeconds,
                            NumSeconds, d_done, blocks, threadsPerBlock);
-                           
-        // Let's see if the data is copied correctly from newConcentrations to
-        // concentrations
         
         // Copy d_done into done so we can know whether to stop or continue
         gpuErrChk(cudaMemcpy(done, d_done, sizeof(int), cudaMemcpyDeviceToHost));

@@ -152,7 +152,7 @@ void behaviorKernel(int *concentrations, float *expectations,
         for (int i = 0; i < numSimulations; i++) {
             float val = concentrations[index * numSimulations + i];
             avg += val;
-            var += val * val;
+            var += (val * val);
         }
         
         // Get the expectation by dividing avg by the number of simulations
@@ -197,7 +197,7 @@ void callGillespieKernel(int *productionStates,
                          int numSimulations,
                          int blocks, int threadsPerBlock) {
     // Calculate a seed and initialize the states
-    time_t t;
+    /*time_t t;
     time(&t);
     
     setupCurandKernel<<<blocks, threadsPerBlock>>>(&state[0], 
@@ -209,7 +209,7 @@ void callGillespieKernel(int *productionStates,
     randomNumberKernel<<<blocks, threadsPerBlock>>>(&state[0], randomTimeSteps, 
                                                     numSimulations);
     randomNumberKernel<<<blocks, threadsPerBlock>>>(&state[1], randomProbs,
-                                                    numSimulations);
+                                                    numSimulations);*/
     
     // Now call the Gillespie kernel
     singleGillespieKernel<<<blocks, threadsPerBlock>>>(productionStates,
