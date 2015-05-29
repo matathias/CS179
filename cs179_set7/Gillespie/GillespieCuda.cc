@@ -97,10 +97,13 @@ int main(int argc, char* argv[]) {
         done[0] = 1;
         gpuErrChk(cudaMemcpy(d_done, done, sizeof(int), cudaMemcpyHostToDevice));
         
-        curandGenerator_t gen;
-        curandCreateGenerator(&gen, CURAND_RNG_PSEUDO_DEFAULT);
-        curandGenerateUniform(gen, d_randomTimeSteps, SimulationCount);
-        curandGenerateUniform(gen, d_randomProbs, SimulationCount);
+        curandGenerator_t gen_timeSteps;
+        curandCreateGenerator(&gen_timeSteps, CURAND_RNG_PSEUDO_DEFAULT);
+        curandGenerateUniform(gen_timeSteps, d_randomTimeSteps, SimulationCount);
+        
+        curandGenerator_t gen_randomProbs;
+        curandCreateGenerator(&gen_randomProbs, CURAND_RNG_PSEUDO_DEFAULT);
+        curandGenerateUniform(gen_randomProbs, d_randomProbs, SimulationCount);
         
         callGillespieKernel(d_productionStates, d_oldConcentrations,
                             d_newConcentrations, d_times, d_randomTimeSteps,

@@ -168,50 +168,13 @@ void behaviorKernel(int *concentrations, float *expectations,
     }
 }
 
-/* This kernel fills the array randoms with random numbers of a uniform
- * distribution between 0 and 1.
- */
-__global__
-void randomNumberKernel(curandState_t *state, float *randoms, float numRandoms){
-    unsigned int index = blockIdx.x * blockDim.x + threadIdx.x;
-    
-    while (index < numRandoms) {
-        randoms[index] = curand_uniform(state);
-    
-        index += blockDim.x * gridDim.x;
-    }
-}
-
-/*
- * This kernel sets up the curand states for the random kernel above.
- */
-__global__
-void setupCurandKernel(curandState_t *state, unsigned long seed) {
-    curand_init(seed, 0, 0, state);
-}
-
 void callGillespieKernel(int *productionStates, 
                          int *old_concentrations, int *new_concentrations,
                          float *times, float *randomTimeSteps,
                          float *randomProbs, curandState_t *state,
                          int numSimulations,
                          int blocks, int threadsPerBlock) {
-    // Calculate a seed and initialize the states
-    /*time_t t;
-    time(&t);
     
-    setupCurandKernel<<<blocks, threadsPerBlock>>>(&state[0], 
-                                                   (unsigned long) t);
-    setupCurandKernel<<<blocks, threadsPerBlock>>>(&state[1], 
-                                                   ((unsigned long) t) + 10);
-    
-    // Fill randomTimeSteps and randomProbs with random values
-    randomNumberKernel<<<blocks, threadsPerBlock>>>(&state[0], randomTimeSteps, 
-                                                    numSimulations);
-    randomNumberKernel<<<blocks, threadsPerBlock>>>(&state[1], randomProbs,
-                                                    numSimulations);*/
-    
-    // Now call the Gillespie kernel
     singleGillespieKernel<<<blocks, threadsPerBlock>>>(productionStates,
                                                        old_concentrations,
                                                        new_concentrations,
