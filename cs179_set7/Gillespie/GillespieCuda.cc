@@ -125,8 +125,8 @@ int main(int argc, char* argv[]) {
             printf("Time for simulation %d: %f\n", i, o_times[i]);
             printf("\tOld Concentration: %d\n", o_oldCon[i]);
             printf("\tNew Concentration: %d\n", o_newCon[i]);
-            printf("\tRandom Prob:     %d\n", o_randP[i]);
-            printf("\tRandom Time val: %d\n", o_randT[i]);
+            printf("\tRandom Prob:     %f\n", o_randP[i]);
+            printf("\tRandom Time val: %f\n", o_randT[i]);
         }
 #endif
         
