@@ -18,7 +18,7 @@ void waveEquationKernal(float *old_data, float *current_data, float *new_data,
                         int numberOfNodes, float constant) {
     
     unsigned int index = blockIdx.x * blockDim.x + threadIdx.x;
-    while (index < numberOfNodes - 1) {
+    while (index > 0 && index < numberOfNodes - 1) {
         // This is to make sure that thread index 0 can still move on to the
         // next thread at blockDim.x * gridDim.x
         if (index > 0) {
