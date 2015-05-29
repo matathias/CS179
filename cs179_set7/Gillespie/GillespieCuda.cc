@@ -72,10 +72,10 @@ int main(int argc, char* argv[]) {
     // Loop from time 0 to time NumSeconds; we use a while loop because the
     // timesteps are variable. We will stop when the value of done is still 1
     // after resampleKernel is run.
-    printf("Done value: %d\n", *done);
+    printf("Done value: %d\n", done[0]);
     float *o_times = (float*)malloc(SimulationCount * sizeof(float));
     cudaError_t err;
-    cudaGetLastError(); //clear out the error buffer...
+    cudaGetLastError(); //clear out the error buffer
     while(done[0] == 0) {
         done[0] = 1;
         //memset(done, 1, sizeof(int));
@@ -101,7 +101,7 @@ int main(int argc, char* argv[]) {
         }
         
         // Let's see what's in d_times...
-        cudaMemcpy(o_times, d_times, SimulationCount * sizeof(float), cudaMemcpyDeviceToHost);
+        /*cudaMemcpy(o_times, d_times, SimulationCount * sizeof(float), cudaMemcpyDeviceToHost);
         err = cudaGetLastError();
         if  (cudaSuccess != err){
                 cerr << "Error " << cudaGetErrorString(err) << endl;
@@ -111,9 +111,8 @@ int main(int argc, char* argv[]) {
         
         for (int i = 0; i < SimulationCount; i+=100){
             printf("Time for simulation %d: %f\n", i, o_times[i]);
-        }
+        }*/
         
-                    
         callResampleKernel(d_concentrations, d_newConcentrations, d_times,
                            SimulationCount, 
                            (float) NumTimePoints / (float) NumSeconds,
@@ -134,7 +133,7 @@ int main(int argc, char* argv[]) {
         } else {
                 cerr << "No memcpy error detected" << endl;
         }
-        printf("Done value (loop): %d\n", *done);
+        printf("Done value (loop): %d\n", done[0]);
         
         // point d_oldConcentrations to d_newConcentrations and vice versa
         int *tmp = d_oldConcentrations;
