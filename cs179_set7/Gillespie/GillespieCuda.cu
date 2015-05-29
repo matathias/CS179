@@ -8,10 +8,10 @@
 
 #include "GillespieCuda.cuh"
 
-#define b 10
-#define g 1
-#define Kon 0.1
-#define Koff 0.9
+#define b 10.0f
+#define g 1.0f
+#define Kon 0.1f
+#define Koff 0.9f
 
 /* This kernel performs a single iteration of the gillespie algorithm.
  *

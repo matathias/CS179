@@ -13,10 +13,6 @@
 
 #include "GillespieCuda.cuh"
 
-#define SimulationCount 1000f
-#define NumTimePoints   1000f
-#define NumSeconds      100f
-
 int main(int argc, char* argv[]) {
     
     if (argc < 3){
@@ -25,6 +21,10 @@ int main(int argc, char* argv[]) {
     }
     const unsigned int threadsPerBlock = atoi(argv[1]);
     const unsigned int blocks = atoi(argv[2]);
+    
+    static int const SimulationCount = 1000;
+    static int const NumTimePoints = 1000;
+    static int const NumSeconds = 100;
     
     
     /***** Allocate all the data~ *****/
