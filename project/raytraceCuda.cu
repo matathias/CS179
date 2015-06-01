@@ -886,12 +886,12 @@ void raytraceKernel(double *grid, Object *objects, double numObjects,
     double intersectNormal[3];
     
     
-    while (i < Nx)
-    {
-        j = threadIdx.y + blockDim.y * blockIdx.y;
+    //while (i < Nx)
+    //{
+        //j = threadIdx.y + blockDim.y * blockIdx.y;
         
-        while (j < Ny)
-        {
+        //while (j < Ny)
+        //{
             // The positions are subtracted by a Nx/2 or Ny/2 term to center
             // the film plane
             double px = (i * dx) - (filmX / (double) 2);
@@ -1090,12 +1090,10 @@ void raytraceKernel(double *grid, Object *objects, double numObjects,
             grid[index + 2] = 1; //pxColor[2];
             
             
-            j += blockDim.y * gridDim.y;
-        }
-        i += blockDim.x * gridDim.x;
-    }
-    
-    __syncthreads();
+            //j += blockDim.y * gridDim.y;
+        //}
+        //i += blockDim.x * gridDim.x;
+    //}
     
     // can you use delete[] in cuda...?
     delete[] finalNewA;
