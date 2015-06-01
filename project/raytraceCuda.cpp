@@ -101,6 +101,34 @@ vector<Point_Light*> lightsPPM;
 vector<Object*> objects;
 
 /******************************************************************************/
+// Function prototypes
+void initPPM();
+void create_film_plane(double *e1, double *e2, double *e3);
+
+void create_Material(double dr, double dg, double db, 
+                     double ar, double ag, double ab,
+                     double sr, double sg, double sb, 
+                     double shine, double refract, double opac, 
+                     Material *mat);
+void create_default_material(Material *m);
+
+void create_object(double e, double n, double xt, double yt, double zt, 
+                   double a, double b, double c, double r1, double r2, 
+                   double r3, double theta, Object *obj);
+void create_default_object();
+
+void create_Light(double x, double y, double z, double r, double g, double b,
+                  double k, Point_Light *l);
+void create_PPM_lights();
+
+// Print pixel data to output
+void printPPM(int pixelIntensity, int xre, int yre, Pixel *grid);
+// Function to parse the command line arguments
+void parseArguments(int argc, char* argv[]);
+void getArguments(int argc, char* argv[]);
+void parseFile(char* filename);
+
+/******************************************************************************/
 // Function declarations
 
 void initPPM()
@@ -139,7 +167,7 @@ void create_Material(double dr, double dg, double db,
                      double ar, double ag, double ab,
                      double sr, double sg, double sb, 
                      double shine, double refract, double opac, 
-                     Material *mat);
+                     Material *mat)
 {
     mat->diffuse = (double *)malloc(sizeof(double) * 3);
     mat->ambient = (double *)malloc(sizeof(double) * 3);
@@ -170,7 +198,7 @@ void create_default_material(Material *m)
 
 void create_object(double e, double n, double xt, double yt, double zt, 
                    double a, double b, double c, double r1, double r2, 
-                   double r3, double theta, Object obj*)
+                   double r3, double theta, Object *obj)
 {
     obj->e = e;
     obj->n = n;
@@ -200,7 +228,7 @@ void create_object(double e, double n, double xt, double yt, double zt,
 
 void create_default_object()
 {
-    Object obj* = (Object *)malloc(sizeof(Object));
+    Object *obj = (Object *)malloc(sizeof(Object));
     create_object(1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 0, obj);
 
     objects.push_back(obj);
