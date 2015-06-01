@@ -39,10 +39,10 @@ TARGETS = raytraceCuda
 all: $(TARGETS)
 
 raytraceCuda: raytraceCuda.cpp raytraceCuda.o
-	$(CC) $< -lineinfo -o $@ raytraceCuda.o -O3 $(LDFLAGS) -Wall -I$(CUDA_INC_PATH)
+	$(CC) $< -o $@ raytraceCuda.o -O3 $(LDFLAGS) -Wall -I$(CUDA_INC_PATH)
 
 raytraceCuda.o: raytraceCuda.cu
-	$(NVCC) $(NVCCFLAGS) -O3 $(EXTRA_NVCCFLAGS) $(GENCODE_FLAGS) -I$(CUDA_INC_PATH) -o $@ -c $<
+	$(NVCC) $(NVCCFLAGS) -O3 $(EXTRA_NVCCFLAGS) $(GENCODE_FLAGS) -I$(CUDA_INC_PATH) -lineinfo -o $@ -c $<
 
 
 clean:
