@@ -1117,14 +1117,19 @@ void callRaytraceKernel(double *grid, Object *objs, double numObjects,
                         bool antiAliased, int blockPower) 
 {
     int blockSize = pow(2, blockPower);
+    blockSize = 32;
     
-    // about 1 thread per screen pixel
-    dim3 blocks(blockSize, blockSize);
+    dim3 blocks;
+    blocks.x = blockSize;
+    blocks.y = blockSize;
+    
     int gx = (Nx / blockSize) + 1;
     int gy = (Ny / blockSize) + 1;
     if (gx < 1) gx = 1;
     if (gy < 1) gy = 1;
-    dim3 gridSize(gx, gy);
+    dim3 gridSize;
+    gridSize.x = gx;
+    gridSize.y = gy;
     
     /*printf("block size:  %d\n", blockSize);
     printf("grid size x: %d\n", gx);
