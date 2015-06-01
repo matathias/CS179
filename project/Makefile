@@ -39,7 +39,7 @@ TARGETS = raytraceCuda
 
 all: $(TARGETS)
 
-raytraceCuda: raytraceCuda.ccp raytraceCuda.o util.cpp
+raytraceCuda: raytraceCuda.cpp raytraceCuda.o util.cpp
 	$(CC) $< -o $@ transpose.o -O3 $(LDFLAGS) -Wall -I$(CUDA_INC_PATH) $(INCLUDE)
 
 raytraceCuda.o: raytraceCuda.cu
