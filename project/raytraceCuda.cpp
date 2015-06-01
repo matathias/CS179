@@ -481,10 +481,10 @@ void parseArguments(int argc, char* argv[])
         objects = tempObjs;
 
         Point_Light *eye = (Point_Light *)malloc(sizeof(Point_Light));
-        create_light(lookFrom[0], lookFrom[1], lookFrom[2], eyeColor[0],
+        create_Light(lookFrom[0], lookFrom[1], lookFrom[2], eyeColor[0],
                      eyeColor[1], eyeColor[2], eyeK, eye);
 
-        vector<Point_Light>::iterator it = tempLights.begin();
+        vector<Point_Light*>::iterator it = tempLights.begin();
 
         tempLights.insert(it, eye);
 
@@ -633,24 +633,24 @@ int main(int argc, char* argv[])
         gpuErrChk(cudaMalloc(d_objects[i].mat, sizeof(Material)));
         gpuErrChk(cudaMemcpy(d_objects[i].mat, objects[i]->mat, 
                              sizeof(Material), cudaMemcpyHostToDevice));
-        gpuErrChk(cudaMalloc(d_objects[i].mat.diffuse, 3 * sizeof(double)));
-        gpuErrChk(cudaMalloc(d_objects[i].mat.ambient, 3 * sizeof(double)));
-        gpuErrChk(cudaMalloc(d_objects[i].mat.specular, 3 * sizeof(double)));
+        gpuErrChk(cudaMalloc(d_objects[i].mat->diffuse, 3 * sizeof(double)));
+        gpuErrChk(cudaMalloc(d_objects[i].mat->ambient, 3 * sizeof(double)));
+        gpuErrChk(cudaMalloc(d_objects[i].mat->specular, 3 * sizeof(double)));
         
-        gpuErrChk(cudaMemcpy(d_objects[i].mat.diffuse, objects[i]->mat->diffuse,
+        gpuErrChk(cudaMemcpy(d_objects[i].mat->diffuse, objects[i]->mat->diffuse,
                              3 * sizeof(double), cudaMemcpyHostToDevice));
-        gpuErrChk(cudaMemcpy(d_objects[i].mat.ambient, objects[i]->mat->ambient,
+        gpuErrChk(cudaMemcpy(d_objects[i].mat->ambient, objects[i]->mat->ambient,
                              3 * sizeof(double), cudaMemcpyHostToDevice));
-        gpuErrChk(cudaMemcpy(d_objects[i].mat.specular, objects[i]->mat->specular,
+        gpuErrChk(cudaMemcpy(d_objects[i].mat->specular, objects[i]->mat->specular,
                              3 * sizeof(double), cudaMemcpyHostToDevice));
         
         // Allocate and copy the object's transformations
-        gpuErrChk(cudaMalloc(d_objects[i]->scale, 9 * sizeof(double)));
-        gpuErrChk(cudaMalloc(d_objects[i]->unScale, 9 * sizeof(double)));
-        gpuErrChk(cudaMalloc(d_objects[i]->rotate, 9 * sizeof(double)));
-        gpuErrChk(cudaMalloc(d_objects[i]->unRotate, 9 * sizeof(double)));
-        gpuErrChk(cudaMalloc(d_objects[i]->translate, 3 * sizeof(double)));
-        gpuErrChk(cudaMalloc(d_objects[i]->unTranslate, 3 * sizeof(double)));
+        gpuErrChk(cudaMalloc(d_objects[i].scale, 9 * sizeof(double)));
+        gpuErrChk(cudaMalloc(d_objects[i].unScale, 9 * sizeof(double)));
+        gpuErrChk(cudaMalloc(d_objects[i].rotate, 9 * sizeof(double)));
+        gpuErrChk(cudaMalloc(d_objects[i].unRotate, 9 * sizeof(double)));
+        gpuErrChk(cudaMalloc(d_objects[i].translate, 3 * sizeof(double)));
+        gpuErrChk(cudaMalloc(d_objects[i].unTranslate, 3 * sizeof(double)));
         
         gpuErrChk(cudaMemcpy(d_objects[i].scale, objects[i]->scale, 
                              9 * sizeof(double), cudaMemcpyHostToDevice));
@@ -671,12 +671,12 @@ int main(int argc, char* argv[])
         gpuErrChk(cudaMemcpy(&d_lights[i], lightsPPM[i], sizeof(Point_Light), cudaMemcpyHostToDevice));
         
         // Allocate and copy the position and color
-        gpuErrChk(cudaMalloc(d_lights[i]->position, 3 * sizeof(double)));
-        gpuErrChk(cudaMalloc(d_lights[i]->color, 3 * sizeof(double)));
+        gpuErrChk(cudaMalloc(d_lights[i].position, 3 * sizeof(double)));
+        gpuErrChk(cudaMalloc(d_lights[i].color, 3 * sizeof(double)));
         
-        gpuErrChk(cudaMemcpy(d_lights[i]->position, lightsPPM[i]->position,
+        gpuErrChk(cudaMemcpy(d_lights[i].position, lightsPPM[i]->position,
                              3 * sizeof(double), cudaMemcpyHostToDevice));
-        gpuErrChk(cudaMemcpy(d_lights[i]->color, lightsPPM[i]->color,
+        gpuErrChk(cudaMemcpy(d_lights[i].color, lightsPPM[i]->color,
                              3 * sizeof(double), cudaMemcpyHostToDevice));
     }
     
