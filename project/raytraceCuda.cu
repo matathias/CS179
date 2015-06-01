@@ -228,48 +228,6 @@ void findRoots(double *coeffs, double *roots)
     }
 }
 
-/* Uses Newton's method to find the t value at which a ray hits the superquadric.
- * If the ray actually misses the superquadric then FLT_MAX is returned instead.*/
-// a and b are 3-vectors
-__device__
-double updateRule(double *a, double *b, double e, double n, double t, double epsilon)
-{
-    double vec[3];
-    findRay(a, b, &vec, t);
-    double gP = gPrime(&vec, a, e, n);
-    double gPPrevious = gP;
-    double g = 0.0;
-    double tnew = t, told = t;
-    bool stopPoint = false;
-
-    while (!stopPoint)
-    {
-        told = tnew;
-        findRay(a, b, &vec, told);
-        gP = gPrime(&vec, a, e, n);
-        g = isq(&vec, e, n);
-
-        if ((g - epsilon) <= 0)
-        {
-            stopPoint = true;
-        }
-        else if (sign(gP) != sign(gPPrevious) || gP == 0)
-        {
-            stopPoint = true;
-            tnew = FLT_MAX;
-        }
-        else
-        {
-            tnew = told - (g / gP);
-            gPPrevious = gP;
-        }
-    }
-    
-    delete[] vec;
-
-    return tnew;
-}
-
 /* Gradient of the isq function. */
 // vec and grad are 3-vectors
 __device__
@@ -279,13 +237,11 @@ void isqGradient(double *vec, double *grad, double e, double n)
     // Check for n = 0 to prevent divide-by-zero errors
     if (n == 0)
     {
-        cout << "n is zero!" << endl;
         xval = yval = zval = FLT_MAX;
     }
     // Check for e = 0 to prevent divide-by-zero errors
     else if (e == 0)
     {
-        cout << "e is  zero!" << endl;
         xval = yval = FLT_MAX;
         zval = (2 * vec[2] * pow(pow(vec[2], 2), ((double) 1 / n) - 1)) / (double) n;
     }
@@ -312,11 +268,55 @@ __device__
 double gPrime(double *vec, double *a, double e, double n)
 {
     double tmp[3];
-    isqGradient(vec, &tmp, e, n);
-    double val = dot(a, &tmp);
+    isqGradient(vec, &tmp[0], e, n);
+    double val = dot(a, &tmp[0]);
     delete[] tmp;
     return val;
 }
+
+/* Uses Newton's method to find the t value at which a ray hits the superquadric.
+ * If the ray actually misses the superquadric then FLT_MAX is returned instead.*/
+// a and b are 3-vectors
+__device__
+double updateRule(double *a, double *b, double e, double n, double t, double epsilon)
+{
+    double vec[3];
+    findRay(a, b, &vec[0], t);
+    double gP = gPrime(&vec[0], a, e, n);
+    double gPPrevious = gP;
+    double g = 0.0;
+    double tnew = t, told = t;
+    bool stopPoint = false;
+
+    while (!stopPoint)
+    {
+        told = tnew;
+        findRay(a, b, &vec[0], told);
+        gP = gPrime(&vec[0], a, e, n);
+        g = isq(&vec[0], e, n);
+
+        if ((g - epsilon) <= 0)
+        {
+            stopPoint = true;
+        }
+        else if (sign(gP) != sign(gPPrevious) || gP == 0)
+        {
+            stopPoint = true;
+            tnew = FLT_MAX;
+        }
+        else
+        {
+            tnew = told - (g / gP);
+            gPPrevious = gP;
+        }
+    }
+    
+    delete[] vec;
+
+    return tnew;
+}
+
+
 
 /* Unit normal vector at a point on the superquadric */
 // r is a 3x3 matrix
@@ -330,9 +330,12 @@ void unitNormal(double *r, double *vec1, double *vec2, double *un, double tt, do
     double un0 = un[0];
     double un1 = un[1];
     double un2 = un[2];
-    nor = r * nor;
-    nor.normalize();
-    return nor;
+    
+    un[0] = (r[0] * un0) + (r[1] * un1) + (r[2] * un2);
+    un[1] = (r[3] * un0) + (r[4] * un1) + (r[5] * un2);
+    un[2] = (r[6] * un0) + (r[7] * un1) + (r[8] * un2);
+    
+    normalize(un);
 }
 
 // Returns the angle between two vectors.
@@ -340,10 +343,10 @@ void unitNormal(double *r, double *vec1, double *vec2, double *un, double tt, do
 __device__
 double vectorAngle(double *a, double *b)
 {
-    double dot = dot(a, b);
+    double d = dot(a, b);
     double mag = norm(a) * norm(b);
 
-    return acos(dot / (double) mag);
+    return acos(d / (double) mag);
 }
 
 // Calculates the refracted ray from an input ray and normal and a snell ratio
