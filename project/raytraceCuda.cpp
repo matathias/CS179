@@ -715,17 +715,19 @@ int main(int argc, char* argv[])
     for (int i = 0; i < numObjects; i++)
     {
         printf("1 - object loop start\n");
-        gpuErrChk(cudaMemcpy(d_objects[i], objects[i], sizeof(Object), 
+        gpuErrChk(cudaMemcpy(&d_objects[i], objects[i], sizeof(Object), 
                              cudaMemcpyHostToDevice));
         printf("2\n");
         
         // Allocate and copy the material
-        gpuErrChk(cudaMalloc(&d_objects[i].mat, sizeof(Material)));
+        Object *ptr = &d_objects[i];
+        Material *test_ptr = ptr->mat;
+        //gpuErrChk(cudaMalloc(&d_objects[i].mat, sizeof(Material)));
         //Material *test_ptr = (Material *) ((char *)&d_objects[i] + 2 * sizeof(double));
         //printf("2aa\n");
-        //gpuErrChk(cudaMalloc(&test_ptr, sizeof(Material)));
+        gpuErrChk(cudaMalloc(&test_ptr, sizeof(Material)));
         printf("2a\n");
-        gpuErrChk(cudaMemcpy(d_objects[i]->mat, objects[i]->mat, 
+        gpuErrChk(cudaMemcpy(d_objects[i].mat, objects[i]->mat, 
                              sizeof(Material), cudaMemcpyHostToDevice));
         printf("2b\n");
         gpuErrChk(cudaMalloc(&d_objects[i].mat->diffuse, 3 * sizeof(double)));
