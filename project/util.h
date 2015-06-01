@@ -12,6 +12,11 @@
 using namespace Eigen;
 using namespace std;
 
+struct Point_Light;
+struct Material;
+struct Object;
+struct Pixel;
+
 /* Returns -1 for negative numbers, 1 for positive numbers, and 0 for zero. */
 int sign(double s);
 /* Returns the norm of the given vector. */
@@ -22,8 +27,6 @@ void normalize(double *vec);
 double dot(double *a, double *b);
 /* Returns the cross product a x b into vector c. */
 void cross(double *a, double *b, double *c);
-
-void findFilmA(double x, double y, double *e1, double *e2, double *e3, double *film);
 
 /* Gets the rotation matrix for a given rotation axis (x, y, z) and angle. */
 void get_rotate_mat(double x, double y, double z, double angle, double *m);

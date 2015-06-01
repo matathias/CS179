@@ -52,13 +52,6 @@ void cross(double *a, double *b, double *c)
     c[2] = (a[0] * b[1]) - (a[1] * b[0]);
 }
 
-void findFilmA(double x, double y, double *e1, double *e2, double *e3, double *film)
-{
-    for (int i = 0; i < 3; i++) {
-        film[i] = (filmDepth * e3[i]) + (x * e1[i]) + (y * e2[i]);
-    }
-}
-
 /* Gets the rotation matrix for a given rotation axis (x, y, z) and angle. */
 void get_rotate_mat(double x, double y, double z, double angle, double *m)
 {

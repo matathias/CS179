@@ -66,7 +66,8 @@ void cWiseMin(double *a, double *b, double *out)
 }
 
 __device__
-void findFilmA(double x, double y, double *e1, double *e2, double *e3, double *film)
+void findFilmA(double x, double y, double *e1, double *e2, double *e3, 
+               double filmDepth, double *film)
 {
     for (int i = 0; i < 3; i++) {
         film[i] = (filmDepth * e3[i]) + (x * e1[i]) + (y * e2[i]);
@@ -96,7 +97,7 @@ void lighting(double *point, double *n, double *e,
     for (int i = 0; i < 3; i++)
         eDirection[i] = e[i] - point[i];
         
-    normalize(&eDirection);
+    normalize(&eDirection[0]);
 
     for (int i = 0; i < numLights && generation > 0; i++)
     {
@@ -125,10 +126,10 @@ void lighting(double *point, double *n, double *e,
             if (k != ind)
             {
                 // Find the ray equation transformations
-                newa(objects[k]->unScale, objects[k]->unRotate, 
-                                     &lDirection, &newA);
-                newb(objects[k]->unScale, objects[k]->unRotate, 
-                                     objects[k]->unTranslate, point, &newB);
+                newa(&objects[k]->unScale, &objects[k]->unRotate, 
+                     &lDirection[0], &newA[0]);
+                newb(&objects[k]->unScale, &objects[k]->unRotate, 
+                     &objects[k]->unTranslate, point, &newB);
 
                 // Find the quadratic equation coefficients
                 findCoeffs(&newA, &newB, &coeffs, true);
@@ -525,7 +526,8 @@ void raytraceKernel(Pixel *grid, Object *objects, double numObjects,
                     Point_Light *lightsPPM, double numLights, 
                     double Nx, double Ny, double filmX, double filmY, 
                     double *bgColor, double *e1, double *e2, double *e3, 
-                    double *lookFrom, double epsilon, bool antiAliased)
+                    double *lookFrom, double epsilon, double filmDepth,
+                    bool antiAliased)
 {    
     double dx = filmX / (double) Nx;
     double dy = filmY / (double) Ny;
@@ -766,8 +768,8 @@ void callRaytraceKernel(Pixel *grid, Object *objs, double numObjects,
                         Point_Light *lightsPPM, double numLights, double Nx, 
                         double Ny, double filmX, double filmY, 
                         double *bgColor, double *e1, double *e2, double *e3, 
-                        double *lookFrom, double epsilon, bool antiAliased,
-                        int blockPower) 
+                        double *lookFrom, double epsilon, double filmDepth,
+                        bool antiAliased, int blockPower) 
 {
     int blockSize = pow(2, blockPower);
     
@@ -777,6 +779,6 @@ void callRaytraceKernel(Pixel *grid, Object *objs, double numObjects,
     
     raytraceKernel<<<grids, blocks>>>(grid, objs, numObjects, lightsPPM,
                                       numLights, Nx, Ny, filmX, filmY, bgColor,
-                                      e1, e2, e3, lookFrom, epsilon,
+                                      e1, e2, e3, lookFrom, epsilon, filmDepth,
                                       antiAliased);
 }
