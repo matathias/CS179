@@ -80,7 +80,7 @@ int sign(double s)
 
 /* Returns the norm of the given vector. */
 __device__
-double norm(double *vec)
+double d_norm(double *vec)
 {
     double n = 0;
     for (int i = 0; i < 3; i++) {
@@ -91,9 +91,9 @@ double norm(double *vec)
 
 /* Normalizes the given vector. */
 __device__
-void normalize(double *vec)
+void d_normalize(double *vec)
 {
-    double n = norm(vec);
+    double n = d_norm(vec);
     for (int i = 0; i < 3; i++) {
         vec[i] = vec[i] / n;
     }
@@ -101,7 +101,7 @@ void normalize(double *vec)
 
 /* Returns the dot product of the given vectors. */
 __device__
-double dot(double *a, double *b)
+double d_dot(double *a, double *b)
 {
     double d = 0;
     for (int i = 0; i < 3; i++) {
@@ -195,9 +195,9 @@ void newb(double *unScale, double *unRotate, double *unTranslate, double *b,
 __device__
 void findCoeffs(double *a, double *b, double *c, bool positiveb)
 {
-    c[0] = dot(a, a);
-    c[1] = 2 * dot(a, b);
-    c[2] = dot(b, b) - 3;
+    c[0] = d_dot(a, a);
+    c[1] = 2 * d_dot(a, b);
+    c[2] = d_dot(b, b) - 3;
     
     if (positiveb)
     {
@@ -269,7 +269,7 @@ double gPrime(double *vec, double *a, double e, double n)
 {
     double tmp[3];
     isqGradient(vec, &tmp[0], e, n);
-    double val = dot(a, &tmp[0]);
+    double val = d_dot(a, &tmp[0]);
     delete[] tmp;
     return val;
 }
@@ -335,7 +335,7 @@ void unitNormal(double *r, double *vec1, double *vec2, double *un, double tt, do
     un[1] = (r[3] * un0) + (r[4] * un1) + (r[5] * un2);
     un[2] = (r[6] * un0) + (r[7] * un1) + (r[8] * un2);
     
-    normalize(un);
+    d_normalize(un);
 }
 
 // Returns the angle between two vectors.
@@ -343,8 +343,8 @@ void unitNormal(double *r, double *vec1, double *vec2, double *un, double tt, do
 __device__
 double vectorAngle(double *a, double *b)
 {
-    double d = dot(a, b);
-    double mag = norm(a) * norm(b);
+    double d = d_dot(a, b);
+    double mag = d_norm(a) * d_norm(b);
 
     return acos(d / (double) mag);
 }
@@ -356,11 +356,11 @@ double vectorAngle(double *a, double *b)
 __device__
 void refractedRay(double *a, double *n, double *ref, double snell)
 {
-    double tmp = dot(n, a);
+    double tmp = d_dot(n, a);
     n[0] *= -1;
     n[1] *= -1;
     n[2] *= -1;
-    double cos1 = dot(n, a);
+    double cos1 = d_dot(n, a);
     if (cos1 < 0)
     {
         cos1 = tmp;
@@ -413,7 +413,7 @@ void lighting(double *point, double *n, double *e,
     for (int i = 0; i < 3; i++)
         eDirection[i] = e[i] - point[i];
         
-    normalize(&eDirection[0]);
+    d_normalize(&eDirection[0]);
 
     for (int i = 0; i < numLights && generation > 0; i++)
     {
@@ -428,8 +428,8 @@ void lighting(double *point, double *n, double *e,
         for (int j = 0; j < 3; j++)
             lDirection[i] = l[i].position[j] - point[i];
             
-        double lightDist = norm(&lDirection[0]);
-        normalize(&lDirection[0]);
+        double lightDist = d_norm(&lDirection[0]);
+        d_normalize(&lDirection[0]);
 
         // Check to see that the light isn't blocked before considering it 
         // further. 
@@ -471,7 +471,7 @@ void lighting(double *point, double *n, double *e,
                      * actually blocking the light. */
                     double ray[3];
                     findRay(&lDirection[0], point, &ray[0], tfinal);
-                    double objDist = norm(&ray[0]);
+                    double objDist = d_norm(&ray[0]);
                     if (tfinal != FLT_MAX && tfinal >= 0 && objDist < lightDist)
                         useLight = false;
                 }
@@ -486,7 +486,7 @@ void lighting(double *point, double *n, double *e,
             // Add the attenuation factor to the light's color
 
             // Add the diffuse factor to the diffuse sum
-            double nDotl = dot(n, &lDirection[0]);
+            double nDotl = d_dot(n, &lDirection[0]);
             //Vector3d lDiffuse = lC * atten * ((0 < nDotl) ? nDotl : 0);
             //diffuseSum = diffuseSum + lDiffuse;
             if (0 < nDotl) {
@@ -500,8 +500,8 @@ void lighting(double *point, double *n, double *e,
             dirDif[0] = eDirection[0] + lDirection[0];
             dirDif[1] = eDirection[1] + lDirection[1];
             dirDif[2] = eDirection[2] + lDirection[2];
-            normalize(&dirDif[0]);
-            double nDotDir = dot(n, &dirDif[0]);
+            d_normalize(&dirDif[0]);
+            double nDotDir = d_dot(n, &dirDif[0]);
             //Vector3d lSpecular = lC * atten * 
             //             pow(((0 < nDotDir && 0 < nDotl) ? nDotDir : 0), shine);
             //specularSum = specularSum + lSpecular;
@@ -514,12 +514,12 @@ void lighting(double *point, double *n, double *e,
     }
     /* Find the light contribution from reflection */
     // Find the reflected ray
-    double eDotN = dot(n, &eDirection[0]);
+    double eDotN = d_dot(n, &eDirection[0]);
     double reflected[3];
     reflected[0] = (2 * n[0] * eDotN) - eDirection[0];
     reflected[1] = (2 * n[1] * eDotN) - eDirection[1];
     reflected[2] = (2 * n[2] * eDotN) - eDirection[2];
-    normalize(&reflected[0]);
+    d_normalize(&reflected[0]);
     double ttrueFinal = 0.0;
     int finalObj = 0;
     double finalNewA[3];
@@ -617,7 +617,7 @@ void lighting(double *point, double *n, double *e,
     // Find the refracted ray
     double refracted1[3];
     refractedRay(&eDirection[0], n, &refracted1[0], objects[ind].mat->snell);
-    normalize(&refracted1[0]);
+    d_normalize(&refracted1[0]);
 
     ttrueFinal = 0.0;
     finalObj = 0;
