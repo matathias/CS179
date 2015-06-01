@@ -597,7 +597,6 @@ void parseArguments(int argc, char* argv[])
         while (i < tempMats.size() &&  i < tempObjs.size())
         {
             change_object_material(tempObjs[i], tempMats[i]);
-            //tempObjs[i]->mat = tempMats[i];
             i++;
         }
 
@@ -725,90 +724,25 @@ int main(int argc, char* argv[])
     gpuErrChk(cudaMalloc(&d_lights, numLights * sizeof(Object)));
     // Copy the objects onto the gpu, as well as allocating space for the object
     // pointers and copying the data in there
-    printf("NumObjects: %d\n", numObjects);
     for (int i = 0; i < numObjects; i++)
     {
-        printf("1 - object loop start\n");
         gpuErrChk(cudaMemcpy(&d_objects[i], objects[i], sizeof(Object), 
                              cudaMemcpyHostToDevice));
-        /*printf("2\n");
         
-        // Allocate and copy the material
-        printf("????\n");
-        Object *ptr = &d_objects[i];
-        printf("!!!\n");
-        Material *test_ptr = ptr->mat;
-        printf("...\n");
-        //gpuErrChk(cudaMalloc(&d_objects[i].mat, sizeof(Material)));
-        Material *test_ptr2 = (Material *) ((char *)&d_objects[i] + 2 * sizeof(double));
-        printf("2aa\n");
-        printf("test_ptr:  %p\n", (void *) test_ptr);
-        printf("test_ptr2: %p\n", (void *) test_ptr2);
-        printf("2ab\n");
-        gpuErrChk(cudaMalloc(&test_ptr, sizeof(Material)));
-        printf("2a\n");
-        gpuErrChk(cudaMemcpy(d_objects[i].mat, objects[i]->mat, 
-                             sizeof(Material), cudaMemcpyHostToDevice));
-        gpuErrChk(cudaMalloc(&d_objects[i].mat->diffuse, 3 * sizeof(double)));
-        gpuErrChk(cudaMalloc(&d_objects[i].mat->ambient, 3 * sizeof(double)));
-        gpuErrChk(cudaMalloc(&d_objects[i].mat->specular, 3 * sizeof(double)));
-        
-        gpuErrChk(cudaMemcpy(d_objects[i].mat->diffuse, objects[i]->mat->diffuse,
-                             3 * sizeof(double), cudaMemcpyHostToDevice));
-        gpuErrChk(cudaMemcpy(d_objects[i].mat->ambient, objects[i]->mat->ambient,
-                             3 * sizeof(double), cudaMemcpyHostToDevice));
-        gpuErrChk(cudaMemcpy(d_objects[i].mat->specular, objects[i]->mat->specular,
-                             3 * sizeof(double), cudaMemcpyHostToDevice));
-        
-        // Allocate and copy the object's transformations
-        gpuErrChk(cudaMalloc(&d_objects[i].scale, 9 * sizeof(double)));
-        gpuErrChk(cudaMalloc(&d_objects[i].unScale, 9 * sizeof(double)));
-        gpuErrChk(cudaMalloc(&d_objects[i].rotate, 9 * sizeof(double)));
-        gpuErrChk(cudaMalloc(&d_objects[i].unRotate, 9 * sizeof(double)));
-        gpuErrChk(cudaMalloc(&d_objects[i].translate, 3 * sizeof(double)));
-        gpuErrChk(cudaMalloc(&d_objects[i].unTranslate, 3 * sizeof(double)));
-        
-        gpuErrChk(cudaMemcpy(d_objects[i].scale, objects[i]->scale, 
-                             9 * sizeof(double), cudaMemcpyHostToDevice));
-        gpuErrChk(cudaMemcpy(d_objects[i].unScale, objects[i]->unScale,
-                             9 * sizeof(double), cudaMemcpyHostToDevice));
-        gpuErrChk(cudaMemcpy(d_objects[i].rotate, objects[i]->rotate,
-                             9 * sizeof(double), cudaMemcpyHostToDevice));
-        gpuErrChk(cudaMemcpy(d_objects[i].unRotate, objects[i]->unRotate,
-                             9 * sizeof(double), cudaMemcpyHostToDevice));
-        gpuErrChk(cudaMemcpy(d_objects[i].translate, objects[i]->translate,
-                             3 * sizeof(double), cudaMemcpyHostToDevice));
-        gpuErrChk(cudaMemcpy(d_objects[i].unTranslate, objects[i]->unTranslate,
-                             3 * sizeof(double), cudaMemcpyHostToDevice));
-        printf("5 - object loop end\n");*/
     }
     // Do the same for the Point_Lights
     for (int i = 0; i < numLights; i++)
     {
-        printf("13 - light loop start\n");
         gpuErrChk(cudaMemcpy(&d_lights[i], lightsPPM[i], sizeof(Point_Light), cudaMemcpyHostToDevice));
-        /*
-        // Allocate and copy the position and color
-        gpuErrChk(cudaMalloc(&d_lights[i].position, 3 * sizeof(double)));
-        gpuErrChk(cudaMalloc(&d_lights[i].color, 3 * sizeof(double)));
-        
-        gpuErrChk(cudaMemcpy(d_lights[i].position, lightsPPM[i]->position,
-                             3 * sizeof(double), cudaMemcpyHostToDevice));
-        gpuErrChk(cudaMemcpy(d_lights[i].color, lightsPPM[i]->color,
-                             3 * sizeof(double), cudaMemcpyHostToDevice));*/
-        printf("13 - light loop end\n");
     }
     
     /* Call the GPU code. */
-    printf("14 - calling kernel\n");
     callRaytraceKernel(d_grid, d_objects, numObjects, d_lights, numLights,
                        Nx, Ny, filmX, filmY, d_bgColor, d_e1, d_e2, d_e3,
                        d_lookFrom, epsilon, filmDepth, antiAlias, blockPower);
-    printf("15 - kernel done\n");
     
     /* Copy data back to CPU. */
     gpuErrChk(cudaMemcpy(grid, d_grid, sizeof(Pixel) * Ny * Nx, cudaMemcpyDeviceToHost));
-    printf("16\n");
 
     /* Output the relevant data. */
     printPPM(255, Nx, Ny, grid);
@@ -823,29 +757,7 @@ int main(int argc, char* argv[])
     gpuErrChk(cudaFree(d_up));
     gpuErrChk(cudaFree(d_bgColor));
     gpuErrChk(cudaFree(d_grid));
-    
-    /*for (int i = 0; i < numObjects; i++)
-    {
-        gpuErrChk(cudaFree(d_objects[i].mat.diffuse));
-        gpuErrChk(cudaFree(d_objects[i].mat.ambient));
-        gpuErrChk(cudaFree(d_objects[i].mat.specular));
-        
-        gpuErrChk(cudaFree(d_objects[i].mat));
-        
-        gpuErrChk(cudaFree(d_objects[i].scale));
-        gpuErrChk(cudaFree(d_objects[i].unScale));
-        gpuErrChk(cudaFree(d_objects[i].rotate));
-        gpuErrChk(cudaFree(d_objects[i].unRotate));
-        gpuErrChk(cudaFree(d_objects[i].translate));
-        gpuErrChk(cudaFree(d_objects[i].unTranslate));
-    }*/
     gpuErrChk(cudaFree(d_objects));
-    
-    /*for (int i = 0; i < numLights; i++)
-    {
-        gpuErrChk(cudaFree(d_lights[i].position));
-        gpuErrChk(cudaFree(d_lights[i].color));
-    }*/
     gpuErrChk(cudaFree(d_lights));
 }
 

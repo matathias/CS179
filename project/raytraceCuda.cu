@@ -1092,7 +1092,7 @@ void callRaytraceKernel(Pixel *grid, Object *objs, double numObjects,
     int gy = Ny / blockSize;
     if (gx < 1) gx = 1;
     if (gy < 1) gy = 1;
-    dim3 grids(Nx / blockSize, Ny / blockSize);
+    dim3 grids(gx, gy);
     
     raytraceKernel<<<grids, blocks>>>(grid, objs, numObjects, lightsPPM,
                                       numLights, Nx, Ny, filmX, filmY, bgColor,
