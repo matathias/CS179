@@ -686,7 +686,7 @@ int main(int argc, char* argv[])
     getArguments(argc, argv);
     
     // block size will be 256 x 256 = 2^8 x 2^8
-    int blockPower = 4;
+    int blockPower = 6;
 
     initPPM();
     /***** Allocate memory here *****/    

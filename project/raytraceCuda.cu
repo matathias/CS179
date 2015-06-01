@@ -5,6 +5,11 @@
 #include <float.h>
 #include "raytraceCuda.cuh"
 
+// flags as to whether or not reflection and refraction are included in the
+// raytracing
+#define REFLECTION 0
+#define REFRACTION 0
+
 struct Point_Light
 {
     double position[3];    //3-vector
@@ -515,6 +520,7 @@ void lighting(double *point, double *n, double *e,
     }
     /* Find the light contribution from reflection */
     // Find the reflected ray
+#if REFLECTION
     double eDotN = d_dot(n, &eDirection[0]);
     double reflected[3];
     reflected[0] = (2 * n[0] * eDotN) - eDirection[0];
@@ -607,8 +613,9 @@ void lighting(double *point, double *n, double *e,
             reflectedLight[2] *= shine;
         }
     }
+#endif
     
-
+#if REFRACTION
     /* Find the refraction contribution. */
     // Change the eye-direction vector so that it points at the surface instead
     // of at the eye
@@ -819,6 +826,7 @@ void lighting(double *point, double *n, double *e,
             refractedLight[2] *= objects[ind].mat.opacity;
         }
     }
+#endif
 
     double minVec[] = {1, 1, 1};
     double difProd[3];
@@ -1106,9 +1114,9 @@ void callRaytraceKernel(Pixel *grid, Object *objs, double numObjects,
     if (gy < 1) gy = 1;
     dim3 grids(gx, gy);
     
-    printf("block size:  %d\n", blockSize);
+    /*printf("block size:  %d\n", blockSize);
     printf("grid size x: %d\n", gx);
-    printf("grid size y: %d\n", gy);
+    printf("grid size y: %d\n", gy);*/
     
     raytraceKernel<<<grids, blocks>>>(grid, objs, numObjects, lightsPPM,
                                       numLights, Nx, Ny, filmX, filmY, bgColor,
