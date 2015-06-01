@@ -35,16 +35,16 @@ inline void gpuAssert(cudaError_t code,
 
 struct Point_Light
 {
-    double *position;    //3-vector
-    double *color;       //3-vector
+    double position[3];    //3-vector
+    double color[3];       //3-vector
     double attenuation_k;
 };
 
 struct Material
 {
-    double *diffuse;     //3-vector
-    double *ambient;     //3-vector
-    double *specular;    //3-vector
+    double diffuse[3];     //3-vector
+    double ambient[3];     //3-vector
+    double specular[3];    //3-vector
     double shine;
     double snell;
     double opacity;
@@ -54,13 +54,13 @@ struct Object
 {
     double e;
     double n;
-    Material *mat;
-    double *scale;      //3x3-matrix
-    double *unScale;    //3x3-matrix
-    double *rotate;     //3x3-matrix
-    double *unRotate;   //3x3-matrix
-    double *translate;   //3-vector
-    double *unTranslate; //3-vector
+    Material mat;
+    double scale[9];      //3x3-matrix
+    double unScale[9];    //3x3-matrix
+    double rotate[9];     //3x3-matrix
+    double unRotate[9];   //3x3-matrix
+    double translate[3];   //3-vector
+    double unTranslate[3]; //3-vector
 };
 
 struct Pixel
@@ -283,9 +283,9 @@ void create_Material(double dr, double dg, double db,
                      double shine, double refract, double opac, 
                      Material *mat)
 {
-    mat->diffuse = (double *)malloc(sizeof(double) * 3);
+    /*mat->diffuse = (double *)malloc(sizeof(double) * 3);
     mat->ambient = (double *)malloc(sizeof(double) * 3);
-    mat->specular = (double *)malloc(sizeof(double) * 3);
+    mat->specular = (double *)malloc(sizeof(double) * 3);*/
     
     mat->diffuse[0] = dr;
     mat->diffuse[1] = dg;
@@ -317,17 +317,17 @@ void create_object(double e, double n, double xt, double yt, double zt,
     obj->e = e;
     obj->n = n;
     
-    obj->scale = (double *)malloc(sizeof(double) * 9);
+    /*obj->scale = (double *)malloc(sizeof(double) * 9);
     obj->unScale = (double *)malloc(sizeof(double) * 9);
     obj->rotate = (double *)malloc(sizeof(double) * 9);
     obj->unRotate = (double *)malloc(sizeof(double) * 9);
     obj->translate = (double *)malloc(sizeof(double) * 3);
-    obj->unTranslate = (double *)malloc(sizeof(double) * 3);
+    obj->unTranslate = (double *)malloc(sizeof(double) * 3);*/
     
-    get_scale_mat(a, b, c, obj->scale);
-    get_scale_mat(1 / (double) a, 1 / (double) b, 1 / (double) c, obj->unScale);
-    get_rotate_mat(r1, r2, r3, theta, obj->rotate);
-    get_rotate_mat(r1, r2, r3, -theta, obj->unRotate);
+    get_scale_mat(a, b, c, &obj->scale[0]);
+    get_scale_mat(1 / (double) a, 1 / (double) b, 1 / (double) c, &obj->unScale[0]);
+    get_rotate_mat(r1, r2, r3, theta, &obj->rotate[0]);
+    get_rotate_mat(r1, r2, r3, -theta, &obj->unRotate[0]);
     
     obj->translate[0] = xt;
     obj->translate[1] = yt;
@@ -336,8 +336,8 @@ void create_object(double e, double n, double xt, double yt, double zt,
     obj->unTranslate[1] = -yt;
     obj->unTranslate[2] = -zt;
 
-    obj->mat = (Material *)malloc(sizeof(Material));
-    create_default_material(obj->mat);
+    //obj->mat = (Material *)malloc(sizeof(Material));
+    create_default_material(&obj->mat);
 }
 
 void create_default_object()
@@ -351,8 +351,8 @@ void create_default_object()
 void create_Light(double x, double y, double z, double r, double g, double b,
                   double k, Point_Light *l)
 {
-    l->position = (double *)malloc(sizeof(double) * 3);
-    l->color = (double *)malloc(sizeof(double) * 3);
+    //l->position = (double *)malloc(sizeof(double) * 3);
+    //l->color = (double *)malloc(sizeof(double) * 3);
     
     l->position[0] = x;
     l->position[1] = y;
@@ -717,7 +717,7 @@ int main(int argc, char* argv[])
         printf("1 - object loop start\n");
         gpuErrChk(cudaMemcpy(&d_objects[i], objects[i], sizeof(Object), 
                              cudaMemcpyHostToDevice));
-        printf("2\n");
+        /*printf("2\n");
         
         // Allocate and copy the material
         printf("????\n");
@@ -735,23 +735,16 @@ int main(int argc, char* argv[])
         printf("2a\n");
         gpuErrChk(cudaMemcpy(d_objects[i].mat, objects[i]->mat, 
                              sizeof(Material), cudaMemcpyHostToDevice));
-        printf("2b\n");
         gpuErrChk(cudaMalloc(&d_objects[i].mat->diffuse, 3 * sizeof(double)));
-        printf("2c\n");
         gpuErrChk(cudaMalloc(&d_objects[i].mat->ambient, 3 * sizeof(double)));
-        printf("2d\n");
         gpuErrChk(cudaMalloc(&d_objects[i].mat->specular, 3 * sizeof(double)));
-        printf("2e\n");
         
         gpuErrChk(cudaMemcpy(d_objects[i].mat->diffuse, objects[i]->mat->diffuse,
                              3 * sizeof(double), cudaMemcpyHostToDevice));
-        printf("2f\n");
         gpuErrChk(cudaMemcpy(d_objects[i].mat->ambient, objects[i]->mat->ambient,
                              3 * sizeof(double), cudaMemcpyHostToDevice));
-        printf("2g\n");
         gpuErrChk(cudaMemcpy(d_objects[i].mat->specular, objects[i]->mat->specular,
                              3 * sizeof(double), cudaMemcpyHostToDevice));
-        printf("3\n");
         
         // Allocate and copy the object's transformations
         gpuErrChk(cudaMalloc(&d_objects[i].scale, 9 * sizeof(double)));
@@ -760,7 +753,6 @@ int main(int argc, char* argv[])
         gpuErrChk(cudaMalloc(&d_objects[i].unRotate, 9 * sizeof(double)));
         gpuErrChk(cudaMalloc(&d_objects[i].translate, 3 * sizeof(double)));
         gpuErrChk(cudaMalloc(&d_objects[i].unTranslate, 3 * sizeof(double)));
-        printf("4\n");
         
         gpuErrChk(cudaMemcpy(d_objects[i].scale, objects[i]->scale, 
                              9 * sizeof(double), cudaMemcpyHostToDevice));
@@ -774,14 +766,14 @@ int main(int argc, char* argv[])
                              3 * sizeof(double), cudaMemcpyHostToDevice));
         gpuErrChk(cudaMemcpy(d_objects[i].unTranslate, objects[i]->unTranslate,
                              3 * sizeof(double), cudaMemcpyHostToDevice));
-        printf("5 - object loop end\n");
+        printf("5 - object loop end\n");*/
     }
     // Do the same for the Point_Lights
     for (int i = 0; i < numLights; i++)
     {
         printf("13 - light loop start\n");
         gpuErrChk(cudaMemcpy(&d_lights[i], lightsPPM[i], sizeof(Point_Light), cudaMemcpyHostToDevice));
-        
+        /*
         // Allocate and copy the position and color
         gpuErrChk(cudaMalloc(&d_lights[i].position, 3 * sizeof(double)));
         gpuErrChk(cudaMalloc(&d_lights[i].color, 3 * sizeof(double)));
@@ -789,7 +781,7 @@ int main(int argc, char* argv[])
         gpuErrChk(cudaMemcpy(d_lights[i].position, lightsPPM[i]->position,
                              3 * sizeof(double), cudaMemcpyHostToDevice));
         gpuErrChk(cudaMemcpy(d_lights[i].color, lightsPPM[i]->color,
-                             3 * sizeof(double), cudaMemcpyHostToDevice));
+                             3 * sizeof(double), cudaMemcpyHostToDevice));*/
         printf("13 - light loop end\n");
     }
     
