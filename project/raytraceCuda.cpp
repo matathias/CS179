@@ -74,7 +74,7 @@ struct Pixel
 // Global variables
 
 // Tolerance value for the Newton's Method update rule
-double epsilon = 0.001;
+double epsilon = 0.00001;
 
 // Toggle for using default object or objects loaded from input
 bool defaultObject = true;
@@ -685,8 +685,8 @@ int main(int argc, char* argv[])
     // extract the command line arguments
     getArguments(argc, argv);
     
-    // block size will be 256 x 256 = 2^8 x 2^8
-    int blockPower = 6;
+    // block size will be 16 x 16 = 2^4 x 2^4
+    int blockPower = 4;
 
     initPPM();
     /***** Allocate memory here *****/    
