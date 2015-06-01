@@ -1,4 +1,5 @@
 #include <cassert>
+#include <stdio.h>
 #include <cuda_runtime.h>
 #include <math.h>
 #include <float.h>
@@ -1097,6 +1098,10 @@ void callRaytraceKernel(Pixel *grid, Object *objs, double numObjects,
     if (gx < 1) gx = 1;
     if (gy < 1) gy = 1;
     dim3 grids(gx, gy);
+    
+    printf("block size: %d\n", blockSize);
+    printf("grid x:     %d\n", gx);
+    printf("grid y:     %d\n", gy);
     
     raytraceKernel<<<grids, blocks>>>(grid, objs, numObjects, lightsPPM,
                                       numLights, Nx, Ny, filmX, filmY, bgColor,
