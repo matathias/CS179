@@ -18,7 +18,6 @@
 
 #include <cuda_runtime.h>
 #include "raytraceCuda.cuh"
-#include "util.h"
 
 using namespace std;
 
@@ -133,8 +132,102 @@ void parseArguments(int argc, char* argv[]);
 void getArguments(int argc, char* argv[]);
 void parseFile(char* filename);
 
+/* Returns the norm of the given vector. */
+double norm(double *vec);
+/* Normalizes the given vector. */
+void normalize(double *vec);
+/* Returns the dot product of the given vectors. */
+double dot(double *a, double *b);
+/* Returns the cross product a x b into vector c. */
+void cross(double *a, double *b, double *c);
+
+/* Gets the rotation matrix for a given rotation axis (x, y, z) and angle. */
+void get_rotate_mat(double x, double y, double z, double angle, double *m);
+/* Gets the scaling matrix for a given scaling vector (x, y, z). */
+void get_scale_mat(double x, double y, double z, double *m);
+
 /******************************************************************************/
 // Function declarations
+/******************************************************************************/
+// Helper functions
+
+/* Returns the norm of the given vector. */
+double norm(double *vec)
+{
+    double n = 0;
+    for (int i = 0; i < 3; i++) {
+        n += vec[i];
+    }
+    return sqrt(n);
+}
+
+/* Normalizes the given vector. */
+void normalize(double *vec)
+{
+    double n = norm(vec);
+    for (int i = 0; i < 3; i++) {
+        vec[i] = vec[i] / n;
+    }
+}
+
+/* Returns the dot product of the given vectors. */
+double dot(double *a, double *b)
+{
+    double d = 0;
+    for (int i = 0; i < 3; i++) {
+        d += a[i] * b[i];
+    }
+    return d;
+}
+
+/* Returns the cross product a x b into vector c. */
+void cross(double *a, double *b, double *c)
+{
+    c[0] = (a[1] * b[2]) - (a[2] * b[1]);
+    c[1] = (a[2] * b[0]) - (a[0] * b[2]);
+    c[2] = (a[0] * b[1]) - (a[1] * b[0]);
+}
+
+/* Gets the rotation matrix for a given rotation axis (x, y, z) and angle. */
+void get_rotate_mat(double x, double y, double z, double angle, double *m)
+{
+    double nor = sqrt((x * x) + (y * y) + (z * z));
+    x = x / nor;
+    y = y / nor;
+    z = z / nor;
+    angle = deg2rad(angle);
+
+    m[0] = pow(x,2) + (1 - pow(x,2)) * cos(angle);
+    m[1] = (x * y * (1 - cos(angle))) - (z * sin(angle));
+    m[2] = (x * z * (1 - cos(angle))) + (y * sin(angle));
+
+    m[3] = (y * x * (1 - cos(angle))) + (z * sin(angle));
+    m[4] = pow(y,2) + (1 - pow(y,2)) * cos(angle);
+    m[5] = (y * z * (1 - cos(angle))) - (x * sin(angle));
+
+    m[6] = (z * x * (1 - cos(angle))) - (y * sin(angle));
+    m[7] = (z * y * (1 - cos(angle))) + (x * sin(angle));
+    m[8] = pow(z,2) + (1 - pow(z,2)) * cos(angle);
+}
+
+/* Gets the scaling matrix for a given scaling vector (x, y, z). */
+void get_scale_mat(double x, double y, double z, double *m)
+{
+    m[0] = x;
+    m[1] = 0;
+    m[2] = 0;
+    
+    m[3] = 0;
+    m[4] = y;
+    m[5] = 0;
+    
+    m[6] = 0;
+    m[7] = 0;
+    m[8] = z;
+}
+
+/******************************************************************************/
+// Raytracing functions
 
 void initPPM()
 {
@@ -567,29 +660,7 @@ int main(int argc, char* argv[])
     int blockPower = 8;
 
     initPPM();
-    /***** Allocate memory here *****/
-    /* CPU - change all vector3ds to double* vectors for the sake of the gpu */
-    /*double *h_e1 = (double*)malloc(sizeof(double) * 3);
-    double *h_e2 = (double*)malloc(sizeof(double) * 3);
-    double *h_e3 = (double*)malloc(sizeof(double) * 3);
-    double *h_lookAt = (double*)malloc(sizeof(double) * 3);
-    double *h_lookFrom = (double*)malloc(sizeof(double) * 3);
-    double *h_up = (double*)malloc(sizeof(double) * 3);
-    for (int i = 0; i < 3; i++) {
-        h_e1[i] = e1(i);
-        h_e2[i] = e2(i);
-        h_e3[i] = e3(i);
-        h_lookAt[i] = lookAt(i);
-        h_lookFrom[i] = lookFrom(i);
-        h_up[i] = up(i);
-        h_bgColor[i] = bgColor(i);
-    }*/
-    /*
-    Pixel *h_bgColor = (Pixel*)malloc(sizeof(Pixel));
-    h_bgColor->red = bgColor[0];
-    h_bgColor->green = bgColor[1];
-    h_bgColor->blue = bgColor[2];*/
-    
+    /***** Allocate memory here *****/    
     Pixel *grid = (Pixel*)malloc(sizeof(Pixel) * Ny * Nx);
     
     /* Allocate memory on the GPU */
