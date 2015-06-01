@@ -6,16 +6,16 @@
 
 struct Point_Light
 {
-    double *position;    //3-vector
-    double *color;       //3-vector
+    double position[3];    //3-vector
+    double color[3];       //3-vector
     double attenuation_k;
 };
 
 struct Material
 {
-    double *diffuse;     //3-vector
-    double *ambient;     //3-vector
-    double *specular;    //3-vector
+    double diffuse[3];     //3-vector
+    double ambient[3];     //3-vector
+    double specular[3];    //3-vector
     double shine;
     double snell;
     double opacity;
@@ -25,13 +25,13 @@ struct Object
 {
     double e;
     double n;
-    Material *mat;
-    double *scale;          //3x3-matrix
-    double *unScale;        //3x3-matrix
-    double *rotate;         //3x3-matrix
-    double *unRotate;       //3x3-matrix
-    double *translate;      //3-vector
-    double *unTranslate;    //3-vector
+    Material mat;
+    double scale[9];      //3x3-matrix
+    double unScale[9];    //3x3-matrix
+    double rotate[9];     //3x3-matrix
+    double unRotate[9];   //3x3-matrix
+    double translate[3];   //3-vector
+    double unTranslate[3]; //3-vector
 };
 
 struct Pixel
@@ -442,10 +442,10 @@ void lighting(double *point, double *n, double *e,
             if (k != ind)
             {
                 // Find the ray equation transformations
-                newa(objects[k].unScale, objects[k].unRotate, 
+                newa(&objects[k].unScale, &objects[k].unRotate, 
                      &lDirection[0], &newA[0]);
-                newb(objects[k].unScale, objects[k].unRotate, 
-                     objects[k].unTranslate, point, &newB[0]);
+                newb(&objects[k].unScale, &objects[k].unRotate, 
+                     &objects[k].unTranslate, point, &newB[0]);
 
                 // Find the quadratic equation coefficients
                 findCoeffs(&newA[0], &newB[0], &coeffs[0], true);
