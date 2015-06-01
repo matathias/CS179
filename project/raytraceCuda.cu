@@ -308,7 +308,7 @@ double updateRule(double *a, double *b, double e, double n, double t, double eps
 
 /************ THIS FUCKIN FUNCTION *****************/
     //while (!stopPoint)
-    for (int iter = 0; iter < 10000 && !stopPoint; iter++)
+    for (int iter = 0; iter < 1000000 && !stopPoint; iter++)
     {
         told = tnew;
         findRay(a, b, &vec[0], told);
