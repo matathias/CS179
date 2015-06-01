@@ -442,10 +442,10 @@ void lighting(double *point, double *n, double *e,
             if (k != ind)
             {
                 // Find the ray equation transformations
-                newa(&objects[k].unScale, &objects[k].unRotate, 
+                newa(&objects[k].unScale[0], &objects[k].unRotate[0], 
                      &lDirection[0], &newA[0]);
-                newb(&objects[k].unScale, &objects[k].unRotate, 
-                     &objects[k].unTranslate, point, &newB[0]);
+                newb(&objects[k].unScale[0], &objects[k].unRotate[0], 
+                     &objects[k].unTranslate[0], point, &newB[0]);
 
                 // Find the quadratic equation coefficients
                 findCoeffs(&newA[0], &newB[0], &coeffs[0], true);
