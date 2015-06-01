@@ -6,7 +6,6 @@ CUDA_PATH       ?= /usr/local/cuda-6.5
 CUDA_INC_PATH   ?= $(CUDA_PATH)/include
 CUDA_BIN_PATH   ?= $(CUDA_PATH)/bin
 CUDA_LIB_PATH   ?= $(CUDA_PATH)/lib64
-INCLUDE = -I/home/matathias/CS179/project
 
 # CUDA code generation flags
 GENCODE_FLAGS   := -gencode arch=compute_20,code=sm_20 -gencode arch=compute_30,code=sm_30 -gencode arch=compute_35,code=sm_35
@@ -40,10 +39,10 @@ TARGETS = raytraceCuda
 all: $(TARGETS)
 
 raytraceCuda: raytraceCuda.cpp raytraceCuda.o util.cpp
-	$(CC) $< -o $@ transpose.o -O3 $(LDFLAGS) -Wall -I$(CUDA_INC_PATH) $(INCLUDE)
+	$(CC) $< -o $@ transpose.o -O3 $(LDFLAGS) -Wall -I$(CUDA_INC_PATH)
 
 raytraceCuda.o: raytraceCuda.cu
-	$(NVCC) $(NVCCFLAGS) -O3 $(EXTRA_NVCCFLAGS) $(GENCODE_FLAGS) -I$(CUDA_INC_PATH) $(INCLUDE) -o $@ -c $<
+	$(NVCC) $(NVCCFLAGS) -O3 $(EXTRA_NVCCFLAGS) $(GENCODE_FLAGS) -I$(CUDA_INC_PATH) -o $@ -c $<
 
 
 clean:

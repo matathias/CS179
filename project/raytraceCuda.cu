@@ -735,9 +735,10 @@ void raytraceKernel(Pixel *grid, Object *objects, double numObjects,
                 }
                 
             }
-            grid[j * Ny + i].red = pxColor[0];
-            grid[j * Ny + i].green = pxColor[1];
-            grid[j * Ny + i].blue = pxColor[2];
+            int index = j * (int) Ny + i;
+            grid[index].red = pxColor[0];
+            grid[index].green = pxColor[1];
+            grid[index].blue = pxColor[2];
             
             
             j += blockDim.y * gridDim.y;
