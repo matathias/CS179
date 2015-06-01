@@ -127,7 +127,7 @@ void create_Light(double x, double y, double z, double r, double g, double b,
 void create_PPM_lights();
 
 // Print pixel data to output
-void printPPM(int pixelIntensity, int xre, int yre, Pixel *grid);
+void printPPM(int pixelIntensity, int xre, int yre, double *grid);
 // Function to parse the command line arguments
 void parseArguments(int argc, char* argv[]);
 void getArguments(int argc, char* argv[]);
@@ -660,7 +660,7 @@ void parseFile(char* filename)
 }
 
 // Print pixel data to output
-void printPPM(int pixelIntensity, int xre, int yre, Pixel *grid)
+void printPPM(int pixelIntensity, int xre, int yre, double *grid)
 {
     // Print the PPM data to standard output
     cout << "P3" << endl;
@@ -671,9 +671,9 @@ void printPPM(int pixelIntensity, int xre, int yre, Pixel *grid)
     {
         for (int i = 0; i < xre; i++)
         {
-            int red = grid[j * xre + i].red * pixelIntensity;
-            int green = grid[j * xre + i].green * pixelIntensity;
-            int blue = grid[j * xre + i].blue * pixelIntensity;
+            int red = grid[j * xre + (i * 3)] * pixelIntensity;
+            int green = grid[j * xre + (i * 3) + 1] * pixelIntensity;
+            int blue = grid[j * xre + (i * 3) + 2] * pixelIntensity;
             
             cout << red << " " << green << " " << blue << endl;
         }
@@ -690,18 +690,18 @@ int main(int argc, char* argv[])
 
     initPPM();
     /***** Allocate memory here *****/    
-    Pixel *grid = (Pixel*)malloc(sizeof(Pixel) * Ny * Nx);
+    double *grid = (Pixel*)malloc(sizeof(double) * Ny * Nx * 3);
     
     /* Allocate memory on the GPU */
     double *d_e1, *d_e2, *d_e3, *d_lookFrom, *d_up, *d_bgColor;
-    Pixel *d_grid;
+    double *d_grid;
     gpuErrChk(cudaMalloc(&d_e1, 3 * sizeof(double)));
     gpuErrChk(cudaMalloc(&d_e2, 3 * sizeof(double)));
     gpuErrChk(cudaMalloc(&d_e3, 3 * sizeof(double)));
     gpuErrChk(cudaMalloc(&d_lookFrom, 3 * sizeof(double)));
     gpuErrChk(cudaMalloc(&d_up, 3 * sizeof(double)));
     gpuErrChk(cudaMalloc(&d_bgColor, 3 * sizeof(double)));
-    gpuErrChk(cudaMalloc(&d_grid, sizeof(Pixel) * Ny * Nx));
+    gpuErrChk(cudaMalloc(&d_grid, sizeof(double) * Ny * Nx * 3));
     
     /* Copy data from the cpu to the gpu. */
     gpuErrChk(cudaMemcpy(d_e1, e1, 3 * sizeof(double), cudaMemcpyHostToDevice));
@@ -713,7 +713,7 @@ int main(int argc, char* argv[])
     gpuErrChk(cudaMemcpy(d_bgColor, bgColor, 3 * sizeof(double), 
                          cudaMemcpyHostToDevice));
     
-    gpuErrChk(cudaMemset(d_grid, 0, sizeof(Pixel) * Ny * Nx));
+    gpuErrChk(cudaMemset(d_grid, 0, sizeof(double) * Ny * Nx * 3));
     
     /* Handle the allocating and copying of the Objects and Point_Lights arrays.
      * This is a little weird because the structs store pointers...
@@ -745,7 +745,7 @@ int main(int argc, char* argv[])
                        d_lookFrom, epsilon, filmDepth, antiAlias, blockPower);
     
     /* Copy data back to CPU. */
-    gpuErrChk(cudaMemcpy(grid, d_grid, sizeof(Pixel) * Ny * Nx, 
+    gpuErrChk(cudaMemcpy(grid, d_grid, sizeof(double) * Ny * Nx * 3, 
                          cudaMemcpyDeviceToHost));
 
     /* Output the relevant data. */

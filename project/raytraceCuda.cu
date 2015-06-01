@@ -841,7 +841,7 @@ void lighting(double *point, double *n, double *e,
 }
 
 __global__
-void raytraceKernel(Pixel *grid, Object *objects, double numObjects,
+void raytraceKernel(double *grid, Object *objects, double numObjects,
                     Point_Light *lightsPPM, double numLights, 
                     double Nx, double Ny, double filmX, double filmY, 
                     double *bgColor, double *e1, double *e2, double *e3, 
@@ -870,9 +870,9 @@ void raytraceKernel(Pixel *grid, Object *objects, double numObjects,
     int j = threadIdx.y + blockDim.y * blockIdx.y;
     
     // preset the values, just to check gpu stuff...
-    grid[j * (int) Nx + i].red = 0.5;
-    grid[j * (int) Nx + i].green = 0.5;
-    grid[j * (int) Nx + i].blue = 0.5;
+    grid[j * (int) Nx + i * 3] = 0.5;
+    grid[j * (int) Nx + i * 3 + 1] = 0.5;
+    grid[j * (int) Nx + i * 3 + 2] = 0.5;
     
     while (i < Nx)
     {
@@ -1072,10 +1072,10 @@ void raytraceKernel(Pixel *grid, Object *objects, double numObjects,
                 }
                 
             }
-            int index = j * (int) Nx + i;
-            grid[index].red = 1; //pxColor[0];
-            grid[index].green = 1; //pxColor[1];
-            grid[index].blue = 1; //pxColor[2];
+            int index = j * (int) Nx + i * 3;
+            grid[index] = 1; //pxColor[0];
+            grid[index + 1] = 1; //pxColor[1];
+            grid[index + 2] = 1; //pxColor[2];
             
             
             j += blockDim.y * gridDim.y;
@@ -1097,7 +1097,7 @@ void raytraceKernel(Pixel *grid, Object *objects, double numObjects,
     delete[] intersectNormal;
 }
 
-void callRaytraceKernel(Pixel *grid, Object *objs, double numObjects,
+void callRaytraceKernel(double *grid, Object *objs, double numObjects,
                         Point_Light *lightsPPM, double numLights, double Nx, 
                         double Ny, double filmX, double filmY, 
                         double *bgColor, double *e1, double *e2, double *e3, 
