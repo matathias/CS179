@@ -305,8 +305,8 @@ double updateRule(double *a, double *b, double e, double n, double t, double eps
     double g = 0.0;
     double tnew = t, told = t;
     bool stopPoint = false;
-    return tnew;/*
 
+/************ THIS FUCKIN FUNCTION *****************/
     while (!stopPoint)
     {
         told = tnew;
@@ -332,7 +332,7 @@ double updateRule(double *a, double *b, double e, double n, double t, double eps
     
     delete[] vec;
 
-    return tnew;*/
+    return tnew;
 }
 
 
@@ -862,10 +862,6 @@ void raytraceKernel(double *grid, Object *objects, double numObjects,
     // Parallize by screen pixel
     int i = threadIdx.x + blockDim.x * blockIdx.x;
     int j = threadIdx.y + blockDim.y * blockIdx.y;
-    // preset the values, just to check gpu stuff...
-    grid[j *  Nx + i * 3] = 0.5;
-    grid[j *  Nx + i * 3 + 1] = 0.5;
-    grid[j *  Nx + i * 3 + 2] = 0.5;
     
     double dx = filmX / (double) Nx;
     double dy = filmY / (double) Ny;
@@ -1084,9 +1080,9 @@ void raytraceKernel(double *grid, Object *objects, double numObjects,
                 
             }
             int index = j * Nx + i * 3;
-            grid[index] = 1; //pxColor[0];
-            grid[index + 1] = 1; //pxColor[1];
-            grid[index + 2] = 1; //pxColor[2];
+            grid[index] = pxColor[0];
+            grid[index + 1] = pxColor[1];
+            grid[index + 2] = pxColor[2];
             
             
             j += blockDim.y * gridDim.y;

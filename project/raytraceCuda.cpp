@@ -74,7 +74,7 @@ struct Pixel
 // Global variables
 
 // Tolerance value for the Newton's Method update rule
-double epsilon = 0.00001;
+double epsilon = 0.001;
 
 // Toggle for using default object or objects loaded from input
 bool defaultObject = true;
