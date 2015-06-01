@@ -713,7 +713,7 @@ int main(int argc, char* argv[])
     gpuErrChk(cudaMemcpy(d_bgColor, bgColor, 3 * sizeof(double), 
                          cudaMemcpyHostToDevice));
     
-    gpuErrChk(cudaMemset(d_grid, 0, sizeof(double) * Ny * Nx * 3));
+    gpuErrChk(cudaMemset(d_grid, 1, sizeof(double) * Ny * Nx * 3));
     
     /* Handle the allocating and copying of the Objects and Point_Lights arrays.
      * This is a little weird because the structs store pointers...
