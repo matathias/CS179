@@ -146,6 +146,11 @@ void get_rotate_mat(double x, double y, double z, double angle, double *m);
 /* Gets the scaling matrix for a given scaling vector (x, y, z). */
 void get_scale_mat(double x, double y, double z, double *m);
 
+// Simple function to convert an angle in degrees to radians
+double deg2rad(double angle);
+// Simple function to convert an angle in radians to degrees
+double rad2deg(double angle);
+
 /******************************************************************************/
 // Function declarations
 /******************************************************************************/
@@ -224,6 +229,17 @@ void get_scale_mat(double x, double y, double z, double *m)
     m[6] = 0;
     m[7] = 0;
     m[8] = z;
+}
+
+// Simple function to convert an angle in degrees to radians
+double deg2rad(double angle)
+{
+    return angle * M_PI / 180.0;
+}
+// Simple function to convert an angle in radians to degrees
+double rad2deg(double angle)
+{
+    return angle * (180.0 / M_PI);
 }
 
 /******************************************************************************/
