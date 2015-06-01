@@ -3,8 +3,6 @@
  */
 
 #include "util.h"
-#include <GL/glew.h>
-#include <GL/glut.h>
 #include <math.h>
 #define _USE_MATH_DEFINES
 #include <float.h>
