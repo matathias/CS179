@@ -4,7 +4,10 @@
 
 #include <cuda_runtime.h>
 
-#include "util.h"
+struct Point_Light;
+struct Material;
+struct Object;
+struct Pixel;
 
 void callRaytraceKernel(Pixel *grid, Object *objs, double numObjects,
                         Point_Light *lightsPPM, double numLights, double Nx, 
