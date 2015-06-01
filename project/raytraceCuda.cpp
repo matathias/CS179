@@ -724,8 +724,8 @@ int main(int argc, char* argv[])
         Material *test_ptr = ptr->mat;
         //gpuErrChk(cudaMalloc(&d_objects[i].mat, sizeof(Material)));
         Material *test_ptr2 = (Material *) ((char *)&d_objects[i] + 2 * sizeof(double));
-        cout << "test_ptr:  " << test_ptr << endl;
-        cout << "test_ptr2: " << test_ptr2 << endl;
+        printf("test_ptr:  %p\n", test_ptr);
+        printf("test_ptr2: %p\n", test_ptr2);
         //printf("2aa\n");
         gpuErrChk(cudaMalloc(&test_ptr, sizeof(Material)));
         printf("2a\n");
