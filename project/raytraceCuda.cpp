@@ -745,7 +745,7 @@ int main(int argc, char* argv[])
     gpuErrChk(cudaMemcpy(grid, d_grid, sizeof(Pixel) * Ny * Nx, cudaMemcpyDeviceToHost));
 
     /* Output the relevant data. */
-    printPPM(255, Nx, Ny, grid);
+    //printPPM(255, Nx, Ny, grid);
     
     /* Free everything. */
     free(grid);
