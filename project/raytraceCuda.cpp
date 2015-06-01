@@ -669,24 +669,18 @@ void parseFile(char* filename)
 
 int main(int argc, char* argv[])
 {
-    printf("1\n");
     // extract the command line arguments
     getArguments(argc, argv);
-    printf("2\n");
     
     // block size will be 256 x 256 = 2^8 x 2^8
     int blockPower = 8;
-    printf("3\n");
 
     initPPM();
-    printf("4\n");
     /***** Allocate memory here *****/    
     Pixel *grid = (Pixel*)malloc(sizeof(Pixel) * Ny * Nx);
-    printf("5\n");
     
     /* Allocate memory on the GPU */
     double *d_e1, *d_e2, *d_e3, *d_lookFrom, *d_up, *d_bgColor;
-    printf("6\n");
     Pixel *d_grid;
     gpuErrChk(cudaMalloc(&d_e1, 3 * sizeof(double)));
     gpuErrChk(cudaMalloc(&d_e2, 3 * sizeof(double)));
@@ -695,7 +689,6 @@ int main(int argc, char* argv[])
     gpuErrChk(cudaMalloc(&d_up, 3 * sizeof(double)));
     gpuErrChk(cudaMalloc(&d_bgColor, 3 * sizeof(double)));
     gpuErrChk(cudaMalloc(&d_grid, sizeof(Pixel) * Ny * Nx));
-    printf("7\n");
     
     /* Copy data from the cpu to the gpu. */
     gpuErrChk(cudaMemcpy(d_e1, e1, 3 * sizeof(double), cudaMemcpyHostToDevice));
@@ -704,10 +697,8 @@ int main(int argc, char* argv[])
     gpuErrChk(cudaMemcpy(d_lookFrom, lookFrom, 3 * sizeof(double), cudaMemcpyHostToDevice));
     gpuErrChk(cudaMemcpy(d_up, up, 3 * sizeof(double), cudaMemcpyHostToDevice));
     gpuErrChk(cudaMemcpy(d_bgColor, bgColor, 3 * sizeof(double), cudaMemcpyHostToDevice));
-    printf("8\n");
     
     gpuErrChk(cudaMemset(d_grid, 0, sizeof(Pixel) * Ny * Nx));
-    printf("9\n");
     
     /* Handle the allocating and copying of the Objects and Point_Lights arrays.
      * This is a little weird because the structs store pointers...
@@ -716,17 +707,17 @@ int main(int argc, char* argv[])
     int numLights = lightsPPM.size();
     Object *d_objects;
     Point_Light *d_lights;
-    printf("10\n");
     gpuErrChk(cudaMalloc(&d_objects, numObjects * sizeof(Object)));
     gpuErrChk(cudaMalloc(&d_lights, numLights * sizeof(Object)));
-    printf("11\n");
     // Copy the objects onto the gpu, as well as allocating space for the object
     // pointers and copying the data in there
+    printf("NumObjects: %d\n", numObjects);
     for (int i = 0; i < numObjects; i++)
     {
-        printf("12 - object loop start\n");
+        printf("1 - object loop start\n");
         gpuErrChk(cudaMemcpy(&d_objects[i], objects[i], sizeof(Object), 
                              cudaMemcpyHostToDevice));
+        printf("2\n");
         
         // Allocate and copy the material
         gpuErrChk(cudaMalloc(&d_objects[i].mat, sizeof(Material)));
@@ -742,6 +733,7 @@ int main(int argc, char* argv[])
                              3 * sizeof(double), cudaMemcpyHostToDevice));
         gpuErrChk(cudaMemcpy(d_objects[i].mat->specular, objects[i]->mat->specular,
                              3 * sizeof(double), cudaMemcpyHostToDevice));
+        printf("3\n");
         
         // Allocate and copy the object's transformations
         gpuErrChk(cudaMalloc(&d_objects[i].scale, 9 * sizeof(double)));
@@ -750,6 +742,7 @@ int main(int argc, char* argv[])
         gpuErrChk(cudaMalloc(&d_objects[i].unRotate, 9 * sizeof(double)));
         gpuErrChk(cudaMalloc(&d_objects[i].translate, 3 * sizeof(double)));
         gpuErrChk(cudaMalloc(&d_objects[i].unTranslate, 3 * sizeof(double)));
+        printf("4\n");
         
         gpuErrChk(cudaMemcpy(d_objects[i].scale, objects[i]->scale, 
                              9 * sizeof(double), cudaMemcpyHostToDevice));
@@ -763,7 +756,7 @@ int main(int argc, char* argv[])
                              3 * sizeof(double), cudaMemcpyHostToDevice));
         gpuErrChk(cudaMemcpy(d_objects[i].unTranslate, objects[i]->unTranslate,
                              3 * sizeof(double), cudaMemcpyHostToDevice));
-        printf("12 - object loop end\n");
+        printf("5 - object loop end\n");
     }
     // Do the same for the Point_Lights
     for (int i = 0; i < numLights; i++)
