@@ -1117,7 +1117,7 @@ void callRaytraceKernel(double *grid, Object *objs, double numObjects,
                         bool antiAliased, int blockPower) 
 {
     int blockSize = pow(2, blockPower);
-    blockSize = 32;
+    blockSize = 16;
     
     dim3 blocks;
     blocks.x = blockSize;
