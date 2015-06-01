@@ -10,6 +10,18 @@
 #define REFLECTION 0
 #define REFRACTION 0
 
+#define gpuErrChk(ans) { gpuAssert((ans), __FILE__, __LINE__); }
+inline void gpuAssert(cudaError_t code,
+                      const char *file,
+                      int line,
+                      bool abort=true) {
+  if (code != cudaSuccess) {
+    fprintf(stderr,"GPUassert: %s %s %d\n",
+            cudaGetErrorString(code), file, line);
+    exit(code);
+  }
+}
+
 struct Point_Light
 {
     double position[3];    //3-vector
@@ -849,12 +861,8 @@ void raytraceKernel(double *grid, Object *objects, double numObjects,
                     bool antiAliased)
 {    
     // Parallize by screen pixel
-    //int i = threadIdx.x + blockDim.x * blockIdx.x;
-    //int j = threadIdx.y + blockDim.y * blockIdx.y;
-    int index = threadIdx.x + blockDim.x * blockIdx.x;
-    int j = index / Nx;
-    int i = index % Nx;
-    
+    int i = threadIdx.x + blockDim.x * blockIdx.x;
+    int j = threadIdx.y + blockDim.y * blockIdx.y;
     // preset the values, just to check gpu stuff...
     grid[j *  Nx + i * 3] = 0.5;
     grid[j *  Nx + i * 3 + 1] = 0.5;
@@ -878,14 +886,12 @@ void raytraceKernel(double *grid, Object *objects, double numObjects,
     double intersectNormal[3];
     
     
-    while (index < Nx * Ny)
+    while (i < Nx)
     {
-        //j = threadIdx.y + blockDim.y * blockIdx.y;
-        j = index / Nx;
-        i = index % Nx;
+        j = threadIdx.y + blockDim.y * blockIdx.y;
         
-        //while (j < Ny)
-        //{
+        while (j < Ny)
+        {
             // The positions are subtracted by a Nx/2 or Ny/2 term to center
             // the film plane
             double px = (i * dx) - (filmX / (double) 2);
@@ -1078,16 +1084,15 @@ void raytraceKernel(double *grid, Object *objects, double numObjects,
                 }
                 
             }
-            int ind = j * Nx + i * 3;
-            grid[ind] = 1; //pxColor[0];
-            grid[ind + 1] = 1; //pxColor[1];
-            grid[ind + 2] = 1; //pxColor[2];
+            int index = j * Nx + i * 3;
+            grid[index] = 1; //pxColor[0];
+            grid[index + 1] = 1; //pxColor[1];
+            grid[index + 2] = 1; //pxColor[2];
             
             
-            //j += blockDim.y * gridDim.y;
-            index += blockDim.x * gridDim.x;
-        //}
-        //i += blockDim.x * gridDim.x;
+            j += blockDim.y * gridDim.y;
+        }
+        i += blockDim.x * gridDim.x;
     }
     
     __syncthreads();
@@ -1125,8 +1130,8 @@ void callRaytraceKernel(double *grid, Object *objs, double numObjects,
     printf("grid size x: %d\n", gx);
     printf("grid size y: %d\n", gy);*/
     
-    raytraceKernel<<<gx * gy, blockSize * blockSize>>>(grid, objs, numObjects, lightsPPM,
+    gpuErrChk(raytraceKernel<<<gridSize, blocks>>>(grid, objs, numObjects, lightsPPM,
                                       numLights, Nx, Ny, filmX, filmY, bgColor,
                                       e1, e2, e3, lookFrom, epsilon, filmDepth,
-                                      antiAliased);
+                                      antiAliased));
 }
