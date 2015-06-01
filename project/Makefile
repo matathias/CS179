@@ -1,33 +1,52 @@
-###############################################################################
-# CS/CNS 171 Fall 2014
-#
-# This is a template Makefile for OpenGL programs. Edit it however you find
-# convenient.
-# 
-# The current version of this file should compile OpenGL programs just fine on
-# Debian-based Linux operating systems.
-#
-# If you run Mac OS or other distributions of Linux, then you may have to
-# fool around with the 'INCLUDE' and 'LIBDIR' lines below before the Makefile
-# can compile the OpenGL parts successfully.
-###############################################################################
-CC = g++
-FLAGS = -g -o
+CC = /usr/bin/g++
 
-INCLUDE = -I/usr/X11R6/include -I/usr/include/GL -I/usr/include -I/home/warrick/Dropbox/r-dwarrick-cs171/hw7/files
-LIBDIR = -L/usr/X11R6/lib -L/usr/local/lib
-SOURCES1 = util.cpp raytrace.cpp
-LIBS = -lGLEW -lGL -lGLU -lglut -lm
+LD_FLAGS = -lrt
 
-EXENAME1 = raytrace
+CUDA_PATH       ?= /usr/local/cuda-6.5
+CUDA_INC_PATH   ?= $(CUDA_PATH)/include
+CUDA_BIN_PATH   ?= $(CUDA_PATH)/bin
+CUDA_LIB_PATH   ?= $(CUDA_PATH)/lib64
+INCLUDE = -I/home/matathias/CS179/project
 
-all: raytrace
+# CUDA code generation flags
+GENCODE_FLAGS   := -gencode arch=compute_20,code=sm_20 -gencode arch=compute_30,code=sm_30 -gencode arch=compute_35,code=sm_35
 
-raytrace: $(SOURCES1)
-	$(CC) $(FLAGS) $(EXENAME1) $(INCLUDE) $(LIBDIR) $(SOURCES1) $(LIBS)
+# Common binaries
+NVCC            ?= $(CUDA_BIN_PATH)/nvcc
+
+# OS-specific build flags
+ifneq ($(DARWIN),)
+      LDFLAGS   := -Xlinker -rpath $(CUDA_LIB_PATH) -L$(CUDA_LIB_PATH) -lcudart -lcufft
+      CCFLAGS   := -arch $(OS_ARCH)
+else
+  ifeq ($(OS_SIZE),32)
+      LDFLAGS   := -L$(CUDA_LIB_PATH) -lcudart
+      CCFLAGS   := -m32
+  else
+      LDFLAGS   := -L$(CUDA_LIB_PATH) -lcudart
+      CCFLAGS   := -m64
+  endif
+endif
+
+# OS-architecture specific flags
+ifeq ($(OS_SIZE),32)
+      NVCCFLAGS := -m32
+else
+      NVCCFLAGS := -m64
+endif
+
+TARGETS = raytraceCuda
+
+all: $(TARGETS)
+
+raytraceCuda: raytraceCuda.ccp raytraceCuda.o util.cpp
+	$(CC) $< -o $@ transpose.o -O3 $(LDFLAGS) -Wall -I$(CUDA_INC_PATH) $(INCLUDE)
+
+raytraceCuda.o: raytraceCuda.cu
+	$(NVCC) $(NVCCFLAGS) -O3 $(EXTRA_NVCCFLAGS) $(GENCODE_FLAGS) -I$(CUDA_INC_PATH) $(INCLUDE) -o $@ -c $<
+
 
 clean:
-	rm -f *.o $(EXENAME)
+	rm -f *.o $(TARGETS)
 
-.PHONY: all clean
-
+again: clean $(TARGETS)
