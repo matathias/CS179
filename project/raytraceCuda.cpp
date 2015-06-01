@@ -626,64 +626,64 @@ int main(int argc, char* argv[])
     // pointers and copying the data in there
     for (int i = 0; i < numObjects; i++)
     {
-        gpuErrChk(cudaMemcpy(d_objects[i], objects[i], sizeof(Object), 
+        gpuErrChk(cudaMemcpy(&d_objects[i], objects[i], sizeof(Object), 
                              cudaMemcpyHostToDevice));
         
         // Allocate and copy the material
         gpuErrChk(cudaMalloc(d_objects[i].mat, sizeof(Material)));
-        gpuErrChk(cudaMemcpy(d_objects[i].mat, objects[i].mat, sizeof(Material), 
-                             cudaMemcpyHostToDevice));
+        gpuErrChk(cudaMemcpy(d_objects[i].mat, objects[i]->mat, 
+                             sizeof(Material), cudaMemcpyHostToDevice));
         gpuErrChk(cudaMalloc(d_objects[i].mat.diffuse, 3 * sizeof(double)));
         gpuErrChk(cudaMalloc(d_objects[i].mat.ambient, 3 * sizeof(double)));
         gpuErrChk(cudaMalloc(d_objects[i].mat.specular, 3 * sizeof(double)));
         
-        gpuErrChk(cudaMemcpy(d_objects[i].mat.diffuse, objects[i].mat.diffuse,
+        gpuErrChk(cudaMemcpy(d_objects[i].mat.diffuse, objects[i]->mat->diffuse,
                              3 * sizeof(double), cudaMemcpyHostToDevice));
-        gpuErrChk(cudaMemcpy(d_objects[i].mat.ambient, objects[i].mat.ambient,
+        gpuErrChk(cudaMemcpy(d_objects[i].mat.ambient, objects[i]->mat->ambient,
                              3 * sizeof(double), cudaMemcpyHostToDevice));
-        gpuErrChk(cudaMemcpy(d_objects[i].mat.specular, objects[i].mat.specular,
+        gpuErrChk(cudaMemcpy(d_objects[i].mat.specular, objects[i]->mat->specular,
                              3 * sizeof(double), cudaMemcpyHostToDevice));
         
         // Allocate and copy the object's transformations
-        gpuErrChk(cudaMalloc(d_objects[i].scale, 9 * sizeof(double)));
-        gpuErrChk(cudaMalloc(d_objects[i].unScale, 9 * sizeof(double)));
-        gpuErrChk(cudaMalloc(d_objects[i].rotate, 9 * sizeof(double)));
-        gpuErrChk(cudaMalloc(d_objects[i].unRotate, 9 * sizeof(double)));
-        gpuErrChk(cudaMalloc(d_objects[i].translate, 3 * sizeof(double)));
-        gpuErrChk(cudaMalloc(d_objects[i].unTranslate, 3 * sizeof(double)));
+        gpuErrChk(cudaMalloc(d_objects[i]->scale, 9 * sizeof(double)));
+        gpuErrChk(cudaMalloc(d_objects[i]->unScale, 9 * sizeof(double)));
+        gpuErrChk(cudaMalloc(d_objects[i]->rotate, 9 * sizeof(double)));
+        gpuErrChk(cudaMalloc(d_objects[i]->unRotate, 9 * sizeof(double)));
+        gpuErrChk(cudaMalloc(d_objects[i]->translate, 3 * sizeof(double)));
+        gpuErrChk(cudaMalloc(d_objects[i]->unTranslate, 3 * sizeof(double)));
         
-        gpuErrChk(cudaMemcpy(d_objects[i].scale, objects[i].scale, 9 * sizeof(double),
-                             cudaMemcpyHostToDevice));
-        gpuErrChk(cudaMemcpy(d_objects[i].unScale, objects[i].unScale,
+        gpuErrChk(cudaMemcpy(d_objects[i].scale, objects[i]->scale, 
                              9 * sizeof(double), cudaMemcpyHostToDevice));
-        gpuErrChk(cudaMemcpy(d_objects[i].rotate, objects[i].rotate,
+        gpuErrChk(cudaMemcpy(d_objects[i].unScale, objects[i]->unScale,
                              9 * sizeof(double), cudaMemcpyHostToDevice));
-        gpuErrChk(cudaMemcpy(d_objects[i].unRotate, objects[i].unRotate,
+        gpuErrChk(cudaMemcpy(d_objects[i].rotate, objects[i]->rotate,
                              9 * sizeof(double), cudaMemcpyHostToDevice));
-        gpuErrChk(cudaMemcpy(d_objects[i].translate, objects[i].translate,
+        gpuErrChk(cudaMemcpy(d_objects[i].unRotate, objects[i]->unRotate,
+                             9 * sizeof(double), cudaMemcpyHostToDevice));
+        gpuErrChk(cudaMemcpy(d_objects[i].translate, objects[i]->translate,
                              3 * sizeof(double), cudaMemcpyHostToDevice));
-        gpuErrChk(cudaMemcpy(d_objects[i].unTranslate, objects[i].unTranslate,
+        gpuErrChk(cudaMemcpy(d_objects[i].unTranslate, objects[i]->unTranslate,
                              3 * sizeof(double), cudaMemcpyHostToDevice));
     }
     // Do the same for the Point_Lights
     for (int i = 0; i < numLights; i++)
     {
-        gpuErrChk(cudaMemcpy(d_lights[i], lightsPPM[i], sizeof(Point_Light), cudaMemcpyHostToDevice));
+        gpuErrChk(cudaMemcpy(&d_lights[i], lightsPPM[i], sizeof(Point_Light), cudaMemcpyHostToDevice));
         
         // Allocate and copy the position and color
-        gpuErrChk(cudaMalloc(d_lights[i].position, 3 * sizeof(double)));
-        gpuErrChk(cudaMalloc(d_lights[i].color, 3 * sizeof(double)));
+        gpuErrChk(cudaMalloc(d_lights[i]->position, 3 * sizeof(double)));
+        gpuErrChk(cudaMalloc(d_lights[i]->color, 3 * sizeof(double)));
         
-        gpuErrChk(cudaMemcpy(d_lights[i].position, lightsPPM[i].position,
+        gpuErrChk(cudaMemcpy(d_lights[i]->position, lightsPPM[i]->position,
                              3 * sizeof(double), cudaMemcpyHostToDevice));
-        gpuErrChk(cudaMemcpy(d_lights[i].color, lightsPPM[i].color,
+        gpuErrChk(cudaMemcpy(d_lights[i]->color, lightsPPM[i]->color,
                              3 * sizeof(double), cudaMemcpyHostToDevice));
     }
     
     /* Call the GPU code. */
     callRaytraceKernel(d_grid, d_objects, numObjects, d_lights, numLights,
                        Nx, Ny, filmX, filmY, d_bgColor, d_e1, d_e2, d_e3,
-                       d_lookFrom, epsilon, filmDepth, antiAliased, blockPower);
+                       d_lookFrom, epsilon, filmDepth, antiAlias, blockPower);
     
     /* Copy data back to CPU. */
     gpuErrChk(cudaMemcpy(grid, d_grid, sizeof(Pixel) * Ny * Nx, cudaMemcpyDeviceToHost));
@@ -692,13 +692,6 @@ int main(int argc, char* argv[])
     printPPM(255, Nx, Ny, grid);
     
     /* Free everything. */
-    delete[] e1;
-    delete[] e2;
-    delete[] e3;
-    delete[] lookAt;
-    delete[] lookFrom;
-    delete[] up;
-    delete[] bgColor;
     free(grid);
     
     gpuErrChk(cudaFree(d_e1));
@@ -711,9 +704,9 @@ int main(int argc, char* argv[])
     
     for (int i = 0; i < numObjects; i++)
     {
-        gpuErrChk(cudaFree(d_objects[i].mat.diffuse));
-        gpuErrChk(cudaFree(d_objects[i].mat.ambient));
-        gpuErrChk(cudaFree(d_objects[i].mat.specular));
+        gpuErrChk(cudaFree(d_objects[i].mat->diffuse));
+        gpuErrChk(cudaFree(d_objects[i].mat->ambient));
+        gpuErrChk(cudaFree(d_objects[i].mat->specular));
         
         gpuErrChk(cudaFree(d_objects[i].mat));
         
