@@ -594,10 +594,10 @@ void lighting(double *point, double *n, double *e,
                    objects[finalObj].n);
                    
         lighting(&intersectR[0], &intersectRNormal[0], e,
-                 objects[finalObj].mat->diffuse, 
-                 objects[finalObj].mat->ambient, 
-                 objects[finalObj].mat->specular, 
-                 objects[finalObj].mat->shine, 
+                 &objects[finalObj].mat.diffuse[0], 
+                 &objects[finalObj].mat.ambient[0], 
+                 &objects[finalObj].mat.specular[0], 
+                 &objects[finalObj].mat.shine, 
                  l, numLights, objects, numObjects, epsilon,
                  finalObj, generation-1, &reflectedLight[0]);
         if (shine < 1) {
@@ -616,7 +616,7 @@ void lighting(double *point, double *n, double *e,
     eDirection[2] *= -1;
     // Find the refracted ray
     double refracted1[3];
-    refractedRay(&eDirection[0], n, &refracted1[0], objects[ind].mat->snell);
+    refractedRay(&eDirection[0], n, &refracted1[0], &objects[ind].mat.snell);
     d_normalize(&refracted1[0]);
 
     ttrueFinal = 0.0;
