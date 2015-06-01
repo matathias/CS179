@@ -389,27 +389,6 @@ void create_PPM_lights()
     lightsPPM.push_back(light1);
 }
 
-// Print pixel data to output
-void printPPM(int pixelIntensity, int xre, int yre, Pixel *grid)
-{
-    // Print the PPM data to standard output
-    cout << "P3" << endl;
-    cout << xre << " " << yre << endl;
-    cout << pixelIntensity << endl;
-
-    for (int j = 0; j < yre; j++)
-    {
-        for (int i = 0; i < xre; i++)
-        {
-            int red = grid[j * Ny + i].red * pixelIntensity;
-            int green = grid[j * Ny + i].green * pixelIntensity;
-            int blue = grid[j * Ny + i].blue * pixelIntensity;
-            
-            cout << red << " " << green << " " << blue << endl;
-        }
-    }
-}
-
 // Function to parse the command line arguments
 void parseArguments(int argc, char* argv[])
 {
@@ -680,6 +659,27 @@ void parseFile(char* filename)
     parseArguments(input.size()+1, args);
 }
 
+// Print pixel data to output
+void printPPM(int pixelIntensity, int xre, int yre, Pixel *grid)
+{
+    // Print the PPM data to standard output
+    cout << "P3" << endl;
+    cout << xre << " " << yre << endl;
+    cout << pixelIntensity << endl;
+
+    for (int j = 0; j < yre; j++)
+    {
+        for (int i = 0; i < xre; i++)
+        {
+            int red = grid[j * xre + i].red * pixelIntensity;
+            int green = grid[j * xre + i].green * pixelIntensity;
+            int blue = grid[j * xre + i].blue * pixelIntensity;
+            
+            cout << red << " " << green << " " << blue << endl;
+        }
+    }
+}
+
 int main(int argc, char* argv[])
 {
     // extract the command line arguments
@@ -707,9 +707,11 @@ int main(int argc, char* argv[])
     gpuErrChk(cudaMemcpy(d_e1, e1, 3 * sizeof(double), cudaMemcpyHostToDevice));
     gpuErrChk(cudaMemcpy(d_e2, e2, 3 * sizeof(double), cudaMemcpyHostToDevice));
     gpuErrChk(cudaMemcpy(d_e3, e3, 3 * sizeof(double), cudaMemcpyHostToDevice));
-    gpuErrChk(cudaMemcpy(d_lookFrom, lookFrom, 3 * sizeof(double), cudaMemcpyHostToDevice));
+    gpuErrChk(cudaMemcpy(d_lookFrom, lookFrom, 3 * sizeof(double), 
+                         cudaMemcpyHostToDevice));
     gpuErrChk(cudaMemcpy(d_up, up, 3 * sizeof(double), cudaMemcpyHostToDevice));
-    gpuErrChk(cudaMemcpy(d_bgColor, bgColor, 3 * sizeof(double), cudaMemcpyHostToDevice));
+    gpuErrChk(cudaMemcpy(d_bgColor, bgColor, 3 * sizeof(double), 
+                         cudaMemcpyHostToDevice));
     
     gpuErrChk(cudaMemset(d_grid, 0, sizeof(Pixel) * Ny * Nx));
     
@@ -733,7 +735,8 @@ int main(int argc, char* argv[])
     // Do the same for the Point_Lights
     for (int i = 0; i < numLights; i++)
     {
-        gpuErrChk(cudaMemcpy(&d_lights[i], lightsPPM[i], sizeof(Point_Light), cudaMemcpyHostToDevice));
+        gpuErrChk(cudaMemcpy(&d_lights[i], lightsPPM[i], sizeof(Point_Light), 
+                             cudaMemcpyHostToDevice));
     }
     
     /* Call the GPU code. */
@@ -742,10 +745,11 @@ int main(int argc, char* argv[])
                        d_lookFrom, epsilon, filmDepth, antiAlias, blockPower);
     
     /* Copy data back to CPU. */
-    gpuErrChk(cudaMemcpy(grid, d_grid, sizeof(Pixel) * Ny * Nx, cudaMemcpyDeviceToHost));
+    gpuErrChk(cudaMemcpy(grid, d_grid, sizeof(Pixel) * Ny * Nx, 
+                         cudaMemcpyDeviceToHost));
 
     /* Output the relevant data. */
-    //printPPM(255, Nx, Ny, grid);
+    printPPM(255, Nx, Ny, grid);
     
     /* Free everything. */
     free(grid);

@@ -861,6 +861,11 @@ void raytraceKernel(Pixel *grid, Object *objects, double numObjects,
     int i = threadIdx.x + blockDim.x * blockIdx.x;
     int j = threadIdx.y + blockDim.y * blockIdx.y;
     
+    // preset the values, just to check gpu stuff...
+    grid[j * (int) Nx + i].red = 0.5;
+    grid[j * (int) Nx + i].green = 0.5;
+    grid[j * (int) Nx + i].blue = 0.5;
+    
     while (i < Nx)
     {
         j = threadIdx.y + blockDim.y * blockIdx.y;
@@ -1059,9 +1064,9 @@ void raytraceKernel(Pixel *grid, Object *objects, double numObjects,
                 }
                 
             }
-            int index = j * (int) Ny + i;
-            grid[index].red = 0; //pxColor[0];
-            grid[index].green = 0.5; //pxColor[1];
+            int index = j * (int) Nx + i;
+            grid[index].red = 1; //pxColor[0];
+            grid[index].green = 1; //pxColor[1];
             grid[index].blue = 1; //pxColor[2];
             
             
@@ -1069,6 +1074,8 @@ void raytraceKernel(Pixel *grid, Object *objects, double numObjects,
         }
         i += blockDim.x * gridDim.x;
     }
+    
+    __syncthreads();
     
     // can you use delete[] in cuda...?
     delete[] finalNewA;
@@ -1098,10 +1105,6 @@ void callRaytraceKernel(Pixel *grid, Object *objs, double numObjects,
     if (gx < 1) gx = 1;
     if (gy < 1) gy = 1;
     dim3 grids(gx, gy);
-    
-    printf("block size: %d\n", blockSize);
-    printf("grid x:     %d\n", gx);
-    printf("grid y:     %d\n", gy);
     
     raytraceKernel<<<grids, blocks>>>(grid, objs, numObjects, lightsPPM,
                                       numLights, Nx, Ny, filmX, filmY, bgColor,
