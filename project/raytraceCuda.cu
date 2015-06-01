@@ -848,6 +848,15 @@ void raytraceKernel(double *grid, Object *objects, double numObjects,
                     double *lookFrom, double epsilon, double filmDepth,
                     bool antiAliased)
 {    
+    // Parallize by screen pixel
+    int i = threadIdx.x + blockDim.x * blockIdx.x;
+    int j = threadIdx.y + blockDim.y * blockIdx.y;
+    
+    // preset the values, just to check gpu stuff...
+    grid[j *  Nx + i * 3] = 0.5;
+    grid[j *  Nx + i * 3 + 1] = 0.5;
+    grid[j *  Nx + i * 3 + 2] = 0.5;
+    
     double dx = filmX / (double) Nx;
     double dy = filmY / (double) Ny;
 
@@ -865,14 +874,6 @@ void raytraceKernel(double *grid, Object *objects, double numObjects,
     double intersect[3];
     double intersectNormal[3];
     
-    // Parallize by screen pixel
-    int i = threadIdx.x + blockDim.x * blockIdx.x;
-    int j = threadIdx.y + blockDim.y * blockIdx.y;
-    
-    // preset the values, just to check gpu stuff...
-    grid[j *  Nx + i * 3] = 0.5;
-    grid[j *  Nx + i * 3 + 1] = 0.5;
-    grid[j *  Nx + i * 3 + 2] = 0.5;
     
     while (i < Nx)
     {
