@@ -720,8 +720,11 @@ int main(int argc, char* argv[])
         printf("2\n");
         
         // Allocate and copy the material
+        printf("????\n");
         Object *ptr = &d_objects[i];
+        printf("!!!\n");
         Material *test_ptr = ptr->mat;
+        printf("...\n");
         //gpuErrChk(cudaMalloc(&d_objects[i].mat, sizeof(Material)));
         Material *test_ptr2 = (Material *) ((char *)&d_objects[i] + 2 * sizeof(double));
         printf("2aa\n");
