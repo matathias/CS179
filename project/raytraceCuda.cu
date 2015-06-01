@@ -275,10 +275,10 @@ void lighting(double *point, double *n, double *e,
                    objects[finalObj].n);
                    
         lighting(&intersectR[0], &intersectRNormal[0], e,
-                 objects[finalObj].mat.diffuse, 
-                 objects[finalObj].mat.ambient, 
-                 objects[finalObj].mat.specular, 
-                 objects[finalObj].mat.shine, 
+                 objects[finalObj].mat->diffuse, 
+                 objects[finalObj].mat->ambient, 
+                 objects[finalObj].mat->specular, 
+                 objects[finalObj].mat->shine, 
                  l, numLights, objects, numObjects, epsilon,
                  finalObj, generation-1, &reflectedLight[0]);
         if (shine < 1) {
@@ -365,7 +365,7 @@ void lighting(double *point, double *n, double *e,
     {
         double intersectR[3];
         double intersectRNormal[3];
-        findRay(&refracted1[0], point, &intersect[0], ttrueFinal);
+        findRay(&refracted1[0], point, &intersectR[0], ttrueFinal);
         unitNormal(objects[finalObj].rotate, &finalNewA[0], &finalNewB[0], 
                    &intersectRNormal[0], ttrueFinal, objects[finalObj].e,
                    objects[finalObj].n);
