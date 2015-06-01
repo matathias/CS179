@@ -810,11 +810,11 @@ int main(int argc, char* argv[])
     gpuErrChk(cudaFree(d_bgColor));
     gpuErrChk(cudaFree(d_grid));
     
-    for (int i = 0; i < numObjects; i++)
+    /*for (int i = 0; i < numObjects; i++)
     {
-        gpuErrChk(cudaFree(d_objects[i].mat->diffuse));
-        gpuErrChk(cudaFree(d_objects[i].mat->ambient));
-        gpuErrChk(cudaFree(d_objects[i].mat->specular));
+        gpuErrChk(cudaFree(d_objects[i].mat.diffuse));
+        gpuErrChk(cudaFree(d_objects[i].mat.ambient));
+        gpuErrChk(cudaFree(d_objects[i].mat.specular));
         
         gpuErrChk(cudaFree(d_objects[i].mat));
         
@@ -824,14 +824,14 @@ int main(int argc, char* argv[])
         gpuErrChk(cudaFree(d_objects[i].unRotate));
         gpuErrChk(cudaFree(d_objects[i].translate));
         gpuErrChk(cudaFree(d_objects[i].unTranslate));
-    }
+    }*/
     gpuErrChk(cudaFree(d_objects));
     
-    for (int i = 0; i < numLights; i++)
+    /*for (int i = 0; i < numLights; i++)
     {
         gpuErrChk(cudaFree(d_lights[i].position));
         gpuErrChk(cudaFree(d_lights[i].color));
-    }
+    }*/
     gpuErrChk(cudaFree(d_lights));
 }
 
