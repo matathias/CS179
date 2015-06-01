@@ -1,23 +1,20 @@
 David Warrick
-CS/CNS 171 Fall 2014
-Assignment 6
+CS 179 Spring 2014-15
+Project
 
-The main program, raytrace, is located within the same directory as this readme 
-file. Open the make file and change the last include directory to correctly 
-point to Eigen; then, simply run "make" from within the directory to compile the
-program.
+The main program, raytraceCuda, is located within the same directory as this 
+readme file. Simply run "make" from within the directory to compile the program.
 
 util.cpp and util.h are helper files that contain useful code used in the main 
-program such as superquadric functions and functions to turn a 4x4 matrix into a
-3x3 matrix and vice versa.
+program such as superquadric functions.
 
 
 /------------------------------------------------------------------------------\
-|          ~~~ raytrace ~~~                                                    |
+|          ~~~ raytraceCuda ~~~                                                |
 \------------------------------------------------------------------------------/
 
 To execute the program, type
-    ./raytrace [extra arguments]
+    ./raytraceCuda [extra arguments]
 where [extra arguments] can be any of several input arguments.
 Note: instead of inputting arguments from the commandline, a single .txt file
       can be specified. The file must contain the same arguments as with command
