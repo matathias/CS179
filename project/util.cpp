@@ -1,5 +1,4 @@
-/* CS/CNS 171 Fall 2014
- *
+/*
  * This file contains the actual implementations of the functions in util.h.
  */
 

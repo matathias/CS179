@@ -1,5 +1,5 @@
 /* David Warrick
- * rt-test.cpp
+ * raytraceCuda.cpp
  */
 
 #include "util.h"

@@ -1,15 +1,12 @@
-/* CS/CNS 171 Fall 2014
- *
+/*
  * This header file contains some useful utility functions.
  */
 
 #pragma once
 
-#include <Eigen/Eigen>
 #include <iostream>
 #include <vector>
 
-using namespace Eigen;
 using namespace std;
 
 struct Point_Light;
