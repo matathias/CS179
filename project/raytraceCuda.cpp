@@ -690,7 +690,7 @@ int main(int argc, char* argv[])
 
     initPPM();
     /***** Allocate memory here *****/    
-    double *grid = (Pixel*)malloc(sizeof(double) * Ny * Nx * 3);
+    double *grid = (double*)malloc(sizeof(double) * Ny * Nx * 3);
     
     /* Allocate memory on the GPU */
     double *d_e1, *d_e2, *d_e3, *d_lookFrom, *d_up, *d_bgColor;
