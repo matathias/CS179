@@ -849,8 +849,11 @@ void raytraceKernel(double *grid, Object *objects, double numObjects,
                     bool antiAliased)
 {    
     // Parallize by screen pixel
-    int i = threadIdx.x + blockDim.x * blockIdx.x;
-    int j = threadIdx.y + blockDim.y * blockIdx.y;
+    //int i = threadIdx.x + blockDim.x * blockIdx.x;
+    //int j = threadIdx.y + blockDim.y * blockIdx.y;
+    int index = threadIdx.x + blockDim.x * blockIdx.x;
+    int j = index / Nx;
+    int i = index % Nx;
     
     // preset the values, just to check gpu stuff...
     grid[j *  Nx + i * 3] = 0.5;
@@ -875,12 +878,14 @@ void raytraceKernel(double *grid, Object *objects, double numObjects,
     double intersectNormal[3];
     
     
-    while (i < Nx)
+    while (index < Nx * Ny)
     {
-        j = threadIdx.y + blockDim.y * blockIdx.y;
+        //j = threadIdx.y + blockDim.y * blockIdx.y;
+        j = index / Nx;
+        i = index % Nx;
         
-        while (j < Ny)
-        {
+        //while (j < Ny)
+        //{
             // The positions are subtracted by a Nx/2 or Ny/2 term to center
             // the film plane
             double px = (i * dx) - (filmX / (double) 2);
@@ -1073,15 +1078,16 @@ void raytraceKernel(double *grid, Object *objects, double numObjects,
                 }
                 
             }
-            int index = j * Nx + i * 3;
-            grid[index] = 1; //pxColor[0];
-            grid[index + 1] = 1; //pxColor[1];
-            grid[index + 2] = 1; //pxColor[2];
+            int ind = j * Nx + i * 3;
+            grid[ind] = 1; //pxColor[0];
+            grid[ind + 1] = 1; //pxColor[1];
+            grid[ind + 2] = 1; //pxColor[2];
             
             
-            j += blockDim.y * gridDim.y;
-        }
-        i += blockDim.x * gridDim.x;
+            //j += blockDim.y * gridDim.y;
+            index += blockDim.x * gridDim.x;
+        //}
+        //i += blockDim.x * gridDim.x;
     }
     
     __syncthreads();
@@ -1119,7 +1125,7 @@ void callRaytraceKernel(double *grid, Object *objs, double numObjects,
     printf("grid size x: %d\n", gx);
     printf("grid size y: %d\n", gy);*/
     
-    raytraceKernel<<<gridSize, blocks>>>(grid, objs, numObjects, lightsPPM,
+    raytraceKernel<<<gx * gy, blockSize * blockSize>>>(grid, objs, numObjects, lightsPPM,
                                       numLights, Nx, Ny, filmX, filmY, bgColor,
                                       e1, e2, e3, lookFrom, epsilon, filmDepth,
                                       antiAliased);
