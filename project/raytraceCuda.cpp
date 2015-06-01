@@ -33,16 +33,16 @@ inline void gpuAssert(cudaError_t code,
 
 struct Point_Light
 {
-    double position[3];    //3-vector
-    double color[3];       //3-vector
+    double *position;    //3-vector
+    double *color;       //3-vector
     double attenuation_k;
 };
 
 struct Material
 {
-    double diffuse[3];     //3-vector
-    double ambient[3];     //3-vector
-    double specular[3];    //3-vector
+    double *diffuse;     //3-vector
+    double *ambient;     //3-vector
+    double *specular;    //3-vector
     double shine;
     double snell;
     double opacity;
@@ -52,13 +52,13 @@ struct Object
 {
     double e;
     double n;
-    Material mat;
-    double scale[9];      //3x3-matrix
-    double unScale[9];    //3x3-matrix
-    double rotate[9];     //3x3-matrix
-    double unRotate[9];   //3x3-matrix
-    double translate[3];  //3-vector
-    double unTranslate[3]; //3-vector
+    Material *mat;
+    double *scale;      //3x3-matrix
+    double *unScale;    //3x3-matrix
+    double *rotate;     //3x3-matrix
+    double *unRotate;   //3x3-matrix
+    double *translate;   //3-vector
+    double *unTranslate; //3-vector
 };
 
 struct Pixel
@@ -143,9 +143,9 @@ void create_Material(double dr, double dg, double db,
                      double shine, double refract, double opac, 
                      Material *mat);
 {
-    //mat->diffuse = (double *)malloc(sizeof(double) * 3);
-    //mat->ambient = (double *)malloc(sizeof(double) * 3);
-    //mat->specular = (double *)malloc(sizeof(double) * 3);
+    mat->diffuse = (double *)malloc(sizeof(double) * 3);
+    mat->ambient = (double *)malloc(sizeof(double) * 3);
+    mat->specular = (double *)malloc(sizeof(double) * 3);
     
     mat->diffuse[0] = dr;
     mat->diffuse[1] = dg;
@@ -177,12 +177,12 @@ void create_object(double e, double n, double xt, double yt, double zt,
     obj->e = e;
     obj->n = n;
     
-    /*obj->scale = (double *)malloc(sizeof(double) * 9);
+    obj->scale = (double *)malloc(sizeof(double) * 9);
     obj->unScale = (double *)malloc(sizeof(double) * 9);
     obj->rotate = (double *)malloc(sizeof(double) * 9);
     obj->unRotate = (double *)malloc(sizeof(double) * 9);
     obj->translate = (double *)malloc(sizeof(double) * 3);
-    obj->unTranslate = (double *)malloc(sizeof(double) * 3);*/
+    obj->unTranslate = (double *)malloc(sizeof(double) * 3);
     
     get_scale_mat(a, b, c, obj->scale);
     get_scale_mat(1 / (double) a, 1 / (double) b, 1 / (double) c, obj->unScale);
@@ -196,8 +196,8 @@ void create_object(double e, double n, double xt, double yt, double zt,
     obj->unTranslate[1] = -yt;
     obj->unTranslate[2] = -zt;
 
-    //obj->mat = (Material *)malloc(sizeof(Material));
-    create_default_material(&obj->mat);
+    obj->mat = (Material *)malloc(sizeof(Material));
+    create_default_material(obj->mat);
 }
 
 void create_default_object()
@@ -211,8 +211,8 @@ void create_default_object()
 void create_Light(double x, double y, double z, double r, double g, double b,
                   double k, Point_Light *l)
 {
-    //l->position = (double *)malloc(sizeof(double) * 3);
-    //l->color = (double *)malloc(sizeof(double) * 3);
+    l->position = (double *)malloc(sizeof(double) * 3);
+    l->color = (double *)malloc(sizeof(double) * 3);
     
     l->position[0] = x;
     l->position[1] = y;
@@ -444,7 +444,7 @@ void parseArguments(int argc, char* argv[])
         int i = 0;
         while (i < tempMats.size() &&  i < tempObjs.size())
         {
-            tempObjs[i]->mat = *tempMats[i];
+            tempObjs[i]->mat = tempMats[i];
             i++;
         }
 
@@ -567,12 +567,11 @@ int main(int argc, char* argv[])
     Pixel *grid = (Pixel*)malloc(sizeof(Pixel) * Ny * Nx);
     
     /* Allocate memory on the GPU */
-    double *d_e1, *d_e2, *d_e3, *d_lookAt, *d_lookFrom, *d_up, *d_bgColor;
-    Pixel *d_grid; //, *d_diffuse, *d_spec, *d_reflect, *d_refract;
+    double *d_e1, *d_e2, *d_e3, *d_lookFrom, *d_up, *d_bgColor;
+    Pixel *d_grid;
     gpuErrChk(cudaMalloc(&d_e1, 3 * sizeof(double)));
     gpuErrChk(cudaMalloc(&d_e2, 3 * sizeof(double)));
     gpuErrChk(cudaMalloc(&d_e3, 3 * sizeof(double)));
-    gpuErrChk(cudaMalloc(&d_lookAt, 3 * sizeof(double)));
     gpuErrChk(cudaMalloc(&d_lookFrom, 3 * sizeof(double)));
     gpuErrChk(cudaMalloc(&d_up, 3 * sizeof(double)));
     gpuErrChk(cudaMalloc(&d_bgColor, 3 * sizeof(double)));
@@ -582,7 +581,6 @@ int main(int argc, char* argv[])
     gpuErrChk(cudaMemcpy(d_e1, e1, 3 * sizeof(double), cudaMemcpyHostToDevice));
     gpuErrChk(cudaMemcpy(d_e2, e2, 3 * sizeof(double), cudaMemcpyHostToDevice));
     gpuErrChk(cudaMemcpy(d_e3, e3, 3 * sizeof(double), cudaMemcpyHostToDevice));
-    gpuErrChk(cudaMemcpy(d_lookAt, lookAt, 3 * sizeof(double), cudaMemcpyHostToDevice));
     gpuErrChk(cudaMemcpy(d_lookFrom, lookFrom, 3 * sizeof(double), cudaMemcpyHostToDevice));
     gpuErrChk(cudaMemcpy(d_up, h_up, 3 * sizeof(double), cudaMemcpyHostToDevice));
     gpuErrChk(cudaMemcpy(d_bgColor, bgColor, 3 * sizeof(double), cudaMemcpyHostToDevice));
@@ -603,17 +601,57 @@ int main(int argc, char* argv[])
     for (int i = 0; i < numObjects; i++)
     {
         gpuErrChk(cudaMemcpy(d_objects[i], objects[i], sizeof(Object), cudaMemcpyHostToDevice));
-        //gpuErrChk(cudaMalloc(d_objects[i].mat, sizeof(Material)
+        
+        // Allocate and copy the material
+        gpuErrChk(cudaMalloc(d_objects[i].mat, sizeof(Material));
+        gpuErrChk(cudaMemcpy(d_objects[i].mat, objects[i].mat, sizeof(Material), cudaMemcpyHostToDevice));
+        gpuErrChk(cudaMalloc(d_objects[i].mat.diffuse, 3 * sizeof(double)));
+        gpuErrChk(cudaMalloc(d_objects[i].mat.ambient, 3 * sizeof(double)));
+        gpuErrChk(cudaMalloc(d_objects[i].mat.specular, 3 * sizeof(double)));
+        gpuErrChk(cudaMemcpy(d_objects[i].mat.diffuse, objects[i].mat.diffuse,
+                             3 * sizeof(double), cudaMemcpyHostToDevice));
+        gpuErrChk(cudaMemcpy(d_objects[i].mat.ambient, objects[i].mat.ambient,
+                             3 * sizeof(double), cudaMemcpyHostToDevice));
+        gpuErrChk(cudaMemcpy(d_objects[i].mat.specular, objects[i].mat.specular,
+                             3 * sizeof(double), cudaMemcpyHostToDevice));
+        
+        // Allocate and copy the object's transformations
+        gpuErrChk(cudaMalloc(d_objects[i].scale, 9 * sizeof(double)));
+        gpuErrChk(cudaMalloc(d_objects[i].unScale, 9 * sizeof(double)));
+        gpuErrChk(cudaMalloc(d_objects[i].rotate, 9 * sizeof(double)));
+        gpuErrChk(cudaMalloc(d_objects[i].unRotate, 9 * sizeof(double)));
+        gpuErrChk(cudaMalloc(d_objects[i].translate, 3 * sizeof(double)));
+        gpuErrChk(cudaMalloc(d_objects[i].unTranslate, 3 * sizeof(double)));
+        
+        gpuErrChk(cudaMemcpy(d_objects[i].scale, objects[i].scale, 9 * sizeof(double),
+                             cudaMemcpyHostToDevice));
+        gpuErrChk(cudaMemcpy(d_objects[i].unScale, objects[i].unScale,
+                             9 * sizeof(double), cudaMemcpyHostToDevice));
+        gpuErrChk(cudaMemcpy(d_objects[i].rotate, objects[i].rotate,
+                             9 * sizeof(double), cudaMemcpyHostToDevice));
+        gpuErrChk(cudaMemcpy(d_objects[i].unRotate, objects[i].unRotate,
+                             9 * sizeof(double), cudaMemcpyHostToDevice));
+        gpuErrChk(cudaMemcpy(d_objects[i].translate, objects[i].translate,
+                             3 * sizeof(double), cudaMemcpyHostToDevice));
+        gpuErrChk(cudaMemcpy(d_objects[i].unTranslate, objects[i].unTranslate,
+                             3 * sizeof(double), cudaMemcpyHostToDevice));
     }
     // Do the same for the Point_Lights
     for (int i = 0; i < numLights; i++)
     {
         gpuErrChk(cudaMemcpy(d_lights[i], lightsPPM[i], sizeof(Point_Light), cudaMemcpyHostToDevice));
+        
+        // Allocate and copy the position and color
+        gpuErrChk(cudaMalloc(d_lights[i].position, 3 * sizeof(double)));
+        gpuErrChk(cudaMalloc(d_lights[i].color, 3 * sizeof(double)));
+        
+        gpuErrChk(cudaMemcpy(d_lights[i].position, lightsPPM[i].position,
+                             3 * sizeof(double), cudaMemcpyHostToDevice));
+        gpuErrChk(cudaMemcpy(d_lights[i].color, lightsPPM[i].color,
+                             3 * sizeof(double), cudaMemcpyHostToDevice));
     }
     
     /* Call the GPU code. */
-    
-    // Replace this next line with the gpu kernel call
     callRaytraceKernel(d_grid, d_objects, numObjects, d_lights, numLights,
                        Nx, Ny, filmX, filmY, d_bgColor, d_e1, d_e2, d_e3,
                        d_lookFrom, epsilon, filmDepth, antiAliased, blockPower);
@@ -625,5 +663,45 @@ int main(int argc, char* argv[])
     printPPM(255, Nx, Ny, grid);
     
     /* Free everything. */
+    delete[] e1;
+    delete[] e2;
+    delete[] e3;
+    delete[] lookAt;
+    delete[] lookFrom;
+    delete[] up;
+    delete[] bgColor;
+    free(grid);
+    
+    gpuErrChk(cudaFree(d_e1));
+    gpuErrChk(cudaFree(d_e2));
+    gpuErrChk(cudaFree(d_e3));
+    gpuErrChk(cudaFree(d_lookFrom));
+    gpuErrChk(cudaFree(d_up));
+    gpuErrChk(cudaFree(d_bgColor));
+    gpuErrChk(cudaFree(d_grid));
+    
+    for (int i = 0; i < numObjects; i++)
+    {
+        gpuErrChk(cudaFree(d_objects[i].mat.diffuse));
+        gpuErrChk(cudaFree(d_objects[i].mat.ambient));
+        gpuErrChk(cudaFree(d_objects[i].mat.specular));
+        
+        gpuErrChk(cudaFree(d_objects[i].mat));
+        
+        gpuErrChk(cudaFree(d_objects[i].scale));
+        gpuErrChk(cudaFree(d_objects[i].unScale));
+        gpuErrChk(cudaFree(d_objects[i].rotate));
+        gpuErrChk(cudaFree(d_objects[i].unRotate));
+        gpuErrChk(cudaFree(d_objects[i].translate));
+        gpuErrChk(cudaFree(d_objects[i].unTranslate));
+    }
+    gpuErrChk(cudaFree(d_objects));
+    
+    for (int i = 0; i < numLights; i++)
+    {
+        gpuErrChk(cudaFree(d_lights[i].position));
+        gpuErrChk(cudaFree(d_lights[i].color));
+    }
+    gpuErrChk(cudaFree(d_lights));
 }
 
