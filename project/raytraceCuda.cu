@@ -436,8 +436,6 @@ void lighting(double *point, double *n, double *e,
     for (int i = 0; i < numLights && generation > 0; i++)
     {
         // Retrieve the light's postion, color, and attenuation factor
-        //Vector3d lP = l[i].position;
-        //Vector3d lC = l[i].color;
         double attenuation = l[i].attenuation_k;
 
         // Get the unit direction and the distance between the light and the
@@ -886,12 +884,12 @@ void raytraceKernel(double *grid, Object *objects, double numObjects,
     double intersectNormal[3];
     
     
-    //while (i < Nx)
-    //{
-        //j = threadIdx.y + blockDim.y * blockIdx.y;
+    while (i < Nx)
+    {
+        j = threadIdx.y + blockDim.y * blockIdx.y;
         
-        //while (j < Ny)
-        //{
+        while (j < Ny)
+        {
             // The positions are subtracted by a Nx/2 or Ny/2 term to center
             // the film plane
             double px = (i * dx) - (filmX / (double) 2);
@@ -964,13 +962,13 @@ void raytraceKernel(double *grid, Object *objects, double numObjects,
                                &intersectNormal[0], ttrueFinal, objects[finalObj].e, 
                                objects[finalObj].n);
 
-                    lighting(&intersect[0], &intersectNormal[0], lookFrom,
+                    /*lighting(&intersect[0], &intersectNormal[0], lookFrom,
                              &objects[finalObj].mat.diffuse[0], 
                              &objects[finalObj].mat.ambient[0], 
                              &objects[finalObj].mat.specular[0], 
                              objects[finalObj].mat.shine,
                              lightsPPM, numLights, objects, numObjects, epsilon,
-                             finalObj, 3, &pxColor[0]);
+                             finalObj, 3, &pxColor[0]);*/
                 }
             }
             else
@@ -1062,14 +1060,14 @@ void raytraceKernel(double *grid, Object *objects, double numObjects,
 
                             double color[] = {0, 0, 0};
                             
-                            lighting(&intersect[0], &intersectNormal[0], lookFrom,
+                            /*lighting(&intersect[0], &intersectNormal[0], lookFrom,
                                      &objects[finalObj].mat.diffuse[0], 
                                      &objects[finalObj].mat.ambient[0], 
                                      &objects[finalObj].mat.specular[0], 
                                      objects[finalObj].mat.shine,
                                      lightsPPM, numLights, objects, numObjects, 
                                      epsilon,
-                                     finalObj, 3, &color[0]);
+                                     finalObj, 3, &color[0]);*/
 
                             pxColor[0] += color[0] * pxCoeffs[counter];
                             pxColor[1] += color[1] * pxCoeffs[counter];
@@ -1090,10 +1088,10 @@ void raytraceKernel(double *grid, Object *objects, double numObjects,
             grid[index + 2] = 1; //pxColor[2];
             
             
-            //j += blockDim.y * gridDim.y;
-        //}
-        //i += blockDim.x * gridDim.x;
-    //}
+            j += blockDim.y * gridDim.y;
+        }
+        i += blockDim.x * gridDim.x;
+    }
     
     // can you use delete[] in cuda...?
     delete[] finalNewA;
