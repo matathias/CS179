@@ -2,7 +2,11 @@
  * raytraceCuda.cpp
  */
 
-#include "util.h"
+#include <cstdio>
+#include <cstdlib>
+#include <stdio.h>
+#include <string.h>
+#include <cmath>
 #include <math.h>
 #define _USE_MATH_DEFINES
 #include <float.h>
@@ -14,6 +18,7 @@
 
 #include <cuda_runtime.h>
 #include "raytraceCuda.cuh"
+#include "util.h"
 
 using namespace std;
 
@@ -138,7 +143,7 @@ void initPPM()
     if (defaultLights)
         create_PPM_lights();
         
-    create_film_plane();
+    create_film_plane(&e1[0], &e2[0], &e3[0]);
 }
 
 
@@ -295,7 +300,6 @@ void parseArguments(int argc, char* argv[])
                                   //specular rgb, shininess value, and refractive index of the 
                                   // object material
     const char* epsilonC = "-ep"; // the epsilon-close-to-zero value for the update rule
-    const char* debugP = "-debug"; // tells the program to pring debugging values
     const char* background = "-bg"; // next three values are the rgb for the background
     const char* target = "-la"; // the next three values are the x,y,z for the look at vector
     const char* eye = "-eye"; // the next three values are the x,y,z for the look from vector
@@ -360,7 +364,7 @@ void parseArguments(int argc, char* argv[])
                 if (inInd >= argc) throw out_of_range("Missing argument(s) for -mat [dr dg db sr sg sb shine refraction opacity]");
                 tdefaultObject = false;
                 Material *mat = (Material*)malloc(sizeof(Material));
-                create_Material(atof(argv[inInd-8]), atof(argv[inInd-7])
+                create_Material(atof(argv[inInd-8]), atof(argv[inInd-7]),
                                 atof(argv[inInd-6]), 0, 0, 0, 
                                 atof(argv[inInd-5]), atof(argv[inInd-4]),
                                 atof(argv[inInd-3]), atof(argv[inInd-2]),
@@ -467,7 +471,7 @@ void parseArguments(int argc, char* argv[])
             bgColor[i] = tbgColor[i];
         }
 
-        int i = 0;
+        unsigned int i = 0;
         while (i < tempMats.size() &&  i < tempObjs.size())
         {
             tempObjs[i]->mat = tempMats[i];
@@ -477,14 +481,10 @@ void parseArguments(int argc, char* argv[])
         objects = tempObjs;
 
         Point_Light *eye = (Point_Light *)malloc(sizeof(Point_Light));
-        
-                void create_Light(double x, double y, double z, double r, double g, double b,
-                  double k, Point_Light *l)
         create_light(lookFrom[0], lookFrom[1], lookFrom[2], eyeColor[0],
                      eyeColor[1], eyeColor[2], eyeK, eye);
 
-        vector<Point_Light>::iterator it;
-        it = tempLights.begin();
+        vector<Point_Light>::iterator it = tempLights.begin();
 
         tempLights.insert(it, eye);
 
@@ -505,7 +505,7 @@ void getArguments(int argc, char* argv[])
     {
         string filetype = ".txt";
         string firstArg(argv[1]);
-        int isFile = firstArg.find(filetype);
+        unsigned int isFile = firstArg.find(filetype);
         if (isFile != string::npos)
         {
             parseFile(argv[1]);
@@ -552,7 +552,7 @@ void parseFile(char* filename)
     ifs.close();
 
     char* args[input.size()+1];
-    for (int i = 0; i < input.size(); i++)
+    for (unsigned int i = 0; i < input.size(); i++)
         args[i+1] = input.at(i);
 
     parseArguments(input.size()+1, args);
@@ -608,7 +608,7 @@ int main(int argc, char* argv[])
     gpuErrChk(cudaMemcpy(d_e2, e2, 3 * sizeof(double), cudaMemcpyHostToDevice));
     gpuErrChk(cudaMemcpy(d_e3, e3, 3 * sizeof(double), cudaMemcpyHostToDevice));
     gpuErrChk(cudaMemcpy(d_lookFrom, lookFrom, 3 * sizeof(double), cudaMemcpyHostToDevice));
-    gpuErrChk(cudaMemcpy(d_up, h_up, 3 * sizeof(double), cudaMemcpyHostToDevice));
+    gpuErrChk(cudaMemcpy(d_up, up, 3 * sizeof(double), cudaMemcpyHostToDevice));
     gpuErrChk(cudaMemcpy(d_bgColor, bgColor, 3 * sizeof(double), cudaMemcpyHostToDevice));
     
     gpuErrChk(cudaMemset(d_grid, 0, sizeof(Pixel) * Ny * Nx));
@@ -626,14 +626,17 @@ int main(int argc, char* argv[])
     // pointers and copying the data in there
     for (int i = 0; i < numObjects; i++)
     {
-        gpuErrChk(cudaMemcpy(d_objects[i], objects[i], sizeof(Object), cudaMemcpyHostToDevice));
+        gpuErrChk(cudaMemcpy(d_objects[i], objects[i], sizeof(Object), 
+                             cudaMemcpyHostToDevice));
         
         // Allocate and copy the material
-        gpuErrChk(cudaMalloc(d_objects[i].mat, sizeof(Material));
-        gpuErrChk(cudaMemcpy(d_objects[i].mat, objects[i].mat, sizeof(Material), cudaMemcpyHostToDevice));
+        gpuErrChk(cudaMalloc(d_objects[i].mat, sizeof(Material)));
+        gpuErrChk(cudaMemcpy(d_objects[i].mat, objects[i].mat, sizeof(Material), 
+                             cudaMemcpyHostToDevice));
         gpuErrChk(cudaMalloc(d_objects[i].mat.diffuse, 3 * sizeof(double)));
         gpuErrChk(cudaMalloc(d_objects[i].mat.ambient, 3 * sizeof(double)));
         gpuErrChk(cudaMalloc(d_objects[i].mat.specular, 3 * sizeof(double)));
+        
         gpuErrChk(cudaMemcpy(d_objects[i].mat.diffuse, objects[i].mat.diffuse,
                              3 * sizeof(double), cudaMemcpyHostToDevice));
         gpuErrChk(cudaMemcpy(d_objects[i].mat.ambient, objects[i].mat.ambient,

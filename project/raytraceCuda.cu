@@ -26,12 +26,12 @@ struct Object
     double e;
     double n;
     Material *mat;
-    double *scale;      //3x3-matrix
-    double *unScale;    //3x3-matrix
-    double *rotate;     //3x3-matrix
-    double *unRotate;   //3x3-matrix
-    double *translate;  //3-vector
-    double *unTranslate; //3-vector
+    double *scale;          //3x3-matrix
+    double *unScale;        //3x3-matrix
+    double *rotate;         //3x3-matrix
+    double *unRotate;       //3x3-matrix
+    double *translate;      //3-vector
+    double *unTranslate;    //3-vector
 };
 
 struct Pixel
