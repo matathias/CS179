@@ -305,6 +305,7 @@ double updateRule(double *a, double *b, double e, double n, double t, double eps
     double g = 0.0;
     double tnew = t, told = t;
     bool stopPoint = false;
+    return tnew;/*
 
     while (!stopPoint)
     {
@@ -331,7 +332,7 @@ double updateRule(double *a, double *b, double e, double n, double t, double eps
     
     delete[] vec;
 
-    return tnew;
+    return tnew;*/
 }
 
 
@@ -962,13 +963,13 @@ void raytraceKernel(double *grid, Object *objects, double numObjects,
                                &intersectNormal[0], ttrueFinal, objects[finalObj].e, 
                                objects[finalObj].n);
 
-                    /*lighting(&intersect[0], &intersectNormal[0], lookFrom,
+                    lighting(&intersect[0], &intersectNormal[0], lookFrom,
                              &objects[finalObj].mat.diffuse[0], 
                              &objects[finalObj].mat.ambient[0], 
                              &objects[finalObj].mat.specular[0], 
                              objects[finalObj].mat.shine,
                              lightsPPM, numLights, objects, numObjects, epsilon,
-                             finalObj, 3, &pxColor[0]);*/
+                             finalObj, 3, &pxColor[0]);
                 }
             }
             else
@@ -1060,14 +1061,14 @@ void raytraceKernel(double *grid, Object *objects, double numObjects,
 
                             double color[] = {0, 0, 0};
                             
-                            /*lighting(&intersect[0], &intersectNormal[0], lookFrom,
+                            lighting(&intersect[0], &intersectNormal[0], lookFrom,
                                      &objects[finalObj].mat.diffuse[0], 
                                      &objects[finalObj].mat.ambient[0], 
                                      &objects[finalObj].mat.specular[0], 
                                      objects[finalObj].mat.shine,
                                      lightsPPM, numLights, objects, numObjects, 
                                      epsilon,
-                                     finalObj, 3, &color[0]);*/
+                                     finalObj, 3, &color[0]);
 
                             pxColor[0] += color[0] * pxCoeffs[counter];
                             pxColor[1] += color[1] * pxCoeffs[counter];
