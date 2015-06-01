@@ -102,7 +102,7 @@ double d_norm(double *vec)
 {
     double n = 0;
     for (int i = 0; i < 3; i++) {
-        n += vec[i];
+        n += vec[i] * vec[i];
     }
     return sqrt(n);
 }
@@ -113,7 +113,7 @@ void d_normalize(double *vec)
 {
     double n = d_norm(vec);
     for (int i = 0; i < 3; i++) {
-        vec[i] = vec[i] / n;
+        vec[i] = vec[i] / (double) n;
     }
 }
 
@@ -164,13 +164,10 @@ void findRay(double *a, double *b, double *c, double t)
 __device__
 void newa(double *unScale, double *unRotate, double *a, double *newA)
 {
-    newA[0] = (unRotate[0] * a[0]) + (unRotate[1] * a[1]) + (unRotate[2] * a[2]);
-    newA[1] = (unRotate[3] * a[0]) + (unRotate[4] * a[1]) + (unRotate[5] * a[2]);
-    newA[2] = (unRotate[6] * a[0]) + (unRotate[7] * a[1]) + (unRotate[8] * a[2]);
+    double a0 = (unRotate[0] * a[0]) + (unRotate[1] * a[1]) + (unRotate[2] * a[2]);
+    double a1 = (unRotate[3] * a[0]) + (unRotate[4] * a[1]) + (unRotate[5] * a[2]);
+    double a2 = (unRotate[6] * a[0]) + (unRotate[7] * a[1]) + (unRotate[8] * a[2]);
     
-    double a0 = newA[0];
-    double a1 = newA[1];
-    double a2 = newA[2];
     newA[0] = (unScale[0] * a0) + (unScale[1] * a1) + (unScale[2] * a2);
     newA[1] = (unScale[3] * a0) + (unScale[4] * a1) + (unScale[5] * a2);
     newA[2] = (unScale[6] * a0) + (unScale[7] * a1) + (unScale[8] * a2);
@@ -183,13 +180,9 @@ void newb(double *unScale, double *unRotate, double *unTranslate, double *b,
           double *newB)
 {
     // b + unTranslate
-    newB[0] = b[0] + unTranslate[0];
-    newB[1] = b[1] + unTranslate[1];
-    newB[2] = b[2] + unTranslate[2];
-    
-    double b0 = newB[0];
-    double b1 = newB[1];
-    double b2 = newB[2];
+    double b0 = b[0] + unTranslate[0];
+    double b1 = b[1] + unTranslate[1];
+    double b2 = b[2] + unTranslate[2];
     
     // unRotate * (b + unTranslate)
     newB[0] = (unRotate[0] * b0) + (unRotate[1] * b1) + (unRotate[2] * b2);
@@ -308,7 +301,7 @@ double updateRule(double *a, double *b, double e, double n, double t, double eps
 
 /************ THIS FUCKIN FUNCTION *****************/
     //while (!stopPoint)
-    for (int iter = 0; iter < 1000000 && !stopPoint; iter++)
+    for (int iter = 0; iter < 10000 && !stopPoint; iter++)
     {
         told = tnew;
         findRay(a, b, &vec[0], told);

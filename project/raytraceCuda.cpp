@@ -318,13 +318,6 @@ void create_object(double e, double n, double xt, double yt, double zt,
     obj->e = e;
     obj->n = n;
     
-    /*obj->scale = (double *)malloc(sizeof(double) * 9);
-    obj->unScale = (double *)malloc(sizeof(double) * 9);
-    obj->rotate = (double *)malloc(sizeof(double) * 9);
-    obj->unRotate = (double *)malloc(sizeof(double) * 9);
-    obj->translate = (double *)malloc(sizeof(double) * 3);
-    obj->unTranslate = (double *)malloc(sizeof(double) * 3);*/
-    
     get_scale_mat(a, b, c, &obj->scale[0]);
     get_scale_mat(1 / (double) a, 1 / (double) b, 1 / (double) c, &obj->unScale[0]);
     get_rotate_mat(r1, r2, r3, theta, &obj->rotate[0]);
@@ -337,7 +330,6 @@ void create_object(double e, double n, double xt, double yt, double zt,
     obj->unTranslate[1] = -yt;
     obj->unTranslate[2] = -zt;
 
-    //obj->mat = (Material *)malloc(sizeof(Material));
     create_default_material(&obj->mat);
 }
 
