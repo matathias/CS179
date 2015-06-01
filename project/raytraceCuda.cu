@@ -104,13 +104,13 @@ void lighting(double *point, double *n, double *e,
         // Retrieve the light's postion, color, and attenuation factor
         //Vector3d lP = l[i].position;
         //Vector3d lC = l[i].color;
-        double attenuation = l[i]->attenuation_k;
+        double attenuation = l[i].attenuation_k;
 
         // Get the unit direction and the distance between the light and the
         // point
         double lDirection[3];
         for (int j = 0; j < 3; j++)
-            lDirection[i] = l[i]->position[j] - point[i];
+            lDirection[i] = l[i].position[j] - point[i];
             
         double lightDist = norm(&lDirection);
         normalize(&lDirection);
