@@ -720,7 +720,9 @@ int main(int argc, char* argv[])
         printf("2\n");
         
         // Allocate and copy the material
-        gpuErrChk(cudaMalloc(&d_objects[i].mat, sizeof(Material)));
+        Object *test_ptr = &d_objects[i];
+        printf("2aa\n");
+        gpuErrChk(cudaMalloc(&test_ptr->mat, sizeof(Material)));
         printf("2a\n");
         gpuErrChk(cudaMemcpy(d_objects[i].mat, objects[i]->mat, 
                              sizeof(Material), cudaMemcpyHostToDevice));
