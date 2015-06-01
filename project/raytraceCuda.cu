@@ -121,7 +121,7 @@ void lighting(double *point, double *n, double *e,
             if (k != ind)
             {
                 // Find the ray equation transformations
-                newa(&objects[k].unScale, &objects[k].unRotate, 
+                newa(objects[k].unScale, objects[k].unRotate, 
                      &lDirection[0], &newA[0]);
                 newb(&objects[k].unScale, &objects[k].unRotate, 
                      &objects[k].unTranslate, point, &newB[0]);
