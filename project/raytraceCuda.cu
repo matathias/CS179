@@ -297,7 +297,7 @@ void lighting(double *point, double *n, double *e,
     eDirection[2] *= -1;
     // Find the refracted ray
     double refracted1[3];
-    refractedRay(&eDirection[0], n, &refracted1[0], objects[ind].mat.snell);
+    refractedRay(&eDirection[0], n, &refracted1[0], objects[ind].mat->snell);
     normalize(&refracted1[0]);
 
     ttrueFinal = 0.0;
@@ -371,15 +371,15 @@ void lighting(double *point, double *n, double *e,
                    objects[finalObj].n);
 
         lighting(&intersectR[0], &intersectRNormal[0], e,
-                 objects[finalObj].mat.diffuse, 
-                 objects[finalObj].mat.ambient, 
-                 objects[finalObj].mat.specular, 
-                 objects[finalObj].mat.shine, 
+                 objects[finalObj].mat->diffuse, 
+                 objects[finalObj].mat->ambient, 
+                 objects[finalObj].mat->specular, 
+                 objects[finalObj].mat->shine, 
                  l, numLights, objects, numObjects, epsilon,
                  finalObj, generation-1, &refractedLight[0]);
-        refractedLight[0] *= objects[ind].mat.opacity;
-        refractedLight[1] *= objects[ind].mat.opacity;
-        refractedLight[2] *= objects[ind].mat.opacity;
+        refractedLight[0] *= objects[ind].mat->opacity;
+        refractedLight[1] *= objects[ind].mat->opacity;
+        refractedLight[2] *= objects[ind].mat->opacity;
     }
     else
     {
@@ -393,7 +393,7 @@ void lighting(double *point, double *n, double *e,
         findCoeffs(&refA[0], &refB[0], &refCoeffs[0], true);
         findRoots(&refCoeffs[0], &refRoots[0]);
 
-        double tini = max(refRoots(0), refRoots(1));
+        double tini = max(refRoots[0], refRoots[1]);
 
         double tfinalRef = updateRule(&refA[0], &refB[0], objects[ind].e, 
                                       objects[ind].n, tini, epsilon);
@@ -408,10 +408,10 @@ void lighting(double *point, double *n, double *e,
             unitNormal(objects[ind].rotate, &refA[0], &refB[0], &outNormal[0], tfinalRef,
                        objects[ind].e, objects[ind].n);
             refractedRay(&refracted1[0], &outNormal[0], &outRay[0],
-                         (double) 1 / objects[ind].mat.snell);
+                         (double) 1 / objects[ind].mat->snell);
             // If the point has total internal reflection, then don't bother
             // with the rest of the refraction calculations.
-            if(outRay(0) == FLT_MAX)
+            if(outRay[0] == FLT_MAX)
                 isRefracted = false;
         }
         // Now that we've found where the ray exits, check to see if it hits any
@@ -488,15 +488,15 @@ void lighting(double *point, double *n, double *e,
                        objects[finalObj].n);
 
             lighting(&intersectR[0], &intersectRNormal[0], e,
-                     objects[finalObj].mat.diffuse, 
-                     objects[finalObj].mat.ambient, 
-                     objects[finalObj].mat.specular, 
-                     objects[finalObj].mat.shine, 
+                     objects[finalObj].mat->diffuse, 
+                     objects[finalObj].mat->ambient, 
+                     objects[finalObj].mat->specular, 
+                     objects[finalObj].mat->shine, 
                      l, numLights, objects, numObjects, epsilon,
                      finalObj, generation - 1, &refractedLight[0]);
-            refractedLight[0] *= objects[ind].mat.opacity;
-            refractedLight[1] *= objects[ind].mat.opacity;
-            refractedLight[2] *= objects[ind].mat.opacity;
+            refractedLight[0] *= objects[ind].mat->opacity;
+            refractedLight[1] *= objects[ind].mat->opacity;
+            refractedLight[2] *= objects[ind].mat->opacity;
         }
     }
 
@@ -552,9 +552,9 @@ void raytraceKernel(Pixel *grid, Object *objects, double numObjects,
             double px = (i * dx) - (filmX / (double) 2);
             double py = (j * dy) - (filmY / (double) 2);
             double pxColor[] = {bgColor[0], bgColor[1], bgColor[2]};
-            if (!antiAlias)
+            if (!antiAliased)
             {
-                findFilmA(px, py, e1, e2, e3, &pointA[0]);
+                findFilmA(px, py, e1, e2, e3, filmDepth, &pointA[0]);
                 hitObject = false;
                 finalObj = 0, ttrueFinal = 0;
                 for (int k = 0; k < numObjects; k++)
@@ -620,11 +620,11 @@ void raytraceKernel(Pixel *grid, Object *objects, double numObjects,
                                objects[finalObj].n);
 
                     lighting(&intersect[0], &intersectNormal[0], lookFrom,
-                             objects[finalObj].mat.diffuse, 
-                             objects[finalObj].mat.ambient, 
-                             objects[finalObj].mat.specular, 
-                             objects[finalObj].mat.shine, epsilon,
-                             lightsPPM, numLights, objects, numObjects, 
+                             objects[finalObj].mat->diffuse, 
+                             objects[finalObj].mat->ambient, 
+                             objects[finalObj].mat->specular, 
+                             objects[finalObj].mat->shine,
+                             lightsPPM, numLights, objects, numObjects, epsilon,
                              finalObj, 3, &pxColor[0]);
                 }
             }
@@ -647,7 +647,7 @@ void raytraceKernel(Pixel *grid, Object *objects, double numObjects,
                     {
                         double thisPx = px + (i * (dx / (double) 2));
                         double thisPy = py + (j * (dy / (double) 2));
-                        findFilmA(thisPx, thisPy, e1, e2, e3, &pointA[0]);
+                        findFilmA(thisPx, thisPy, e1, e2, e3, filmDepth, &pointA[0]);
                         hitObject = false;
                         finalObj = 0, ttrueFinal = 0;
                         for (int k = 0; k < numObjects; k++)
@@ -718,11 +718,12 @@ void raytraceKernel(Pixel *grid, Object *objects, double numObjects,
                             double color[] = {0, 0, 0};
                             
                             lighting(&intersect[0], &intersectNormal[0], lookFrom,
-                                     objects[finalObj].mat.diffuse, 
-                                     objects[finalObj].mat.ambient, 
-                                     objects[finalObj].mat.specular, 
-                                     objects[finalObj].mat.shine, epsilon,
+                                     objects[finalObj].mat->diffuse, 
+                                     objects[finalObj].mat->ambient, 
+                                     objects[finalObj].mat->specular, 
+                                     objects[finalObj].mat->shine,
                                      lightsPPM, numLights, objects, numObjects, 
+                                     epsilon,
                                      finalObj, 3, &color[0]);
 
                             pxColor[0] += color[0] * pxCoeffs[counter];
@@ -734,9 +735,9 @@ void raytraceKernel(Pixel *grid, Object *objects, double numObjects,
                 }
                 
             }
-            grid[j * Ny + i]->red = pxColor[0];
-            grid[j * Ny + i]->green = pxColor[1];
-            grid[j * Ny + i]->blue = pxColor[2];
+            grid[j * Ny + i].red = pxColor[0];
+            grid[j * Ny + i].green = pxColor[1];
+            grid[j * Ny + i].blue = pxColor[2];
             
             
             j += blockDim.y * gridDim.y;
