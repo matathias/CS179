@@ -721,16 +721,23 @@ int main(int argc, char* argv[])
         
         // Allocate and copy the material
         gpuErrChk(cudaMalloc(&d_objects[i].mat, sizeof(Material)));
+        printf("2a\n");
         gpuErrChk(cudaMemcpy(d_objects[i].mat, objects[i]->mat, 
                              sizeof(Material), cudaMemcpyHostToDevice));
+        printf("2b\n");
         gpuErrChk(cudaMalloc(&d_objects[i].mat->diffuse, 3 * sizeof(double)));
+        printf("2c\n");
         gpuErrChk(cudaMalloc(&d_objects[i].mat->ambient, 3 * sizeof(double)));
+        printf("2d\n");
         gpuErrChk(cudaMalloc(&d_objects[i].mat->specular, 3 * sizeof(double)));
+        printf("2e\n");
         
         gpuErrChk(cudaMemcpy(d_objects[i].mat->diffuse, objects[i]->mat->diffuse,
                              3 * sizeof(double), cudaMemcpyHostToDevice));
+        printf("2f\n");
         gpuErrChk(cudaMemcpy(d_objects[i].mat->ambient, objects[i]->mat->ambient,
                              3 * sizeof(double), cudaMemcpyHostToDevice));
+        printf("2g\n");
         gpuErrChk(cudaMemcpy(d_objects[i].mat->specular, objects[i]->mat->specular,
                              3 * sizeof(double), cudaMemcpyHostToDevice));
         printf("3\n");
