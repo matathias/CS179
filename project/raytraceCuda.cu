@@ -1106,6 +1106,10 @@ void callRaytraceKernel(Pixel *grid, Object *objs, double numObjects,
     if (gy < 1) gy = 1;
     dim3 grids(gx, gy);
     
+    printf("block size:  %d\n", blockSize);
+    printf("grid size x: %d\n", gx);
+    printf("grid size y: %d\n", gy);
+    
     raytraceKernel<<<grids, blocks>>>(grid, objs, numObjects, lightsPPM,
                                       numLights, Nx, Ny, filmX, filmY, bgColor,
                                       e1, e2, e3, lookFrom, epsilon, filmDepth,
