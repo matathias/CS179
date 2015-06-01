@@ -15,14 +15,14 @@ NVCC            ?= $(CUDA_BIN_PATH)/nvcc
 
 # OS-specific build flags
 ifneq ($(DARWIN),)
-      LDFLAGS   := -Xlinker -rpath $(CUDA_LIB_PATH) -L$(CUDA_LIB_PATH) -lcudart -lcufft -lineinfo
+      LDFLAGS   := -Xlinker -rpath $(CUDA_LIB_PATH) -L$(CUDA_LIB_PATH) -lcudart -lcufft
       CCFLAGS   := -arch $(OS_ARCH)
 else
   ifeq ($(OS_SIZE),32)
-      LDFLAGS   := -L$(CUDA_LIB_PATH) -lcudart -lineinfo
+      LDFLAGS   := -L$(CUDA_LIB_PATH) -lcudart
       CCFLAGS   := -m32
   else
-      LDFLAGS   := -L$(CUDA_LIB_PATH) -lcudart -lineinfo
+      LDFLAGS   := -L$(CUDA_LIB_PATH) -lcudart
       CCFLAGS   := -m64
   endif
 endif
@@ -39,7 +39,7 @@ TARGETS = raytraceCuda
 all: $(TARGETS)
 
 raytraceCuda: raytraceCuda.cpp raytraceCuda.o
-	$(CC) $< -o $@ raytraceCuda.o -O3 $(LDFLAGS) -Wall -I$(CUDA_INC_PATH)
+	$(CC) $< -lineinfo -o $@ raytraceCuda.o -O3 $(LDFLAGS) -Wall -I$(CUDA_INC_PATH)
 
 raytraceCuda.o: raytraceCuda.cu
 	$(NVCC) $(NVCCFLAGS) -O3 $(EXTRA_NVCCFLAGS) $(GENCODE_FLAGS) -I$(CUDA_INC_PATH) -o $@ -c $<
