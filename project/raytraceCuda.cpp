@@ -119,6 +119,7 @@ void create_default_material(Material *m);
 void create_object(double e, double n, double xt, double yt, double zt, 
                    double a, double b, double c, double r1, double r2, 
                    double r3, double theta, Object *obj);
+void change_object_material(Object *obj, Material *mat);
 void create_default_object();
 
 void create_Light(double x, double y, double z, double r, double g, double b,
@@ -338,6 +339,18 @@ void create_object(double e, double n, double xt, double yt, double zt,
 
     //obj->mat = (Material *)malloc(sizeof(Material));
     create_default_material(&obj->mat);
+}
+
+void change_object_material(Object *obj, Material *mat)
+{
+    for(int i = 0; i < 3; i++) {
+        obj->mat.diffuse[i] = mat->diffuse[i];
+        obj->mat.ambient[i] = mat->ambient[i];
+        obj->mat.specular[i] = mat->specular[i];
+    }
+    obj->mat.shine = mat->shine;
+    obj->mat.snell = mat->snell;
+    obj->mat.opacity = mat->opacity;
 }
 
 void create_default_object()
@@ -583,7 +596,8 @@ void parseArguments(int argc, char* argv[])
         unsigned int i = 0;
         while (i < tempMats.size() &&  i < tempObjs.size())
         {
-            tempObjs[i].mat = tempMats[i];
+            change_object_material(tempObjs[i], tempMats[i]);
+            //tempObjs[i]->mat = tempMats[i];
             i++;
         }
 
