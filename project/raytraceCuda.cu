@@ -1130,8 +1130,10 @@ void callRaytraceKernel(double *grid, Object *objs, double numObjects,
     printf("grid size x: %d\n", gx);
     printf("grid size y: %d\n", gy);*/
     
-    gpuErrChk(raytraceKernel<<<gridSize, blocks>>>(grid, objs, numObjects, lightsPPM,
+    raytraceKernel<<<gridSize, blocks>>>(grid, objs, numObjects, lightsPPM,
                                       numLights, Nx, Ny, filmX, filmY, bgColor,
                                       e1, e2, e3, lookFrom, epsilon, filmDepth,
-                                      antiAliased));
+                                      antiAliased);
+    gpuErrChk(cudaPeekAtLastError());
+    gpuErrChk(cudaDeviceSynchronize());
 }
