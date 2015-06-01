@@ -583,7 +583,7 @@ void parseArguments(int argc, char* argv[])
         unsigned int i = 0;
         while (i < tempMats.size() &&  i < tempObjs.size())
         {
-            tempObjs[i]->mat = tempMats[i];
+            tempObjs[i].mat = tempMats[i];
             i++;
         }
 
