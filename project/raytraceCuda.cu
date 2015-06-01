@@ -1048,6 +1048,10 @@ void raytraceKernel(Pixel *grid, Object *objects, double numObjects,
                             pxColor[0] += color[0] * pxCoeffs[counter];
                             pxColor[1] += color[1] * pxCoeffs[counter];
                             pxColor[2] += color[2] * pxCoeffs[counter];
+                            
+                            delete[] color;
+                            delete[] intersect;
+                            delete[] intersectNormal;
                         }
                         counter++;
                     }
@@ -1055,9 +1059,9 @@ void raytraceKernel(Pixel *grid, Object *objects, double numObjects,
                 
             }
             int index = j * (int) Ny + i;
-            grid[index].red = pxColor[0];
-            grid[index].green = pxColor[1];
-            grid[index].blue = pxColor[2];
+            grid[index].red = 0; //pxColor[0];
+            grid[index].green = 0.5; //pxColor[1];
+            grid[index].blue = 1; //pxColor[2];
             
             
             j += blockDim.y * gridDim.y;
