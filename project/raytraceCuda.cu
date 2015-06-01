@@ -1114,12 +1114,15 @@ void callRaytraceKernel(double *grid, Object *objs, double numObjects,
     if (gy < 1) gy = 1;
     dim3 grids(gx, gy);
     
-    /*printf("block size:  %d\n", blockSize);
+    printf("block size:  %d\n", blockSize);
     printf("grid size x: %d\n", gx);
-    printf("grid size y: %d\n", gy);*/
+    printf("grid size y: %d\n", gy);
+    grid[0] = 1;
+    printf("here 1\n");
     grid[1] = 1;
+    printf("here 2\n");
     grid[2] = 1;
-    grid[3] = 1;
+    printf("here 3\n");
     
     raytraceKernel<<<grids, blocks>>>(grid, objs, numObjects, lightsPPM,
                                       numLights, Nx, Ny, filmX, filmY, bgColor,
