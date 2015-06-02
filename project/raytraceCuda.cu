@@ -892,13 +892,15 @@ void raytraceKernel(double *grid, Object *objects, double numObjects,
     double *intersect = &rayDoubles[j * Nx + i + 18];
     double *intersectNormal = &rayDoubles[j * Nx + i + 21];
     double *roots = &rayDoubles[j * Nx + i + 24];
-    
-    /*while (i < Nx)
+    if (i == 0 && j == 0) {
+    for (i = 0; i < Nx; i++)
+    //while (i < Nx)
     {
-        j = threadIdx.y + blockDim.y * blockIdx.y;
+        //j = threadIdx.y + blockDim.y * blockIdx.y;
         
-        while (j < Ny)
-        {*/
+        for (j = 0; j < Ny; j++)
+        //while (j < Ny)
+        {
             // The positions are subtracted by a Nx/2 or Ny/2 term to center
             // the film plane
             double px = (i * dx) - (filmX / (double) 2);
@@ -1094,10 +1096,11 @@ void raytraceKernel(double *grid, Object *objects, double numObjects,
             grid[index + 2] = pxColor[2];
             
             
-           /* j += blockDim.y * gridDim.y;
+            //j += blockDim.y * gridDim.y;
         }
-        i += blockDim.x * gridDim.x;
-    }*/
+        //i += blockDim.x * gridDim.x;
+    }
+    }
 }
 
 void callRaytraceKernel(double *grid, Object *objs, double numObjects,
