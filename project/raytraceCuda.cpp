@@ -388,6 +388,7 @@ void parseArguments(int argc, char* argv[])
         if (isFile != string::npos)
         {
             parseFile(argv[1]);
+            return;
         }
     }
     else
