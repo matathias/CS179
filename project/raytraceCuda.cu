@@ -1090,7 +1090,7 @@ void raytraceKernel(double *grid, Object *objects, double numObjects,
                 }
                 delete[] pxCoeffs;
             }
-            int index = j * Nx + i * 3;
+            int index = (j * Nx + i) * 3;
             grid[index] = pxColor[0];
             grid[index + 1] = pxColor[1];
             grid[index + 2] = pxColor[2];
