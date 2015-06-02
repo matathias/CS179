@@ -904,7 +904,7 @@ void raytraceKernel(double *grid, Object *objects, double numObjects,
             double px = (i * dx) - (filmX / (double) 2);
             double py = (j * dy) - (filmY / (double) 2);
             double pxColor[] = {bgColor[0], bgColor[1], bgColor[2]};
-            pointerChk(&pxColor[0], __LINE__);
+            
             if (!antiAliased)
             {
                 findFilmA(px, py, e1, e2, e3, filmDepth, pointA);
@@ -927,9 +927,9 @@ void raytraceKernel(double *grid, Object *objects, double numObjects,
                     // can continue with the calculations.
                     if (roots[0] != FLT_MAX)
                     {
-                        printf("Thread (%d, %d), (%d, %d) on pixel (%d, %d) hit bounding sphere.\n",
+                        /*printf("Thread (%d, %d), (%d, %d) on pixel (%d, %d) hit bounding sphere.\n",
                                threadIdx.x, threadIdx.y, blockIdx.x, blockIdx.y,
-                               i, j);
+                               i, j);*/
                         // Use the update rule to find tfinal
                         double tini = min(roots[0], roots[1]);
                         double tfinal = updateRule(newA, newB, objects[k].e, 
@@ -942,9 +942,9 @@ void raytraceKernel(double *grid, Object *objects, double numObjects,
                          * "missed". */
                         if (tfinal != FLT_MAX && tfinal >= 0)
                         {
-                            printf("Thread (%d, %d), (%d, %d) on pixel (%d, %d) hit superquadric.\n",
+                            /*printf("Thread (%d, %d), (%d, %d) on pixel (%d, %d) hit superquadric.\n",
                                    threadIdx.x, threadIdx.y, blockIdx.x, blockIdx.y,
-                                   i, j);
+                                   i, j);*/
                             if(hitObject && tfinal < ttrueFinal)
                             {
                                 ttrueFinal = tfinal;
