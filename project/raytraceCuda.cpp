@@ -597,7 +597,6 @@ void getArguments(int argc, char* argv[])
 {
     if (argc > 1)
     {
-        printf("second arg: %s\n", argv[1]);
         string filetype = ".txt";
         string firstArg(argv[1]);
         unsigned int isFile = firstArg.find(filetype);
@@ -607,7 +606,7 @@ void getArguments(int argc, char* argv[])
         }
         else
         {
-            parseArguments(argc, argv);
+            parseArguments(argc, &argv[0]);
         }
     }
 }

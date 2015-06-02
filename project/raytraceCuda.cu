@@ -1180,6 +1180,8 @@ void callRaytraceKernel(double *grid, Object *objs, double numObjects,
     dim3 gridSize;
     gridSize.x = gx;
     gridSize.y = gy;
+    gx = 1;
+    gy = 1;
 #if DEBUG
     printf("block size:  %d\n", blockSize);
     printf("grid size x: %d\n", gx);
