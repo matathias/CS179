@@ -879,6 +879,7 @@ void raytraceKernel(double *grid, Object *objects, double numObjects,
                     double *lookFrom, double epsilon, double filmDepth,
                     bool antiAliased, double *rayDoubles)
 {    
+    printf("beginning of the raytrace kernel.\n");
     // Parallize by screen pixel
     int i = threadIdx.x + blockDim.x * blockIdx.x;
     int j = threadIdx.y + blockDim.y * blockIdx.y;
@@ -1140,6 +1141,7 @@ void raytraceKernel(double *grid, Object *objects, double numObjects,
     delete[] roots;
     delete[] intersect;
     delete[] intersectNormal;*/
+    printf("end of kernel.\n");
 }
 
 void callRaytraceKernel(double *grid, Object *objs, double numObjects,
@@ -1150,7 +1152,6 @@ void callRaytraceKernel(double *grid, Object *objs, double numObjects,
                         bool antiAliased, int blockPower) 
 {
     int blockSize = pow(2, blockPower);
-    //blockSize = 16;
     
     dim3 blocks;
     blocks.x = blockSize;
