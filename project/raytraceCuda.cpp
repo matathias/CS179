@@ -83,6 +83,8 @@ bool defaultLights = true;
 // Toggle for using antialiasing
 bool antiAlias = false;
 
+bool alreadySet = false;
+
 /* Ray-tracing globals */
 // Unit orthogonal film vectors
 double e1[] = {1.0, 0.0, 0.0};
@@ -380,7 +382,7 @@ void create_PPM_lights()
 // Function to parse the command line arguments
 void parseArguments(int argc, char* argv[])
 {
-    if (argc > 1)
+    if (argc > 1 && !alreadySet)
     {
         string filetype = ".txt";
         string firstArg(argv[1]);
@@ -394,6 +396,8 @@ void parseArguments(int argc, char* argv[])
     }
     else
         return;
+        
+    alreadySet = true;
     
     printf("second arg: %s\n", argv[1]);
     
