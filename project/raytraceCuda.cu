@@ -1010,10 +1010,6 @@ void raytraceKernel(double *grid, Object *objects, double numObjects,
                                objects[finalObj].n);
 
                     lighting(intersect, intersectNormal, lookFrom,
-                             /*&objects[finalObj].mat.diffuse[0], 
-                             &objects[finalObj].mat.ambient[0], 
-                             &objects[finalObj].mat.specular[0], 
-                             objects[finalObj].mat.shine,*/
                              &objects[finalObj].mat,
                              lightsPPM, numLights, objects, numObjects, epsilon,
                              finalObj, 3, &pxColor[0]);
@@ -1152,9 +1148,7 @@ void raytraceKernel(double *grid, Object *objects, double numObjects,
     delete[] coeffs;
     delete[] roots;
     delete[] intersect;
-    delete[] intersectNormal;
-    printf("end of kernel. Thread at (%d, %d), (%d, %d)\n", threadIdx.x,
-           threadIdx.y, blockIdx.x, blockIdx.y);*/
+    delete[] intersectNormal;*/
 }
 
 void callRaytraceKernel(double *grid, Object *objs, double numObjects,
