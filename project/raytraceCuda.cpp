@@ -160,10 +160,12 @@ double rad2deg(double angle);
 /* Returns the norm of the given vector. */
 double norm(double *vec)
 {
+    printf("Start of norm: (%f, %f, %f)\n", vec[0], vec[1], vec[2]);
     double n = 0;
     for (int i = 0; i < 3; i++) {
         n += vec[i];
     }
+    printf("End of norm, value of n: %f\t sqrt(n): %f\n", n, sqrt(n));
     return sqrt(n);
 }
 
