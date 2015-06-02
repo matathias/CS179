@@ -656,9 +656,10 @@ void printPPM(int pixelIntensity, int xre, int yre, double *grid)
     {
         for (int i = 0; i < xre; i++)
         {
-            int red = grid[j * xre + (i * 3)] * pixelIntensity;
-            int green = grid[j * xre + (i * 3) + 1] * pixelIntensity;
-            int blue = grid[j * xre + (i * 3) + 2] * pixelIntensity;
+            int index = j * xre + i * 3;
+            int red = grid[index] * pixelIntensity;
+            int green = grid[index + 1] * pixelIntensity;
+            int blue = grid[index + 2] * pixelIntensity;
             
             cout << red << " " << green << " " << blue << endl;
         }
