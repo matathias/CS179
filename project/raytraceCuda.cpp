@@ -684,7 +684,7 @@ int main(int argc, char* argv[])
     double *grid = (double*)malloc(sizeof(double) * Ny * Nx * 3);
     
     int numObjects = objects.size();
-    p_objects = (Object *)malloc(sizeof(Object) * numObj);
+    p_objects = (Object *)malloc(sizeof(Object) * numObjects);
     for (int j = 0; j < numObjects; j++) {
         p_objects[j] = *objects[j];
     }
