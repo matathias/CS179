@@ -380,7 +380,6 @@ void create_PPM_lights()
 // Function to parse the command line arguments
 void parseArguments(int argc, char* argv[])
 {
-    printf("entered parseArguments\n");
     int inInd = 1;
     
     // Command line triggers to respond to.
@@ -429,12 +428,12 @@ void parseArguments(int argc, char* argv[])
     bool eyeSpecified = false;
     bool tantiAlias = antiAlias;
 
+    printf("second arg: %s\n", argv[1]);
+
     try
     {
-        printf("entered try block\n");
         while (inInd < argc)
         {
-            printf("start of loop\n");
             if (strcmp(argv[inInd], objectsIn) == 0)
             {
                 inInd += 12;
