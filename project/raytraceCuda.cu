@@ -939,6 +939,10 @@ void raytraceKernel(double *grid, Object *objects, double numObjects,
             if (!antiAliased)
             {
                 findFilmA(px, py, e1, e2, e3, filmDepth, pointA);
+                printf("Thread at (%d, %d), (%d, %d)\n\te1: (%f, %f, %f)\n\te2: (%f, %f, %f)\n\te3: (%f, %f, %f)\n\tpointA: (%f, %f, %f)\n", 
+                       threadIdx.x, threadIdx.y, blockIdx.x, blockIdx.y, e1[0],
+                       e1[1], e1[2], e2[0], e2[1], e2[2], e3[0], e3[1], e3[2],
+                       pointA[0], pointA[1], pointA[2]);
                 hitObject = false;
                 finalObj = 0, ttrueFinal = 0;
                 for (int k = 0; k < numObjects; k++)
@@ -947,9 +951,9 @@ void raytraceKernel(double *grid, Object *objects, double numObjects,
                     newa(objects[k].unScale, objects[k].unRotate, pointA, newA);
                     newb(objects[k].unScale, objects[k].unRotate, 
                          objects[k].unTranslate, lookFrom, newB);
-                    printf("Thread at (%d, %d), (%d, %d)\n\tnewA: (%f, %f, %f)\n\tnewB: (%f, %f, %f)\n",
+                    /*printf("Thread at (%d, %d), (%d, %d)\n\tnewA: (%f, %f, %f)\n\tnewB: (%f, %f, %f)\n",
                           threadIdx.x, threadIdx.y, blockIdx.x, blockIdx.y,
-                          newA[0], newA[1], newA[2], newB[0], newB[1], newB[2]);
+                          newA[0], newA[1], newA[2], newB[0], newB[1], newB[2]);*/
 
                     // Find the quadratic equation coefficients
                     findCoeffs(newA, newB, coeffs, true);
