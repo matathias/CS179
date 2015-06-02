@@ -93,8 +93,6 @@ __device__
 void findFilmA(double x, double y, double *e1, double *e2, double *e3, 
                double filmDepth, double *film)
 {
-/*    printf("Beginning of findFilmA:\n\te1: (%f, %f, %f)\n\te2: (%f, %f, %f)\n\te3: (%f, %f, %f)\n\tfilm: (%f, %f, %f)\n", 
-            e1[0], e1[1], e1[2], e2[0], e2[1], e2[2], e3[0], e3[1], e3[2], film[0], film[1], film[2]));*/
     for (int i = 0; i < 3; i++) {
         film[i] = (filmDepth * e3[i]) + (x * e1[i]) + (y * e2[i]);
     }
@@ -417,7 +415,7 @@ void lighting(double *point, double *n, double *e,
               Point_Light *l, int numLights, 
               Object *objects, int numObjects,
               double epsilon, 
-              int ind, int generation, double *res)
+              int ind, int generation, double *res, double *lightDoubles)
 {
     double diffuseSum[] = {0.0, 0.0, 0.0};
     double specularSum[] = {0.0, 0.0, 0.0};
@@ -428,10 +426,15 @@ void lighting(double *point, double *n, double *e,
     double* spec = &mat->specular[0];
     double shine = mat->shine;
     
-    double newA[3];
+    /*double newA[3];
     double newB[3];
     double coeffs[3];
-    double roots[2];
+    double roots[2];*/
+    double *newA = &lightDoubles[0];
+    double *newB = &lightDoubles[3];
+    double *coeffs = &lightDoubles[6];
+    double *roots = &lightDoubles[30];
+    
 
     // Get the unit direction from the point to the camera
     double eDirection[3];
@@ -534,22 +537,25 @@ void lighting(double *point, double *n, double *e,
                 specularSum[1] += l[i].color[1] * atten * pow(nDotDir, shine);
                 specularSum[2] += l[i].color[2] * atten * pow(nDotDir, shine);
             }
-            //delete[] dirDif;
+            delete[] dirDif;
         }
     }
     /* Find the light contribution from reflection */
     // Find the reflected ray
 #if REFLECTION
     double eDotN = d_dot(n, &eDirection[0]);
-    double reflected[3];
+    //double reflected[3];
+    double *reflected = &lightDoubles[9];
     reflected[0] = (2 * n[0] * eDotN) - eDirection[0];
     reflected[1] = (2 * n[1] * eDotN) - eDirection[1];
     reflected[2] = (2 * n[2] * eDotN) - eDirection[2];
     d_normalize(&reflected[0]);
     double ttrueFinal = 0.0;
     int finalObj = 0;
-    double finalNewA[3];
-    double finalNewB[3];
+    //double finalNewA[3];
+    //double finalNewB[3];
+    double *finalNewA = &lightDoubles[12];
+    double *finalNewB = &lightDoubles[15];
     bool hitObject = false;
     for (int k = 0; k < numObjects && generation > 0 ; k++)
     {
@@ -622,14 +628,14 @@ void lighting(double *point, double *n, double *e,
         lighting(&intersectR[0], &intersectRNormal[0], e,
                  &objects[finalObj].mat,
                  l, numLights, objects, numObjects, epsilon,
-                 finalObj, generation-1, &reflectedLight[0]);
+                 finalObj, generation-1, &reflectedLight[0], lightDoubles);
         if (shine < 1) {
             reflectedLight[0] *= shine;
             reflectedLight[1] *= shine;
             reflectedLight[2] *= shine;
         }
-        //delete[] intersectR;
-        //delete[] intersectRNormal;
+        delete[] intersectR;
+        delete[] intersectRNormal;
     }
 #endif
     
@@ -641,7 +647,8 @@ void lighting(double *point, double *n, double *e,
     eDirection[1] *= -1;
     eDirection[2] *= -1;
     // Find the refracted ray
-    double refracted1[3];
+    //double refracted1[3];
+    double *refracted1 = &lightDoubles[9];
     refractedRay(&eDirection[0], n, &refracted1[0], objects[ind].mat.snell);
     d_normalize(&refracted1[0]);
 
@@ -718,17 +725,21 @@ void lighting(double *point, double *n, double *e,
         lighting(&intersectR[0], &intersectRNormal[0], e,
                  &objects[finalObj].mat,
                  l, numLights, objects, numObjects, epsilon,
-                 finalObj, generation-1, &refractedLight[0]);
+                 finalObj, generation-1, &refractedLight[0], lightDoubles);
         refractedLight[0] *= objects[ind].mat.opacity;
         refractedLight[1] *= objects[ind].mat.opacity;
         refractedLight[2] *= objects[ind].mat.opacity;
     }
     else
     {
-        double refA[3];
+        /*double refA[3];
         double refB[3];
         double refCoeffs[3];
-        double refRoots[3];
+        double refRoots[2];*/
+        double *refA = &lightDoubles[18];
+        double *refB = &lightDoubles[21];
+        double *refCoeffs = &lightDoubles[24];
+        double *refRoots = &lightDoubles[27];
         newa(objects[ind].unScale, objects[ind].unRotate, &refracted1[0], &refA[0]);
         newb(objects[ind].unScale, objects[ind].unRotate, 
              objects[ind].unTranslate, point, &refB[0]);
@@ -741,9 +752,12 @@ void lighting(double *point, double *n, double *e,
                                       objects[ind].n, tini, epsilon);
 
         bool isRefracted = true;
-        double outPoint[3];
+        //double outPoint[3];
         double outNormal[3];
-        double outRay[3];
+        //double outRay[3];
+        double *outPoint = &lightDoubles[24];
+        double *outRay = &lightDoubles[27];
+        
         if (isRefracted) // the fuck is the point of this?
         {
             findRay(&refracted1[0], point, &outPoint[0], tfinalRef);
@@ -833,20 +847,25 @@ void lighting(double *point, double *n, double *e,
             lighting(&intersectR[0], &intersectRNormal[0], e,
                      &objects[finalObj].mat,
                      l, numLights, objects, numObjects, epsilon,
-                     finalObj, generation - 1, &refractedLight[0]);
+                     finalObj, generation - 1, &refractedLight[0], lightDoubles);
             refractedLight[0] *= objects[ind].mat.opacity;
             refractedLight[1] *= objects[ind].mat.opacity;
             refractedLight[2] *= objects[ind].mat.opacity;
             delete[] intersectR;
             delete[] intersectRNormal;
         }
-        delete[] outRay;
-        delete[] outPoint;
+        //delete[] outRay;
+        //delete[] outPoint;
     }
 #endif
 
-    double minVec[] = {1, 1, 1};
-    double maxVec[3];
+    //double minVec[] = {1, 1, 1};
+    //double maxVec[3];
+    double *minVec = &lightDoubles[0];
+    double *maxVec = &lightDoubles[3];
+    minVec[0] = 1;
+    minVec[1] = 1;
+    minVec[2] = 1;
            
     cProduct(&diffuseSum[0], dif, &diffuseSum[0]);
     cProduct(&specularSum[0], spec, &specularSum[0]);
@@ -856,18 +875,18 @@ void lighting(double *point, double *n, double *e,
     cWiseMin(&minVec[0], &maxVec[0], res);
     
     // Free everything
-    delete[] maxVec;
-    delete[] minVec;
+    //delete[] maxVec;
+    //delete[] minVec;
     
     delete[] diffuseSum;
     delete[] specularSum;
     delete[] reflectedLight;
     delete[] refractedLight;
     
-    delete[] newA;
+    /*delete[] newA;
     delete[] newB;
     delete[] coeffs;
-    delete[] roots;
+    delete[] roots;*/
 }
 
 __global__
@@ -876,7 +895,7 @@ void raytraceKernel(double *grid, Object *objects, double numObjects,
                     int Nx, int Ny, double filmX, double filmY, 
                     double *bgColor, double *e1, double *e2, double *e3, 
                     double *lookFrom, double epsilon, double filmDepth,
-                    bool antiAliased, double *rayDoubles)
+                    bool antiAliased, double *rayDoubles, double *lightDoubles)
 {   
     // Parallize by screen pixel
     int i = threadIdx.x + blockDim.x * blockIdx.x;
@@ -899,6 +918,9 @@ void raytraceKernel(double *grid, Object *objects, double numObjects,
     double *intersect = &rayDoubles[rayInd + 18];
     double *intersectNormal = &rayDoubles[rayInd + 21];
     double *roots = &rayDoubles[rayInd + 24];
+    
+    int lightInd = (j * Nx + i) * 32;
+    double *lDoubles = &lightDoubles[lightInd];
     
     pointerChk(finalNewA, __LINE__);
     pointerChk(finalNewB, __LINE__);
@@ -1003,7 +1025,7 @@ void raytraceKernel(double *grid, Object *objects, double numObjects,
                     lighting(intersect, intersectNormal, lookFrom,
                              &objects[finalObj].mat,
                              lightsPPM, numLights, objects, numObjects, epsilon,
-                             finalObj, 3, &pxColor[0]);
+                             finalObj, 3, &pxColor[0], lDoubles);
                 }
             }
             else
@@ -1098,7 +1120,7 @@ void raytraceKernel(double *grid, Object *objects, double numObjects,
                                      &objects[finalObj].mat,
                                      lightsPPM, numLights, objects, numObjects, 
                                      epsilon,
-                                     finalObj, 3, &color[0]);
+                                     finalObj, 3, &color[0], lDoubles);
 
                             pxColor[0] += color[0] * pxCoeffs[counter];
                             pxColor[1] += color[1] * pxCoeffs[counter];
@@ -1160,11 +1182,16 @@ void callRaytraceKernel(double *grid, Object *objs, double numObjects,
     gpuErrChk(cudaMalloc(&rayDoubles, sizeof(double) * numThreads * 26));
     gpuErrChk(cudaMemset(rayDoubles, 0, sizeof(double) * numThreads * 26));
     
+    double *lightDoubles;
+    gpuErrChk(cudaMalloc(&lightDoubles, sizeof(double) * numThreads * 32));
+    gpuErrChk(cudaMemset(lightDoubles, 0, sizeof(double) * numThreads * 32));
+    
     raytraceKernel<<<gridSize, blocks>>>(grid, objs, numObjects, lightsPPM,
                                       numLights, Nx, Ny, filmX, filmY, bgColor,
                                       e1, e2, e3, lookFrom, epsilon, filmDepth,
-                                      antiAliased, rayDoubles);
+                                      antiAliased, rayDoubles, lightDoubles);
     gpuErrChk(cudaPeekAtLastError());
     gpuErrChk(cudaDeviceSynchronize());
     gpuErrChk(cudaFree(rayDoubles));
+    gpuErrChk(cudaFree(lightDoubles));
 }
