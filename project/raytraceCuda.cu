@@ -886,8 +886,7 @@ void raytraceKernel(double *grid, Object *objects, double numObjects,
                     double *bgColor, double *e1, double *e2, double *e3, 
                     double *lookFrom, double epsilon, double filmDepth,
                     bool antiAliased, double *rayDoubles)
-{    
-    printf("beginning of the raytrace kernel.\n");
+{   
     // Parallize by screen pixel
     int i = threadIdx.x + blockDim.x * blockIdx.x;
     int j = threadIdx.y + blockDim.y * blockIdx.y;
@@ -928,9 +927,6 @@ void raytraceKernel(double *grid, Object *objects, double numObjects,
     pointerChk(intersectNormal, __LINE__);
     pointerChk(roots, __LINE__);
     
-    printf("Post pointerChks - thread at (%d, %d), (%d, %d)\n", threadIdx.x,
-           threadIdx.y, blockIdx.x, blockIdx.y);
-    
     while (i < Nx)
     {
         j = threadIdx.y + blockDim.y * blockIdx.y;
@@ -969,6 +965,9 @@ void raytraceKernel(double *grid, Object *objects, double numObjects,
                         double tini = min(roots[0], roots[1]);
                         double tfinal = updateRule(newA, newB, objects[k].e, 
                                                    objects[k].n, tini, epsilon);
+                                                   
+                        printf("Post update rule. tini: %f tfinal: %f - thread at (%d, %d), (%d, %d)\n",
+                        tini, tfinal, threadIdx.x, threadIdx.y, blockIdx.x, blockIdx.y);
 
                         /* Check to see if tfinal is FLT_MAX - if it is then the ray 
                          * missed the superquadric. Additionally, if tfinal is negative 
