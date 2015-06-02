@@ -156,10 +156,7 @@ double isq(double *vec, double e, double n)
     // Test for e = 0 now to prevent divide-by-zero errors.
     if (e == 0)
         return zTerm;
-    /*printf("&vec[0]: %p vec[0]: %f\n", &vec[0], vec[0]);
-    printf("&vec[1]: %p vec[1]: %f\n", &vec[1], vec[1]);
-    printf("&vec[2]: %p vec[2]: %f\n", &vec[2], vec[2]);*/
-    printf("&e: %p e: %f\n", &e, e);
+        
     double xTerm = pow(pow(vec[0], 2.0), 1.0 / (double) e);
     double yTerm = pow(pow(vec[1], 2.0), 1.0 / (double) e);
     double xyTerm = pow(xTerm + yTerm, e / (double) n);
