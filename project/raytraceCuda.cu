@@ -323,6 +323,11 @@ double updateRule(double *a, double *b, double e, double n, double t, double eps
             stopPoint = true;
             tnew = FLT_MAX;
         }
+        else if (tnew >= FLT_MAX)
+        {
+            stopPoint = true;
+            tnew = FLT_MAX;
+        }
         else
         {
             tnew = told - (g / gP);
@@ -942,14 +947,17 @@ void raytraceKernel(double *grid, Object *objects, double numObjects,
                     newa(objects[k].unScale, objects[k].unRotate, pointA, newA);
                     newb(objects[k].unScale, objects[k].unRotate, 
                          objects[k].unTranslate, lookFrom, newB);
+                    prinf("Thread at (%d, %d), (%d, %d)\n\tnewA: (%f, %f, %f)\n\tnewB: (%f, %f, %f)\n",
+                          threadIdx.x, threadIdx.y, blockIdx.x, blockIdx.y,
+                          newA[0], newA[1], newA[2], newB[0], newB[1], newB[2]);
 
                     // Find the quadratic equation coefficients
                     findCoeffs(newA, newB, coeffs, true);
                     // Using the coefficients, find the roots
                     findRoots(coeffs, roots);
-                    printf("Coeffs: %f, %f, %f\t Roots: %f, %f - thread at (%d, %d), (%d, %d)\n",
+                    /*printf("Coeffs: %f, %f, %f\t Roots: %f, %f - thread at (%d, %d), (%d, %d)\n",
                         coeffs[0], coeffs[1], coeffs[2], roots[0], roots[1], 
-                        threadIdx.x, threadIdx.y, blockIdx.x, blockIdx.y);
+                        threadIdx.x, threadIdx.y, blockIdx.x, blockIdx.y);*/
 
                     // Check to see if the roots are FLT_MAX - if they are then the 
                     // ray missed the superquadric. If they haven't missed then we 
