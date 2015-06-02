@@ -1094,7 +1094,7 @@ void raytraceKernel(double *grid, Object *objects, double numObjects,
                                        objects[finalObj].e, objects[finalObj].n);
 
                             double color[] = {0, 0, 0};
-                            pointerChk(&color[0], __LINE);
+                            pointerChk(&color[0], __LINE__);
                             
                             lighting(intersect, intersectNormal, lookFrom,
                                      &objects[finalObj].mat.diffuse[0], 
