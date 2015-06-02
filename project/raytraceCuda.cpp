@@ -803,7 +803,7 @@ int main(int argc, char* argv[])
                          cudaMemcpyDeviceToHost));
 
     /* Output the relevant data. */
-    printPPM(255, Nx, Ny, grid);
+    //printPPM(255, Nx, Ny, grid);
     
     /* Free everything. */
     free(grid);
