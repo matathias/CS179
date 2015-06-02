@@ -883,7 +883,7 @@ void raytraceKernel(double *grid, Object *objects, double numObjects,
     int finalObj = 0;
     bool hitObject = false;
     
-    int rayInd = j * Nx * 26 + i
+    int rayInd = j * Nx * 26 + i;
     double *finalNewA = &rayDoubles[rayInd];
     double *finalNewB = &rayDoubles[rayInd + 3];
     double *pointA = &rayDoubles[rayInd + 6];
