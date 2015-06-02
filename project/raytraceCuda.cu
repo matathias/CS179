@@ -940,7 +940,6 @@ void raytraceKernel(double *grid, Object *objects, double numObjects,
                          * "missed". */
                         if (tfinal != FLT_MAX && tfinal >= 0)
                         {
-                            printf("Pixel (%d, %d) hit superquadric.\n", i, j);
                             if(hitObject && tfinal < ttrueFinal)
                             {
                                 ttrueFinal = tfinal;
