@@ -912,6 +912,7 @@ void raytraceKernel(double *grid, Object *objects, double numObjects,
     double *intersectNormal = &rayDoubles[j * Nx + i + 21];
     double *roots = &rayDoubles[j * Nx + i + 24];
     
+    pointerChk(finalNewA);
     
     while (i < Nx)
     {
