@@ -259,6 +259,10 @@ void initPPM()
 
 void create_film_plane(double *e1, double *e2, double *e3)
 {
+    printf("Beginning of create film plane:\n");
+    printf("e1: (%f, %f, %f)\n", e1[0], e1[1], e1[2]);
+    printf("e2: (%f, %f, %f)\n", e2[0], e2[1], e2[2]);
+    printf("e3: (%f, %f, %f)\n", e3[0], e3[1], e3[2]);
     // First, find the proper value for filmY from filmX, Nx and Ny
     filmY = Ny * filmX / (double) Nx;
     
@@ -276,6 +280,10 @@ void create_film_plane(double *e1, double *e2, double *e3)
     
     cross(e2, e3, e1);
     normalize(e1);
+    printf("End of create film plane:\n");
+    printf("e1: (%f, %f, %f)\n", e1[0], e1[1], e1[2]);
+    printf("e2: (%f, %f, %f)\n", e2[0], e2[1], e2[2]);
+    printf("e3: (%f, %f, %f)\n", e3[0], e3[1], e3[2]);
 }
 
 void create_Material(double dr, double dg, double db, 
