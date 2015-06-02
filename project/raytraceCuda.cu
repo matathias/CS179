@@ -91,15 +91,11 @@ __device__
 void findFilmA(double x, double y, double *e1, double *e2, double *e3, 
                double filmDepth, double *film)
 {
-    printf("Beginning of findFilmA:\n\te1: (%f, %f, %f)\n\te2: (%f, %f, %f)\n\te3: (%f, %f, %f)\n\tfilm: (%f, %f, %f)\n", 
-            e1[0], e1[1], e1[2], e2[0], e2[1], e2[2], e3[0], e3[1], e3[2], film[0], film[1], film[2]);
+/*    printf("Beginning of findFilmA:\n\te1: (%f, %f, %f)\n\te2: (%f, %f, %f)\n\te3: (%f, %f, %f)\n\tfilm: (%f, %f, %f)\n", 
+            e1[0], e1[1], e1[2], e2[0], e2[1], e2[2], e3[0], e3[1], e3[2], film[0], film[1], film[2]));*/
     for (int i = 0; i < 3; i++) {
         film[i] = (filmDepth * e3[i]) + (x * e1[i]) + (y * e2[i]);
     }
-    
-
-/*    printf("End of findFilmA:\n\te1: (%f, %f, %f)\n\te2: (%f, %f, %f)\n\te3: (%f, %f, %f)\n\tfilm: (%f, %f, %f)\n", 
-            e1[0], e1[1], e1[2], e2[0], e2[1], e2[2], e3[0], e3[1], e3[2], film[0], film[1], film[2]));*/
 }
 
 /* Returns -1 for negative numbers, 1 for positive numbers, and 0 for zero. */
@@ -630,6 +626,8 @@ void lighting(double *point, double *n, double *e,
             reflectedLight[1] *= shine;
             reflectedLight[2] *= shine;
         }
+        delete[] intersectR;
+        delete[] intersectRNormal;
     }
 #endif
     
@@ -900,6 +898,16 @@ void raytraceKernel(double *grid, Object *objects, double numObjects,
     double *intersectNormal = &rayDoubles[rayInd + 21];
     double *roots = &rayDoubles[rayInd + 24];
     
+    pointerChk(finalNewA, __LINE__);
+    pointerChk(finalNewB, __LINE__);
+    pointerChk(pointA, __LINE__);
+    pointerChk(newA, __LINE__);
+    pointerChk(newB, __LINE__);
+    pointerChk(coeffs, __LINE__);
+    pointerChk(intersect, __LINE__);
+    pointerChk(intersectNormal, __LINE__);
+    pointerChk(roots, __LINE__);
+    
     while (i < Nx)
     {
         j = threadIdx.y + blockDim.y * blockIdx.y;
@@ -914,6 +922,10 @@ void raytraceKernel(double *grid, Object *objects, double numObjects,
             
             if (!antiAliased)
             {
+                pointerChk(pointA, __LINE__);
+                pointerChk(e1, __LINE__);
+                pointerChk(e2, __LINE__);
+                pointerChk(e3, __LINE__);
                 findFilmA(px, py, e1, e2, e3, filmDepth, pointA);
                 hitObject = false;
                 finalObj = 0, ttrueFinal = 0;
