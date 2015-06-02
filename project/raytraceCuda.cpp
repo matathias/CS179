@@ -683,9 +683,9 @@ int main(int argc, char* argv[])
     /***** Allocate memory here *****/    
     double *grid = (double*)malloc(sizeof(double) * Ny * Nx * 3);
     
-    int numObj = objects.size();
+    int numObjects = objects.size();
     p_objects = (Object *)malloc(sizeof(Object) * numObj);
-    for (int j = 0; j < numObj; j++) {
+    for (int j = 0; j < numObjects; j++) {
         p_objects[j] = *objects[j];
     }
     int numLights = lightsPPM.size();
@@ -720,8 +720,8 @@ int main(int argc, char* argv[])
     /* Handle the allocating and copying of the Objects and Point_Lights arrays.
      * This is a little weird because the structs store pointers...
      */
-    int numObjects = objects.size();
-    int numLights = lightsPPM.size();
+    //int numObjects = objects.size();
+    //int numLights = lightsPPM.size();
     Object *d_objects;
     Point_Light *d_lights;
     gpuErrChk(cudaMalloc(&d_objects, numObjects * sizeof(Object)));
