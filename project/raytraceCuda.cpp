@@ -679,6 +679,7 @@ void printPPM(int pixelIntensity, int xre, int yre, double *grid)
 int main(int argc, char* argv[])
 {
     // extract the command line arguments
+        printf("second arg: %s\n", argv[1]);
     if(getArguments(argc, argv)) {
         printf("second arg: %s\n", argv[1]);
         parseArguments(argc, argv);
