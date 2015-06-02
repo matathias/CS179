@@ -284,10 +284,6 @@ void create_Material(double dr, double dg, double db,
                      double shine, double refract, double opac, 
                      Material *mat)
 {
-    /*mat->diffuse = (double *)malloc(sizeof(double) * 3);
-    mat->ambient = (double *)malloc(sizeof(double) * 3);
-    mat->specular = (double *)malloc(sizeof(double) * 3);*/
-    
     mat->diffuse[0] = dr;
     mat->diffuse[1] = dg;
     mat->diffuse[2] = db;
@@ -355,10 +351,7 @@ void create_default_object()
 
 void create_Light(double x, double y, double z, double r, double g, double b,
                   double k, Point_Light *l)
-{
-    //l->position = (double *)malloc(sizeof(double) * 3);
-    //l->color = (double *)malloc(sizeof(double) * 3);
-    
+{    
     l->position[0] = x;
     l->position[1] = y;
     l->position[2] = z;
@@ -696,16 +689,16 @@ int main(int argc, char* argv[])
     gpuErrChk(cudaMalloc(&d_grid, sizeof(double) * Ny * Nx * 3));
     
     /* Copy data from the cpu to the gpu. */
-    gpuErrChk(cudaMemcpy(d_e1, e1, 3 * sizeof(double), cudaMemcpyHostToDevice));
-    gpuErrChk(cudaMemcpy(d_e2, e2, 3 * sizeof(double), cudaMemcpyHostToDevice));
-    gpuErrChk(cudaMemcpy(d_e3, e3, 3 * sizeof(double), cudaMemcpyHostToDevice));
-    gpuErrChk(cudaMemcpy(d_lookFrom, lookFrom, 3 * sizeof(double), 
+    gpuErrChk(cudaMemcpy(d_e1, &e1[0], 3 * sizeof(double), cudaMemcpyHostToDevice));
+    gpuErrChk(cudaMemcpy(d_e2, &e2[0], 3 * sizeof(double), cudaMemcpyHostToDevice));
+    gpuErrChk(cudaMemcpy(d_e3, &e3[0], 3 * sizeof(double), cudaMemcpyHostToDevice));
+    gpuErrChk(cudaMemcpy(d_lookFrom, &lookFrom[0], 3 * sizeof(double), 
                          cudaMemcpyHostToDevice));
-    gpuErrChk(cudaMemcpy(d_up, up, 3 * sizeof(double), cudaMemcpyHostToDevice));
-    gpuErrChk(cudaMemcpy(d_bgColor, bgColor, 3 * sizeof(double), 
+    gpuErrChk(cudaMemcpy(d_up, &up[0], 3 * sizeof(double), cudaMemcpyHostToDevice));
+    gpuErrChk(cudaMemcpy(d_bgColor, &bgColor[0], 3 * sizeof(double), 
                          cudaMemcpyHostToDevice));
     
-    gpuErrChk(cudaMemset(d_grid, 1, sizeof(double) * Ny * Nx * 3));
+    gpuErrChk(cudaMemset(d_grid, 0, sizeof(double) * Ny * Nx * 3));
     
     /* Handle the allocating and copying of the Objects and Point_Lights arrays.
      * This is a little weird because the structs store pointers...
