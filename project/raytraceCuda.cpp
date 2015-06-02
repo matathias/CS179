@@ -261,9 +261,9 @@ void print_objects()
                o->scale[7], o->scale[8], o->unScale[6], o->unScale[7], o->unScale[8]);
         printf("rotate: [%f, %f, %f] unRotate: [%f, %f, %f]\n", o->rotate[0],
                o->rotate[1], o->rotate[2], o->unRotate[0], o->unRotate[1], o->unRotate[2]);
-        printf("       [%f, %f, %f]            [%f, %f, %f]\n", o->rotate[3],
+        printf("        [%f, %f, %f]           [%f, %f, %f]\n", o->rotate[3],
                o->rotate[4], o->rotate[5], o->unRotate[3], o->unRotate[4], o->unRotate[5]);
-        printf("       [%f, %f, %f]            [%f, %f, %f]\n", o->rotate[6],
+        printf("        [%f, %f, %f]           [%f, %f, %f]\n", o->rotate[6],
                o->rotate[7], o->rotate[8], o->unRotate[6], o->unRotate[7], o->unRotate[8]);
         printf("translate: (%f, %f, %f) unTranslate: (%f, %f, %f)\n",
                o->translate[0], o->translate[1], o->translate[2], o->unTranslate[0],
@@ -739,8 +739,8 @@ int main(int argc, char* argv[])
         p_lights[j] = *lightsPPM[j];
     }
     
-    print_objects();
-    print_lights();
+    //print_objects();
+    //print_lights();
     
     /* Allocate memory on the GPU */
     double *d_e1, *d_e2, *d_e3, *d_lookFrom, *d_up, *d_bgColor;
@@ -768,28 +768,13 @@ int main(int argc, char* argv[])
     /* Handle the allocating and copying of the Objects and Point_Lights arrays.
      * This is a little weird because the structs store pointers...
      */
-    //int numObjects = objects.size();
-    //int numLights = lightsPPM.size();
     Object *d_objects;
     Point_Light *d_lights;
     gpuErrChk(cudaMalloc(&d_objects, numObjects * sizeof(Object)));
     gpuErrChk(cudaMalloc(&d_lights, numLights * sizeof(Object)));
-    // Copy the objects onto the gpu, as well as allocating space for the object
-    // pointers and copying the data in there
-    /*for (int i = 0; i < numObjects; i++)
-    {
-        gpuErrChk(cudaMemcpy(&d_objects[i], objects[i], sizeof(Object), 
-                             cudaMemcpyHostToDevice));
-        
-    }*/
+    
     gpuErrChk(cudaMemcpy(d_objects, p_objects, sizeof(Object) * numObjects,
                          cudaMemcpyHostToDevice));
-    // Do the same for the Point_Lights
-    /*for (int i = 0; i < numLights; i++)
-    {
-        gpuErrChk(cudaMemcpy(&d_lights[i], lightsPPM[i], sizeof(Point_Light), 
-                             cudaMemcpyHostToDevice));
-    }*/
     gpuErrChk(cudaMemcpy(d_lights, p_lights, sizeof(Point_Light) * numLights,
                          cudaMemcpyHostToDevice));
     
@@ -803,7 +788,7 @@ int main(int argc, char* argv[])
                          cudaMemcpyDeviceToHost));
 
     /* Output the relevant data. */
-    //printPPM(255, Nx, Ny, grid);
+    printPPM(255, Nx, Ny, grid);
     
     /* Free everything. */
     free(grid);
