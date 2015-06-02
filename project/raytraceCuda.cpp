@@ -133,7 +133,7 @@ void create_PPM_lights();
 void printPPM(int pixelIntensity, int xre, int yre, double *grid);
 // Function to parse the command line arguments
 void parseArguments(int argc, char* argv[]);
-bool getArguments(int argc, char* argv[]);
+void getArguments(int argc, char* argv[]);
 void parseFile(char* filename);
 
 /* Returns the norm of the given vector. */
@@ -380,6 +380,19 @@ void create_PPM_lights()
 // Function to parse the command line arguments
 void parseArguments(int argc, char* argv[])
 {
+    if (argc > 1)
+    {
+        string filetype = ".txt";
+        string firstArg(argv[1]);
+        unsigned int isFile = firstArg.find(filetype);
+        if (isFile != string::npos)
+        {
+            parseFile(argv[1]);
+        }
+    }
+    else
+        return;
+    
     int inInd = 1;
     
     // Command line triggers to respond to.
@@ -593,7 +606,7 @@ void parseArguments(int argc, char* argv[])
     }
 }
 
-bool getArguments(int argc, char* argv[])
+void getArguments(int argc, char* argv[])
 {
     if (argc > 1)
     {
@@ -606,11 +619,9 @@ bool getArguments(int argc, char* argv[])
         }
         else
         {
-            //parseArguments(argc, argv);
-            return true;
+            parseArguments(argc, argv);
         }
     }
-    return false;
 }
 
 void parseFile(char* filename)
@@ -680,10 +691,8 @@ int main(int argc, char* argv[])
 {
     // extract the command line arguments
         printf("second arg: %s\n", argv[1]);
-    if(getArguments(argc, argv)) {
-        printf("second arg: %s\n", argv[1]);
-        parseArguments(argc, argv);
-    }
+    //getArguments(argc, argv);
+    parseArguments(argc, argv);
     
     // block size will be 16 x 16 = 2^4 x 2^4
     int blockPower = 4;
