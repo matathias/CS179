@@ -883,15 +883,16 @@ void raytraceKernel(double *grid, Object *objects, double numObjects,
     int finalObj = 0;
     bool hitObject = false;
     
-    double *finalNewA = &rayDoubles[j * Nx + i];
-    double *finalNewB = &rayDoubles[j * Nx + i + 3];
-    double *pointA = &rayDoubles[j * Nx + i + 6];
-    double *newA = &rayDoubles[j * Nx + i + 9];
-    double *newB = &rayDoubles[j * Nx + i + 12];
-    double *coeffs = &rayDoubles[j * Nx + i + 15];
-    double *intersect = &rayDoubles[j * Nx + i + 18];
-    double *intersectNormal = &rayDoubles[j * Nx + i + 21];
-    double *roots = &rayDoubles[j * Nx + i + 24];
+    int rayInd = j * Nx * 26 + i
+    double *finalNewA = &rayDoubles[rayInd];
+    double *finalNewB = &rayDoubles[rayInd + 3];
+    double *pointA = &rayDoubles[rayInd + 6];
+    double *newA = &rayDoubles[rayInd + 9];
+    double *newB = &rayDoubles[rayInd + 12];
+    double *coeffs = &rayDoubles[rayInd + 15];
+    double *intersect = &rayDoubles[rayInd + 18];
+    double *intersectNormal = &rayDoubles[rayInd + 21];
+    double *roots = &rayDoubles[rayInd + 24];
     //if (i == 0 && j == 0) {
     //for (i = 0; i < Nx; i++)
     while (i < Nx)
