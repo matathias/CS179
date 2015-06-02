@@ -24,12 +24,10 @@ inline void gpuAssert(cudaError_t code,
   }
 }
     
-#define pointerChk(ans) { pointerCheck((ans), __FILE__, __LINE__); }
-__device__ inline void pointerCheck(double *ptr, const char *file, int line,
-                         bool abort=true) {
+__device__
+void pointerChk(double *ptr, int line) {
     if (ptr == NULL) {
-        fprintf(stderr, "Null pointer at %s %d\n", file, line);
-        exit(1);
+        printf("ptr is null at line %d\n", line);
     }
 }
 
@@ -910,7 +908,9 @@ void raytraceKernel(double *grid, Object *objects, double numObjects,
     double *intersectNormal = &rayDoubles[j * Nx + i + 21];
     double *roots = &rayDoubles[j * Nx + i + 24];
     
-    pointerChk(finalNewA);
+    pointerChk(finalNewA, __LINE__);
+    pointerChk(finalNewB, __LINE__);
+    pointerChk(pointA, __LINE__);
     
     while (i < Nx)
     {
