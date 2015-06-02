@@ -7,10 +7,10 @@
 
 // flags as to whether or not reflection and refraction are included in the
 // raytracing
-#define REFLECTION 0
-#define REFRACTION 0
+#define REFLECTION 1
+#define REFRACTION 1
 
-#define DEBUG 1
+#define DEBUG 0
 
 #define gpuErrChk(ans) { gpuAssert((ans), __FILE__, __LINE__); }
 inline void gpuAssert(cudaError_t code,
@@ -893,13 +893,11 @@ void raytraceKernel(double *grid, Object *objects, double numObjects,
     double *intersect = &rayDoubles[rayInd + 18];
     double *intersectNormal = &rayDoubles[rayInd + 21];
     double *roots = &rayDoubles[rayInd + 24];
-    //if (i == 0 && j == 0) {
-    //for (i = 0; i < Nx; i++)
+    
     while (i < Nx)
     {
         j = threadIdx.y + blockDim.y * blockIdx.y;
         
-        //for (j = 0; j < Ny; j++)
         while (j < Ny)
         {
             // The positions are subtracted by a Nx/2 or Ny/2 term to center
@@ -942,7 +940,6 @@ void raytraceKernel(double *grid, Object *objects, double numObjects,
                          * "missed". */
                         if (tfinal != FLT_MAX && tfinal >= 0)
                         {
-                            //printf("Pixel (%d, %d) hit superquadric.\n", i, j);
                             if(hitObject && tfinal < ttrueFinal)
                             {
                                 ttrueFinal = tfinal;
@@ -1069,7 +1066,6 @@ void raytraceKernel(double *grid, Object *objects, double numObjects,
                                        objects[finalObj].e, objects[finalObj].n);
 
                             double color[] = {0, 0, 0};
-                            pointerChk(&color[0], __LINE__);
                             
                             lighting(intersect, intersectNormal, lookFrom,
                                      &objects[finalObj].mat,
@@ -1120,10 +1116,11 @@ void callRaytraceKernel(double *grid, Object *objs, double numObjects,
     dim3 gridSize;
     gridSize.x = gx;
     gridSize.y = gy;
-    /*
+#if DEBUG
     printf("block size:  %d\n", blockSize);
     printf("grid size x: %d\n", gx);
-    printf("grid size y: %d\n", gy);*/
+    printf("grid size y: %d\n", gy);
+#endif
     // Allocate space on the gpu for the double arrays in the kernel
     int numThreads = (blockSize * gx) * (blockSize * gy);
     double *rayDoubles;
