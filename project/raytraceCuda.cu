@@ -321,11 +321,6 @@ double updateRule(double *a, double *b, double e, double n, double t, double eps
             stopPoint = true;
             tnew = FLT_MAX;
         }
-        else if (tnew >= FLT_MAX)
-        {
-            stopPoint = true;
-            tnew = FLT_MAX;
-        }
         else
         {
             tnew = told - (g / gP);
@@ -846,9 +841,6 @@ void lighting(double *point, double *n, double *e,
 
     double minVec[] = {1, 1, 1};
     double maxVec[3];
-    printf("Before sum Somethread\n\tspecSum: (%f, %f, %f)\n\tdifSum: (%f, %f, %f)\n",
-           specularSum[0], specularSum[1], specularSum[2],
-           diffuseSum[0], diffuseSum[1], diffuseSum[2]);
            
     cProduct(&diffuseSum[0], dif, &diffuseSum[0]);
     cProduct(&specularSum[0], spec, &specularSum[0]);
@@ -856,13 +848,6 @@ void lighting(double *point, double *n, double *e,
     maxVec[1] = diffuseSum[1] + specularSum[1] + reflectedLight[1] + refractedLight[1];
     maxVec[2] = diffuseSum[2] + specularSum[2] + reflectedLight[2] + refractedLight[2];
     cWiseMin(&minVec[0], &maxVec[0], res);
-    
-    printf("After sum Somethread\n\tspecSum: (%f, %f, %f)\n\tdifSum: (%f, %f, %f)\n",
-           specularSum[0], specularSum[1], specularSum[2],
-           diffuseSum[0], diffuseSum[1], diffuseSum[2]);
-    
-    /*if (res[0] != 0 || res[1] != 0 || res[2] != 0)
-        printf("Color: %f, %f, %f\n", res[0], res[1], res[2]);*/
     
     // Free everything
     delete[] maxVec;
@@ -988,7 +973,7 @@ void raytraceKernel(double *grid, Object *objects, double numObjects,
                                objects[finalObj].n);
 
                     lighting(intersect, intersectNormal, lookFrom,
-                             &objects[finalObj].mat,
+                             &objects[finalObj].mat[0],
                              lightsPPM, numLights, objects, numObjects, epsilon,
                              finalObj, 3, &pxColor[0]);
                 }
