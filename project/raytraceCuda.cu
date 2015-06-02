@@ -425,8 +425,8 @@ void lighting(double *point, double *n, double *e,
     double reflectedLight[] = {0.0, 0.0, 0.0};
     double refractedLight[] = {0.0, 0.0, 0.0};
     
-    double* dif = mat->diffuse;
-    double* spec = mat->specular;
+    double* dif = &mat->diffuse[0];
+    double* spec = &mat->specular[0];
     double shine = mat->shine;
     
     double newA[3];
@@ -846,12 +846,23 @@ void lighting(double *point, double *n, double *e,
 
     double minVec[] = {1, 1, 1};
     double maxVec[3];
+    printf("Before sum Somethread\n\tspecSum: (%f, %f, %f)\n\tdifSum: (%f, %f, %f)\n",
+           specularSum[0], specularSum[1], specularSum[2],
+           diffuseSum[0], diffuseSum[1], diffuseSum[2]);
+           
     cProduct(&diffuseSum[0], dif, &diffuseSum[0]);
     cProduct(&specularSum[0], spec, &specularSum[0]);
     maxVec[0] = diffuseSum[0] + specularSum[0] + reflectedLight[0] + refractedLight[0];
     maxVec[1] = diffuseSum[1] + specularSum[1] + reflectedLight[1] + refractedLight[1];
     maxVec[2] = diffuseSum[2] + specularSum[2] + reflectedLight[2] + refractedLight[2];
     cWiseMin(&minVec[0], &maxVec[0], res);
+    
+    printf("After sum Somethread\n\tspecSum: (%f, %f, %f)\n\tdifSum: (%f, %f, %f)\n",
+           specularSum[0], specularSum[1], specularSum[2],
+           diffuseSum[0], diffuseSum[1], diffuseSum[2]);
+    
+    /*if (res[0] != 0 || res[1] != 0 || res[2] != 0)
+        printf("Color: %f, %f, %f\n", res[0], res[1], res[2]);*/
     
     // Free everything
     delete[] maxVec;
@@ -1092,8 +1103,6 @@ void raytraceKernel(double *grid, Object *objects, double numObjects,
             grid[index] = pxColor[0];
             grid[index + 1] = pxColor[1];
             grid[index + 2] = pxColor[2];
-            if (pxColor[0] != 0 || pxColor[1] != 0 || pxColor[2] != 0)
-                printf("Color: %f, %f, %f\n", pxColor[0], pxColor[1], pxColor[2]);
             
             
             j += blockDim.y * gridDim.y;
