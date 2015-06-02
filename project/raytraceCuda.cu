@@ -925,7 +925,7 @@ void raytraceKernel(double *grid, Object *objects, double numObjects,
                          objects[k].unTranslate, lookFrom, &newB[0]);
 
                     // Find the quadratic equation coefficients
-                    findCoeffs(&newA[0], &newB[0], &coeffs[0], true);
+                    findCoeffs(newA, newB, coeffs, true);
                     // Using the coefficients, find the roots
                     findRoots(&coeffs[0], &roots[0]);
 
