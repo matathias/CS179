@@ -147,6 +147,8 @@ double isq(double *vec, double e, double n)
     pointerChk(&vec[0], __LINE__);
     pointerChk(&vec[1], __LINE__);
     pointerChk(&vec[2], __LINE__);
+    pointerChk(&e, __LINE__);
+    pointerChk(&n, __LINE__);
     // Test for n = 0 now to prevent divide-by-zero errors.
     if (n == 0)
         return FLT_MAX;

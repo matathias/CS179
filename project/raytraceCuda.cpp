@@ -104,6 +104,9 @@ int Nx = 100, Ny = 100;
 vector<Point_Light*> lightsPPM;
 vector<Object*> objects;
 
+Point_Light *p_lights;
+Object *p_objects;
+
 /******************************************************************************/
 // Function prototypes
 void initPPM();
@@ -565,6 +568,11 @@ void parseArguments(int argc, char* argv[])
         }
 
         objects = tempObjs;
+        int numObj = tempObjs.size();
+        p_objects = (Object *)malloc(sizeof(Object) * numObj);
+        for (int j = 0; j < numObj; j++) {
+            p_objects[j] = tempObjs[j];
+        }
 
         Point_Light *eye = (Point_Light *)malloc(sizeof(Point_Light));
         create_Light(lookFrom[0], lookFrom[1], lookFrom[2], eyeColor[0],
@@ -575,7 +583,14 @@ void parseArguments(int argc, char* argv[])
         tempLights.insert(it, eye);
 
         if (!defaultLights)
+        {
             lightsPPM = tempLights;
+            int numLights = tempLights.size();
+            p_lights = (Point_Light *)malloc(sizeof(Point_Light) * numLights);
+            for (int j = 0; j < numLights; j++) {
+                p_lights[j] = tempLights[j];
+            }
+        }
     }
     catch (exception& ex)
     {
@@ -712,18 +727,22 @@ int main(int argc, char* argv[])
     gpuErrChk(cudaMalloc(&d_lights, numLights * sizeof(Object)));
     // Copy the objects onto the gpu, as well as allocating space for the object
     // pointers and copying the data in there
-    for (int i = 0; i < numObjects; i++)
+    /*for (int i = 0; i < numObjects; i++)
     {
         gpuErrChk(cudaMemcpy(&d_objects[i], objects[i], sizeof(Object), 
                              cudaMemcpyHostToDevice));
         
-    }
+    }*/
+    gpuErrChk(cudaMemcpy(d_objects, p_objects, sizeof(Object) * numObjects,
+                         cudaMemcpyHostToDevice));
     // Do the same for the Point_Lights
-    for (int i = 0; i < numLights; i++)
+    /*for (int i = 0; i < numLights; i++)
     {
         gpuErrChk(cudaMemcpy(&d_lights[i], lightsPPM[i], sizeof(Point_Light), 
                              cudaMemcpyHostToDevice));
-    }
+    }*/
+    gpuErrChk(cudaMemcpy(d_lights, p_lights, sizeof(Point_Light) * numLights,
+                         cudaMemcpyHostToDevice));
     
     /* Call the GPU code. */
     callRaytraceKernel(d_grid, d_objects, numObjects, d_lights, numLights,
@@ -739,6 +758,8 @@ int main(int argc, char* argv[])
     
     /* Free everything. */
     free(grid);
+    free(p_objects);
+    free(p_lights);
     
     gpuErrChk(cudaFree(d_e1));
     gpuErrChk(cudaFree(d_e2));
