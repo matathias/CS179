@@ -388,10 +388,14 @@ void parseArguments(int argc, char* argv[])
         if (isFile != string::npos)
         {
             parseFile(argv[1]);
+            printf("second arg: %s\n", argv[1]);
+            return;
         }
     }
     else
         return;
+    
+    printf("second arg: %s\n", argv[1]);
     
     int inInd = 1;
     
@@ -440,8 +444,6 @@ void parseArguments(int argc, char* argv[])
     bool tdefaultLights = defaultLights;
     bool eyeSpecified = false;
     bool tantiAlias = antiAlias;
-
-    printf("second arg: %s\n", argv[1]);
 
     try
     {
@@ -690,7 +692,6 @@ void printPPM(int pixelIntensity, int xre, int yre, double *grid)
 int main(int argc, char* argv[])
 {
     // extract the command line arguments
-        printf("second arg: %s\n", argv[1]);
     //getArguments(argc, argv);
     parseArguments(argc, argv);
     
