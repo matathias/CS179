@@ -133,7 +133,7 @@ void create_PPM_lights();
 void printPPM(int pixelIntensity, int xre, int yre, double *grid);
 // Function to parse the command line arguments
 void parseArguments(int argc, char* argv[]);
-void getArguments(int argc, char* argv[]);
+bool getArguments(int argc, char* argv[]);
 void parseFile(char* filename);
 
 /* Returns the norm of the given vector. */
