@@ -144,6 +144,9 @@ double d_dot(double *a, double *b)
 __device__
 double isq(double *vec, double e, double n)
 {
+    pointerChk(&vec[0], __LINE__);
+    pointerChk(&vec[1], __LINE__);
+    pointerChk(&vec[2], __LINE__);
     // Test for n = 0 now to prevent divide-by-zero errors.
     if (n == 0)
         return FLT_MAX;
@@ -300,6 +303,10 @@ __device__
 double updateRule(double *a, double *b, double e, double n, double t, double epsilon)
 {
     double vec[3];
+    pointerChk(&vec[0], __LINE__);
+    pointerChk(&vec[1], __LINE__);
+    pointerChk(&vec[2], __LINE__);
+    
     findRay(a, b, &vec[0], t);
     double gP = gPrime(&vec[0], a, e, n);
     double gPPrevious = gP;
