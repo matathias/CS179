@@ -947,7 +947,7 @@ void raytraceKernel(double *grid, Object *objects, double numObjects,
                     newa(objects[k].unScale, objects[k].unRotate, pointA, newA);
                     newb(objects[k].unScale, objects[k].unRotate, 
                          objects[k].unTranslate, lookFrom, newB);
-                    prinf("Thread at (%d, %d), (%d, %d)\n\tnewA: (%f, %f, %f)\n\tnewB: (%f, %f, %f)\n",
+                    printf("Thread at (%d, %d), (%d, %d)\n\tnewA: (%f, %f, %f)\n\tnewB: (%f, %f, %f)\n",
                           threadIdx.x, threadIdx.y, blockIdx.x, blockIdx.y,
                           newA[0], newA[1], newA[2], newB[0], newB[1], newB[2]);
 
