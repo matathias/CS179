@@ -868,6 +868,7 @@ void lighting(double *point, double *n, double *e,
     delete[] newB;
     delete[] coeffs;
     delete[] roots;
+    printf("end of lighting function\n");
 }
 
 __global__
@@ -911,6 +912,12 @@ void raytraceKernel(double *grid, Object *objects, double numObjects,
     pointerChk(finalNewA, __LINE__);
     pointerChk(finalNewB, __LINE__);
     pointerChk(pointA, __LINE__);
+    pointerChk(newA, __LINE__);
+    pointerChk(newB, __LINE__);
+    pointerChk(coeffs, __LINE__);
+    pointerChk(intersect, __LINE__);
+    pointerChk(intersectNormal, __LINE__);
+    pointerChk(roots, __LINE__);
     
     while (i < Nx)
     {
@@ -923,6 +930,7 @@ void raytraceKernel(double *grid, Object *objects, double numObjects,
             double px = (i * dx) - (filmX / (double) 2);
             double py = (j * dy) - (filmY / (double) 2);
             double pxColor[] = {bgColor[0], bgColor[1], bgColor[2]};
+            pointerChk(&pxColor[0], __LINE__);
             if (!antiAliased)
             {
                 findFilmA(px, py, e1, e2, e3, filmDepth, pointA);
@@ -1011,6 +1019,7 @@ void raytraceKernel(double *grid, Object *objects, double numObjects,
                                      (1 / (2 * sqrt((double) 2))) / denom,
                                      (1 / (double) 2) / denom,
                                      (1 / (2 * sqrt((double) 2))) / denom};
+                pointerChk(&pxCoeffs[0], __LINE__);
                 int counter = 0;
                 for (int g = -1; g <= 1; g++)
                 {
@@ -1018,7 +1027,7 @@ void raytraceKernel(double *grid, Object *objects, double numObjects,
                     {
                         double thisPx = px + (g * (dx / (double) 2));
                         double thisPy = py + (h * (dy / (double) 2));
-                        findFilmA(thisPx, thisPy, e1, e2, e3, filmDepth, &pointA[0]);
+                        findFilmA(thisPx, thisPy, e1, e2, e3, filmDepth, pointA);
                         hitObject = false;
                         finalObj = 0, ttrueFinal = 0;
                         for (int k = 0; k < numObjects; k++)
@@ -1085,6 +1094,7 @@ void raytraceKernel(double *grid, Object *objects, double numObjects,
                                        objects[finalObj].e, objects[finalObj].n);
 
                             double color[] = {0, 0, 0};
+                            pointerChk(&color[0], __LINE);
                             
                             lighting(intersect, intersectNormal, lookFrom,
                                      &objects[finalObj].mat.diffuse[0], 
@@ -1110,6 +1120,9 @@ void raytraceKernel(double *grid, Object *objects, double numObjects,
             grid[index] = pxColor[0];
             grid[index + 1] = pxColor[1];
             grid[index + 2] = pxColor[2];
+            pointerChk(&grid[index], __LINE__);
+            pointerChk(&grid[index + 1], __LINE__);
+            pointerChk(&grid[index + 2], __LINE__);
             
             
             j += blockDim.y * gridDim.y;
@@ -1151,9 +1164,9 @@ void callRaytraceKernel(double *grid, Object *objs, double numObjects,
     gridSize.x = gx;
     gridSize.y = gy;
     
-    /*printf("block size:  %d\n", blockSize);
+    printf("block size:  %d\n", blockSize);
     printf("grid size x: %d\n", gx);
-    printf("grid size y: %d\n", gy);*/
+    printf("grid size y: %d\n", gy);
     // Allocate space on the gpu for the double arrays in the kernel
     int numThreads = (blockSize * gx) * (blockSize * gy);
     double *rayDoubles;
