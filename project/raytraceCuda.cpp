@@ -83,8 +83,6 @@ bool defaultLights = true;
 // Toggle for using antialiasing
 bool antiAlias = false;
 
-bool alreadySet = false;
-
 /* Ray-tracing globals */
 // Unit orthogonal film vectors
 double e1[] = {1.0, 0.0, 0.0};
@@ -382,25 +380,6 @@ void create_PPM_lights()
 // Function to parse the command line arguments
 void parseArguments(int argc, char* argv[])
 {
-    if (argc > 1 && !alreadySet)
-    {
-        string filetype = ".txt";
-        string firstArg(argv[1]);
-        unsigned int isFile = firstArg.find(filetype);
-        if (isFile != string::npos)
-        {
-            parseFile(argv[1]);
-            printf("second arg: %s\n", argv[1]);
-            //return;
-        }
-    }
-    else
-        return;
-        
-    alreadySet = true;
-    
-    printf("second arg: %s\n", argv[1]);
-    
     int inInd = 1;
     
     // Command line triggers to respond to.
@@ -448,6 +427,8 @@ void parseArguments(int argc, char* argv[])
     bool tdefaultLights = defaultLights;
     bool eyeSpecified = false;
     bool tantiAlias = antiAlias;
+
+    printf("second arg: %s\n", argv[1]);
 
     try
     {
@@ -616,6 +597,7 @@ void getArguments(int argc, char* argv[])
 {
     if (argc > 1)
     {
+        printf("second arg: %s\n", argv[1]);
         string filetype = ".txt";
         string firstArg(argv[1]);
         unsigned int isFile = firstArg.find(filetype);
@@ -632,48 +614,43 @@ void getArguments(int argc, char* argv[])
 
 void parseFile(char* filename)
 {
-    try {
-        ifstream ifs;
-        ifs.open(filename);
+    ifstream ifs;
+    ifs.open(filename);
 
-        vector<char* > input;
+    vector<char* > input;
 
-        // Retrieve the data
-        while(ifs.good())
+    // Retrieve the data
+    while(ifs.good())
+    {
+        // Read the next line
+        string nextLine;
+        getline(ifs, nextLine);
+
+        while (nextLine.length() > 0)
         {
-            // Read the next line
-            string nextLine;
-            getline(ifs, nextLine);
-
-            while (nextLine.length() > 0)
+            // Get rid of extra spaces and read in any numbers that are
+            // encountered
+            string rotStr = " ";
+            while (nextLine.length() > 0 && rotStr.compare(" ") == 0)
             {
-                // Get rid of extra spaces and read in any numbers that are
-                // encountered
-                string rotStr = " ";
-                while (nextLine.length() > 0 && rotStr.compare(" ") == 0)
-                {
-                    int space = nextLine.find(" ");
-                    if (space == 0)
-                        space = 1;
-                    rotStr = nextLine.substr(0, space);
-                    nextLine.erase(0, space);
-                }
-                char* thistr = new char[rotStr.length() + 1];
-                strcpy(thistr, rotStr.c_str());
-                input.push_back(thistr);
+                int space = nextLine.find(" ");
+                if (space == 0)
+                    space = 1;
+                rotStr = nextLine.substr(0, space);
+                nextLine.erase(0, space);
             }
+            char* thistr = new char[rotStr.length() + 1];
+            strcpy(thistr, rotStr.c_str());
+            input.push_back(thistr);
         }
-        ifs.close();
-
-        char* args[input.size()+1];
-        for (unsigned int i = 0; i < input.size(); i++)
-            args[i+1] = input.at(i);
-
-        parseArguments(input.size()+1, args);
     }
-    catch (exception& e) {
-        printf("Something fucked up with file %s in parseFile.\n", filename);
-    }
+    ifs.close();
+
+    char* args[input.size()+1];
+    for (unsigned int i = 0; i < input.size(); i++)
+        args[i+1] = input.at(i);
+
+    parseArguments(input.size()+1, args);
 }
 
 // Print pixel data to output
@@ -701,8 +678,7 @@ void printPPM(int pixelIntensity, int xre, int yre, double *grid)
 int main(int argc, char* argv[])
 {
     // extract the command line arguments
-    //getArguments(argc, argv);
-    parseArguments(argc, argv);
+    getArguments(argc, argv);
     
     // block size will be 16 x 16 = 2^4 x 2^4
     int blockPower = 4;
