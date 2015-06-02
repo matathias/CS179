@@ -717,10 +717,6 @@ void lighting(double *point, double *n, double *e,
                    objects[finalObj].n);
 
         lighting(&intersectR[0], &intersectRNormal[0], e,
-                 /*&objects[finalObj].mat.diffuse[0], 
-                 &objects[finalObj].mat.ambient[0], 
-                 &objects[finalObj].mat.specular[0], 
-                 objects[finalObj].mat.shine, */
                  &objects[finalObj].mat,
                  l, numLights, objects, numObjects, epsilon,
                  finalObj, generation-1, &refractedLight[0]);
@@ -836,10 +832,6 @@ void lighting(double *point, double *n, double *e,
                        objects[finalObj].n);
 
             lighting(&intersectR[0], &intersectRNormal[0], e,
-                     /*&objects[finalObj].mat.diffuse[0], 
-                     &objects[finalObj].mat.ambient[0], 
-                     &objects[finalObj].mat.specular[0], 
-                     objects[finalObj].mat.shine, */
                      &objects[finalObj].mat,
                      l, numLights, objects, numObjects, epsilon,
                      finalObj, generation - 1, &refractedLight[0]);
@@ -955,6 +947,9 @@ void raytraceKernel(double *grid, Object *objects, double numObjects,
                     findCoeffs(newA, newB, coeffs, true);
                     // Using the coefficients, find the roots
                     findRoots(coeffs, roots);
+                    printf("Coeffs: %f, %f, %f\t Roots: %f, %f - thread at (%d, %d), (%d, %d)\n",
+                        coeffs[0], coeffs[1], coeffs[2], roots[0], roots[1], 
+                        threadIdx.x, threadIdx.y, blockIdx.x, blockIdx.y);
 
                     // Check to see if the roots are FLT_MAX - if they are then the 
                     // ray missed the superquadric. If they haven't missed then we 
@@ -966,8 +961,8 @@ void raytraceKernel(double *grid, Object *objects, double numObjects,
                         double tfinal = updateRule(newA, newB, objects[k].e, 
                                                    objects[k].n, tini, epsilon);
                                                    
-                        printf("Post update rule. tini: %f tfinal: %f - thread at (%d, %d), (%d, %d)\n",
-                        tini, tfinal, threadIdx.x, threadIdx.y, blockIdx.x, blockIdx.y);
+                        /*printf("Post update rule. tini: %f tfinal: %f - thread at (%d, %d), (%d, %d)\n",
+                        tini, tfinal, threadIdx.x, threadIdx.y, blockIdx.x, blockIdx.y);*/
 
                         /* Check to see if tfinal is FLT_MAX - if it is then the ray 
                          * missed the superquadric. Additionally, if tfinal is negative 
