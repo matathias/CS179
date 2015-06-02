@@ -973,7 +973,7 @@ void raytraceKernel(double *grid, Object *objects, double numObjects,
                                objects[finalObj].n);
 
                     lighting(intersect, intersectNormal, lookFrom,
-                             &objects[finalObj].mat[0],
+                             &objects[finalObj].mat,
                              lightsPPM, numLights, objects, numObjects, epsilon,
                              finalObj, 3, &pxColor[0]);
                 }
