@@ -12,6 +12,8 @@
 
 #define DEBUG 0
 
+#define SINGLETHREADMODE 1
+
 #define gpuErrChk(ans) { gpuAssert((ans), __FILE__, __LINE__); }
 inline void gpuAssert(cudaError_t code,
                       const char *file,
@@ -908,11 +910,18 @@ void raytraceKernel(double *grid, Object *objects, double numObjects,
     pointerChk(intersectNormal, __LINE__);
     pointerChk(roots, __LINE__);
     
+#if SINGLETHREADMODE
+    if (i == 0 && j == 0) {
+    for(i = 0; i < Nx; i++)
+    {
+        for(j = 0; j < Ny; j++)
+#else
     while (i < Nx)
     {
         j = threadIdx.y + blockDim.y * blockIdx.y;
         
         while (j < Ny)
+#endif
         {
             // The positions are subtracted by a Nx/2 or Ny/2 term to center
             // the film plane
@@ -1107,12 +1116,18 @@ void raytraceKernel(double *grid, Object *objects, double numObjects,
             grid[index + 1] = pxColor[1];
             grid[index + 2] = pxColor[2];
             
-            
+#if SINGLETHREADMODE
+        }
+    }
+    }
+}
+#else
             j += blockDim.y * gridDim.y;
         }
         i += blockDim.x * gridDim.x;
     }
 }
+#endif
 
 void callRaytraceKernel(double *grid, Object *objs, double numObjects,
                         Point_Light *lightsPPM, double numLights, int Nx, 
