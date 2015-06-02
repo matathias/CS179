@@ -766,7 +766,6 @@ int main(int argc, char* argv[])
     gpuErrChk(cudaMemset(d_grid, 0, sizeof(double) * Ny * Nx * 3));
     
     /* Handle the allocating and copying of the Objects and Point_Lights arrays.
-     * This is a little weird because the structs store pointers...
      */
     Object *d_objects;
     Point_Light *d_lights;
