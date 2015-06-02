@@ -380,6 +380,7 @@ void create_PPM_lights()
 // Function to parse the command line arguments
 void parseArguments(int argc, char* argv[])
 {
+    printf("entered parseArguments\n");
     int inInd = 1;
     
     // Command line triggers to respond to.
@@ -430,8 +431,10 @@ void parseArguments(int argc, char* argv[])
 
     try
     {
+        printf("entered try block\n");
         while (inInd < argc)
         {
+            printf("start of loop\n");
             if (strcmp(argv[inInd], objectsIn) == 0)
             {
                 inInd += 12;
@@ -549,6 +552,7 @@ void parseArguments(int argc, char* argv[])
 
         epsilon = tepsilon;
         filmDepth = tfilmDepth, filmX = tfilmX;
+        printf("Assigning Nx and Ny as tNx: %d and tNy: %d\n", tNx, tNy);
         Nx = tNx, Ny = tNy;
         defaultLights = tdefaultLights;
         defaultObject = tdefaultObject;
@@ -592,10 +596,8 @@ void parseArguments(int argc, char* argv[])
 
 void getArguments(int argc, char* argv[])
 {
-    printf("argc: %d\n", argc);
     if (argc > 1)
     {
-        printf("hereag; da;h\n");
         string filetype = ".txt";
         string firstArg(argv[1]);
         unsigned int isFile = firstArg.find(filetype);
