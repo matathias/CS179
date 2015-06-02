@@ -679,8 +679,10 @@ void printPPM(int pixelIntensity, int xre, int yre, double *grid)
 int main(int argc, char* argv[])
 {
     // extract the command line arguments
-    if(getArguments(argc, argv))
+    if(getArguments(argc, argv)) {
+        printf("second arg: %s\n", argv[1]);
         parseArguments(argc, argv);
+    }
     
     // block size will be 16 x 16 = 2^4 x 2^4
     int blockPower = 4;
