@@ -571,7 +571,7 @@ void parseArguments(int argc, char* argv[])
         int numObj = tempObjs.size();
         p_objects = (Object *)malloc(sizeof(Object) * numObj);
         for (int j = 0; j < numObj; j++) {
-            p_objects[j] = tempObjs[j];
+            p_objects[j] = *tempObjs[j];
         }
 
         Point_Light *eye = (Point_Light *)malloc(sizeof(Point_Light));
@@ -588,7 +588,7 @@ void parseArguments(int argc, char* argv[])
             int numLights = tempLights.size();
             p_lights = (Point_Light *)malloc(sizeof(Point_Light) * numLights);
             for (int j = 0; j < numLights; j++) {
-                p_lights[j] = tempLights[j];
+                p_lights[j] = *tempLights[j];
             }
         }
     }
