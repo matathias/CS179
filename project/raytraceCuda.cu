@@ -91,9 +91,20 @@ __device__
 void findFilmA(double x, double y, double *e1, double *e2, double *e3, 
                double filmDepth, double *film)
 {
+    printf("Beginning of findFilmA\n");
+    printf("e1: (%f, %f, %f)\n", e1[0], e1[1], e1[2]);
+    printf("e2: (%f, %f, %f)\n", e2[0], e2[1], e2[2]);
+    printf("e3: (%f, %f, %f)\n", e3[0], e3[1], e3[2]);
+    printf("film: (%f, %f, %f)\n", film[0], film[1], film[2]);
     for (int i = 0; i < 3; i++) {
         film[i] = (filmDepth * e3[i]) + (x * e1[i]) + (y * e2[i]);
     }
+    
+    printf("End of findFilmA\n");
+    printf("e1: (%f, %f, %f)\n", e1[0], e1[1], e1[2]);
+    printf("e2: (%f, %f, %f)\n", e2[0], e2[1], e2[2]);
+    printf("e3: (%f, %f, %f)\n", e3[0], e3[1], e3[2]);
+    printf("film: (%f, %f, %f)\n", film[0], film[1], film[2]);
 }
 
 /* Returns -1 for negative numbers, 1 for positive numbers, and 0 for zero. */
