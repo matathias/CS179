@@ -160,24 +160,20 @@ double rad2deg(double angle);
 /* Returns the norm of the given vector. */
 double norm(double *vec)
 {
-    printf("Start of norm: (%f, %f, %f)\n", vec[0], vec[1], vec[2]);
     double n = 0;
     for (int i = 0; i < 3; i++) {
         n += vec[i] * vec[i];
     }
-    printf("End of norm, value of n: %f\t sqrt(n): %f\n", n, sqrt(n));
     return sqrt(n);
 }
 
 /* Normalizes the given vector. */
 void normalize(double *vec)
 {
-    printf("Start of normalize: (%f, %f, %f)\n", vec[0], vec[1], vec[2]);
     double n = norm(vec);
     for (int i = 0; i < 3; i++) {
         vec[i] = vec[i] / n;
     }
-    printf("End of normalize: (%f, %f, %f)\n", vec[0], vec[1], vec[2]);
 }
 
 /* Returns the dot product of the given vectors. */
@@ -263,10 +259,6 @@ void initPPM()
 
 void create_film_plane(double *e1, double *e2, double *e3)
 {
-    printf("Beginning of create film plane:\n");
-    printf("e1: (%f, %f, %f)\n", e1[0], e1[1], e1[2]);
-    printf("e2: (%f, %f, %f)\n", e2[0], e2[1], e2[2]);
-    printf("e3: (%f, %f, %f)\n", e3[0], e3[1], e3[2]);
     // First, find the proper value for filmY from filmX, Nx and Ny
     filmY = Ny * filmX / (double) Nx;
     
@@ -284,10 +276,6 @@ void create_film_plane(double *e1, double *e2, double *e3)
     
     cross(e2, e3, e1);
     normalize(e1);
-    printf("End of create film plane:\n");
-    printf("e1: (%f, %f, %f)\n", e1[0], e1[1], e1[2]);
-    printf("e2: (%f, %f, %f)\n", e2[0], e2[1], e2[2]);
-    printf("e3: (%f, %f, %f)\n", e3[0], e3[1], e3[2]);
 }
 
 void create_Material(double dr, double dg, double db, 
@@ -746,7 +734,7 @@ int main(int argc, char* argv[])
                          cudaMemcpyDeviceToHost));
 
     /* Output the relevant data. */
-    //printPPM(255, Nx, Ny, grid);
+    printPPM(255, Nx, Ny, grid);
     
     /* Free everything. */
     free(grid);
