@@ -10,6 +10,8 @@
 #define REFLECTION 0
 #define REFRACTION 0
 
+#define DEBUG 1
+
 #define gpuErrChk(ans) { gpuAssert((ans), __FILE__, __LINE__); }
 inline void gpuAssert(cudaError_t code,
                       const char *file,
@@ -21,6 +23,8 @@ inline void gpuAssert(cudaError_t code,
     exit(code);
   }
 }
+#define debug_print(fmt, ...) \
+    do { if (DEBUG) fprintf(stderr, fmt, __VA_ARGS__); } while (0)
 
 struct Point_Light
 {
@@ -210,13 +214,10 @@ void findCoeffs(double *a, double *b, double *c, bool positiveb)
     c[1] = 2 * d_dot(a, b);
     c[2] = d_dot(b, b) - 3;
     
-    if (positiveb)
-    {
-        if (c[1] < 0){
-            c[0] *= -1;
-            c[1] *= -1;
-            c[2] *= -1;
-        }
+    if (positiveb && c[1] < 0){
+        c[0] *= -1;
+        c[1] *= -1;
+        c[2] *= -1;
     }
 }
 
@@ -1003,12 +1004,12 @@ void raytraceKernel(double *grid, Object *objects, double numObjects,
                                      (1 / (double) 2) / denom,
                                      (1 / (2 * sqrt((double) 2))) / denom};
                 int counter = 0;
-                for (int i = -1; i <= 1; i++)
+                for (int g = -1; g <= 1; g++)
                 {
-                    for (int j = -1; j <= 1; j++)
+                    for (int h = -1; h <= 1; h++)
                     {
-                        double thisPx = px + (i * (dx / (double) 2));
-                        double thisPy = py + (j * (dy / (double) 2));
+                        double thisPx = px + (g * (dx / (double) 2));
+                        double thisPy = py + (h * (dy / (double) 2));
                         findFilmA(thisPx, thisPy, e1, e2, e3, filmDepth, &pointA[0]);
                         hitObject = false;
                         finalObj = 0, ttrueFinal = 0;
