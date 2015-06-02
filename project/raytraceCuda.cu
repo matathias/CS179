@@ -24,7 +24,7 @@ inline void gpuAssert(cudaError_t code,
   }
 }
     
-#define __device__ pointerChk(ans) { pointerCheck((ans), __FILE__, __LINE__); }
+#define pointerChk(ans) { pointerCheck((ans), __FILE__, __LINE__); }
 __device__ inline void pointerCheck(double *ptr, const char *file, int line,
                          bool abort=true) {
     if (ptr == NULL) {
