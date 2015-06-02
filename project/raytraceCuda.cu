@@ -920,6 +920,9 @@ void raytraceKernel(double *grid, Object *objects, double numObjects,
     pointerChk(intersectNormal, __LINE__);
     pointerChk(roots, __LINE__);
     
+    printf("Post pointerChks - thread at (%d, %d), (%d, %d)\n", threadIdx.x,
+           threadIdx.y, blockIdx.x, blockIdx.y);
+    
     while (i < Nx)
     {
         j = threadIdx.y + blockDim.y * blockIdx.y;
@@ -1141,7 +1144,8 @@ void raytraceKernel(double *grid, Object *objects, double numObjects,
     delete[] roots;
     delete[] intersect;
     delete[] intersectNormal;*/
-    printf("end of kernel.\n");
+    printf("end of kernel. Thread at (%d, %d), (%d, %d)\n", threadIdx.x,
+           threadIdx.y, blockIdx.x, blockIdx.y);
 }
 
 void callRaytraceKernel(double *grid, Object *objs, double numObjects,
