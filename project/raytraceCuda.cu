@@ -424,7 +424,6 @@ void lighting(double *point, double *n, double *e,
     double refractedLight[] = {0.0, 0.0, 0.0};
     
     double* dif = mat->diffuse;
-    double* amb = mat->ambient;
     double* spec = mat->specular;
     double shine = mat->shine;
     
@@ -1154,9 +1153,9 @@ void raytraceKernel(double *grid, Object *objects, double numObjects,
     delete[] coeffs;
     delete[] roots;
     delete[] intersect;
-    delete[] intersectNormal;*/
+    delete[] intersectNormal;
     printf("end of kernel. Thread at (%d, %d), (%d, %d)\n", threadIdx.x,
-           threadIdx.y, blockIdx.x, blockIdx.y);
+           threadIdx.y, blockIdx.x, blockIdx.y);*/
 }
 
 void callRaytraceKernel(double *grid, Object *objs, double numObjects,
