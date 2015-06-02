@@ -534,7 +534,7 @@ void lighting(double *point, double *n, double *e,
                 specularSum[1] += l[i].color[1] * atten * pow(nDotDir, shine);
                 specularSum[2] += l[i].color[2] * atten * pow(nDotDir, shine);
             }
-            delete[] dirDif;
+            //delete[] dirDif;
         }
     }
     /* Find the light contribution from reflection */
@@ -628,8 +628,8 @@ void lighting(double *point, double *n, double *e,
             reflectedLight[1] *= shine;
             reflectedLight[2] *= shine;
         }
-        delete[] intersectR;
-        delete[] intersectRNormal;
+        //delete[] intersectR;
+        //delete[] intersectRNormal;
     }
 #endif
     
