@@ -389,7 +389,7 @@ void parseArguments(int argc, char* argv[])
         {
             parseFile(argv[1]);
             printf("second arg: %s\n", argv[1]);
-            return;
+            //return;
         }
     }
     else
@@ -628,43 +628,48 @@ void getArguments(int argc, char* argv[])
 
 void parseFile(char* filename)
 {
-    ifstream ifs;
-    ifs.open(filename);
+    try {
+        ifstream ifs;
+        ifs.open(filename);
 
-    vector<char* > input;
+        vector<char* > input;
 
-    // Retrieve the data
-    while(ifs.good())
-    {
-        // Read the next line
-        string nextLine;
-        getline(ifs, nextLine);
-
-        while (nextLine.length() > 0)
+        // Retrieve the data
+        while(ifs.good())
         {
-            // Get rid of extra spaces and read in any numbers that are
-            // encountered
-            string rotStr = " ";
-            while (nextLine.length() > 0 && rotStr.compare(" ") == 0)
+            // Read the next line
+            string nextLine;
+            getline(ifs, nextLine);
+
+            while (nextLine.length() > 0)
             {
-                int space = nextLine.find(" ");
-                if (space == 0)
-                    space = 1;
-                rotStr = nextLine.substr(0, space);
-                nextLine.erase(0, space);
+                // Get rid of extra spaces and read in any numbers that are
+                // encountered
+                string rotStr = " ";
+                while (nextLine.length() > 0 && rotStr.compare(" ") == 0)
+                {
+                    int space = nextLine.find(" ");
+                    if (space == 0)
+                        space = 1;
+                    rotStr = nextLine.substr(0, space);
+                    nextLine.erase(0, space);
+                }
+                char* thistr = new char[rotStr.length() + 1];
+                strcpy(thistr, rotStr.c_str());
+                input.push_back(thistr);
             }
-            char* thistr = new char[rotStr.length() + 1];
-            strcpy(thistr, rotStr.c_str());
-            input.push_back(thistr);
         }
+        ifs.close();
+
+        char* args[input.size()+1];
+        for (unsigned int i = 0; i < input.size(); i++)
+            args[i+1] = input.at(i);
+
+        parseArguments(input.size()+1, args);
     }
-    ifs.close();
-
-    char* args[input.size()+1];
-    for (unsigned int i = 0; i < input.size(); i++)
-        args[i+1] = input.at(i);
-
-    parseArguments(input.size()+1, args);
+    catch (exception& e) {
+        printf("Something fucked up with file %s in parseFile.\n", filename);
+    }
 }
 
 // Print pixel data to output
