@@ -246,6 +246,51 @@ double rad2deg(double angle)
     return angle * (180.0 / M_PI);
 }
 
+void print_objects()
+{
+    int numObjects = objects.size();
+    for (int i = 0; i < numObjects; i++) {
+        Object *o = &p_objects[i];
+        printf("\nObject %d\n", i);
+        printf("e: %f\t n: %f\n", o->e, o->n);
+        printf("scale: [%f, %f, %f] unScale: [%f, %f, %f]\n", o->scale[0],
+               o->scale[1], o->scale[2], o->unScale[0], o->unScale[1], o->unScale[2]);
+        printf("       [%f, %f, %f]          [%f, %f, %f]\n", o->scale[3],
+               o->scale[4], o->scale[5], o->unScale[3], o->unScale[4], o->unScale[5]);
+        printf("       [%f, %f, %f]          [%f, %f, %f]\n", o->scale[6],
+               o->scale[7], o->scale[8], o->unScale[6], o->unScale[7], o->unScale[8]);
+        printf("rotate: [%f, %f, %f] unRotate: [%f, %f, %f]\n", o->rotate[0],
+               o->rotate[1], o->rotate[2], o->unRotate[0], o->unRotate[1], o->unRotate[2]);
+        printf("       [%f, %f, %f]            [%f, %f, %f]\n", o->rotate[3],
+               o->rotate[4], o->rotate[5], o->unRotate[3], o->unRotate[4], o->unRotate[5]);
+        printf("       [%f, %f, %f]            [%f, %f, %f]\n", o->rotate[6],
+               o->rotate[7], o->rotate[8], o->unRotate[6], o->unRotate[7], o->unRotate[8]);
+        printf("translate: (%f, %f, %f) unTranslate: (%f, %f, %f)\n",
+               o->translate[0], o->translate[1], o->translate[2], o->unTranslate[0],
+               o->unTranslate[1], o->unTranslate[2]);
+        printf("Material-\n");
+        printf("Diffuse: (%f, %f, %f)\n", o->mat.diffuse[0], o->mat.diffuse[1],
+               o->mat.diffuse[2]);
+        printf("Ambient: (%f, %f, %f)\n", o->mat.ambient[0], o->mat.ambient[1],
+               o->mat.ambient[2]);
+        printf("Specular: (%f, %f, %f)\n", o->mat.specular[0], o->mat.specular[1],
+               o->mat.specular[2]);
+        printf("shine: %f\t snell: %f\t opacity: %f\n", o->mat.shine, o->mat.snell, o->mat.opacity);
+    }
+}
+
+void print_lights()
+{
+    int numLights = lightsPPM.size();
+    for (int i = 0; i < numLights; i++) {
+        Point_Light *l = &p_lights[i];
+        printf("\nLight %d\n", i);
+        printf("Position: (%f, %f, %f)\n", l->position[0], l->position[1], l->position[2]);
+        printf("Color: (%f, %f, %f)\n", l->color[0], l->color[1], l->color[2]);
+        printf("Attenuation Factor: %f\n", l->attenuation_k);
+    }
+}
+
 /******************************************************************************/
 // Raytracing functions
 
@@ -428,8 +473,6 @@ void parseArguments(int argc, char* argv[])
     bool eyeSpecified = false;
     bool tantiAlias = antiAlias;
 
-    printf("second arg: %s\n", argv[1]);
-
     try
     {
         while (inInd < argc)
@@ -551,7 +594,6 @@ void parseArguments(int argc, char* argv[])
 
         epsilon = tepsilon;
         filmDepth = tfilmDepth, filmX = tfilmX;
-        printf("Assigning Nx and Ny as tNx: %d and tNy: %d\n", tNx, tNy);
         Nx = tNx, Ny = tNy;
         defaultLights = tdefaultLights;
         defaultObject = tdefaultObject;
@@ -597,7 +639,6 @@ void getArguments(int argc, char* argv[])
 {
     if (argc > 1)
     {
-        printf("second arg: %s\n", argv[1]);
         string filetype = ".txt";
         string firstArg(argv[1]);
         unsigned int isFile = firstArg.find(filetype);
@@ -697,6 +738,9 @@ int main(int argc, char* argv[])
     for (int j = 0; j < numLights; j++) {
         p_lights[j] = *lightsPPM[j];
     }
+    
+    print_objects();
+    print_lights();
     
     /* Allocate memory on the GPU */
     double *d_e1, *d_e2, *d_e3, *d_lookFrom, *d_up, *d_bgColor;
