@@ -991,6 +991,7 @@ void raytraceKernel(double *grid, Object *objects, double numObjects,
         print_objects(objects, numObjects);
         print_lights(lightsPPM, numLights);
     }
+    __syncthreads();
     
 #if SINGLETHREADMODE
     if (i == 0 && j == 0) {
