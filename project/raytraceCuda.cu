@@ -25,6 +25,15 @@ inline void gpuAssert(cudaError_t code,
 }
 #define debug_print(fmt, ...) \
     do { if (DEBUG) fprintf(stderr, fmt, __VA_ARGS__); } while (0)
+    
+#define pointerChk(ans) { pointerCheck((ans), __FILE__, __LINE__); }
+inline void pointerCheck(double *ptr, const char *file, int line,
+                         bool abort=true) {
+    if (ptr == NULL) {
+        fprintf(stderr, "Null pointer at %s %d\n", file, line);
+        exit(1);
+    }
+}
 
 struct Point_Light
 {
