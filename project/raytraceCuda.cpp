@@ -592,8 +592,10 @@ void parseArguments(int argc, char* argv[])
 
 void getArguments(int argc, char* argv[])
 {
+    printf("argc: %d\n", argc);
     if (argc > 1)
     {
+        printf("hereag; da;h\n");
         string filetype = ".txt";
         string firstArg(argv[1]);
         unsigned int isFile = firstArg.find(filetype);
