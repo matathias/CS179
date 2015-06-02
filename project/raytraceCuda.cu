@@ -927,7 +927,7 @@ void raytraceKernel(double *grid, Object *objects, double numObjects,
                     // can continue with the calculations.
                     if (roots[0] != FLT_MAX)
                     {
-                        printf("Thread (%f, %f), (%f, %f) on pixel (%d, %d) hit bounding sphere.\n",
+                        printf("Thread (%d, %d), (%d, %d) on pixel (%d, %d) hit bounding sphere.\n",
                                threadIdx.x, threadIdx.y, blockIdx.x, blockIdx.y,
                                i, j);
                         // Use the update rule to find tfinal
@@ -942,7 +942,7 @@ void raytraceKernel(double *grid, Object *objects, double numObjects,
                          * "missed". */
                         if (tfinal != FLT_MAX && tfinal >= 0)
                         {
-                            printf("Thread (%f, %f), (%f, %f) on pixel (%d, %d) hit superquadric.\n",
+                            printf("Thread (%d, %d), (%d, %d) on pixel (%d, %d) hit superquadric.\n",
                                    threadIdx.x, threadIdx.y, blockIdx.x, blockIdx.y,
                                    i, j);
                             if(hitObject && tfinal < ttrueFinal)
