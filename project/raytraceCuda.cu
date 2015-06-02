@@ -411,7 +411,8 @@ void refractedRay(double *a, double *n, double *ref, double snell)
 __device__
 // n is the normal. e is the eye. ind is the index of the object we're lighting.
 void lighting(double *point, double *n, double *e,
-              double *dif, double *amb, double *spec, double shine, 
+              //double *dif, double *amb, double *spec, double shine, 
+              Material *mat,
               Point_Light *l, int numLights, 
               Object *objects, int numObjects,
               double epsilon, 
@@ -421,6 +422,11 @@ void lighting(double *point, double *n, double *e,
     double specularSum[] = {0.0, 0.0, 0.0};
     double reflectedLight[] = {0.0, 0.0, 0.0};
     double refractedLight[] = {0.0, 0.0, 0.0};
+    
+    double* dif = mat->diffuse;
+    double* amb = mat->ambient;
+    double* spec = mat->specular;
+    double shine = mat->shine;
     
     double newA[3];
     double newB[3];
@@ -614,10 +620,11 @@ void lighting(double *point, double *n, double *e,
                    objects[finalObj].n);
                    
         lighting(&intersectR[0], &intersectRNormal[0], e,
-                 &objects[finalObj].mat.diffuse[0], 
+                 /*&objects[finalObj].mat.diffuse[0], 
                  &objects[finalObj].mat.ambient[0], 
                  &objects[finalObj].mat.specular[0], 
-                 objects[finalObj].mat.shine, 
+                 objects[finalObj].mat.shine, */
+                 &objects[finalObj].mat,
                  l, numLights, objects, numObjects, epsilon,
                  finalObj, generation-1, &reflectedLight[0]);
         if (shine < 1) {
@@ -711,10 +718,11 @@ void lighting(double *point, double *n, double *e,
                    objects[finalObj].n);
 
         lighting(&intersectR[0], &intersectRNormal[0], e,
-                 &objects[finalObj].mat.diffuse[0], 
+                 /*&objects[finalObj].mat.diffuse[0], 
                  &objects[finalObj].mat.ambient[0], 
                  &objects[finalObj].mat.specular[0], 
-                 objects[finalObj].mat.shine, 
+                 objects[finalObj].mat.shine, */
+                 &objects[finalObj].mat,
                  l, numLights, objects, numObjects, epsilon,
                  finalObj, generation-1, &refractedLight[0]);
         refractedLight[0] *= objects[ind].mat.opacity;
@@ -829,10 +837,11 @@ void lighting(double *point, double *n, double *e,
                        objects[finalObj].n);
 
             lighting(&intersectR[0], &intersectRNormal[0], e,
-                     &objects[finalObj].mat.diffuse[0], 
+                     /*&objects[finalObj].mat.diffuse[0], 
                      &objects[finalObj].mat.ambient[0], 
                      &objects[finalObj].mat.specular[0], 
-                     objects[finalObj].mat.shine, 
+                     objects[finalObj].mat.shine, */
+                     &objects[finalObj].mat,
                      l, numLights, objects, numObjects, epsilon,
                      finalObj, generation - 1, &refractedLight[0]);
             refractedLight[0] *= objects[ind].mat.opacity;
@@ -1003,10 +1012,11 @@ void raytraceKernel(double *grid, Object *objects, double numObjects,
                                objects[finalObj].n);
 
                     lighting(intersect, intersectNormal, lookFrom,
-                             &objects[finalObj].mat.diffuse[0], 
+                             /*&objects[finalObj].mat.diffuse[0], 
                              &objects[finalObj].mat.ambient[0], 
                              &objects[finalObj].mat.specular[0], 
-                             objects[finalObj].mat.shine,
+                             objects[finalObj].mat.shine,*/
+                             &objects[finalObj].mat,
                              lightsPPM, numLights, objects, numObjects, epsilon,
                              finalObj, 3, &pxColor[0]);
                 }
@@ -1101,10 +1111,11 @@ void raytraceKernel(double *grid, Object *objects, double numObjects,
                             pointerChk(&color[0], __LINE__);
                             
                             lighting(intersect, intersectNormal, lookFrom,
-                                     &objects[finalObj].mat.diffuse[0], 
+                                     /*&objects[finalObj].mat.diffuse[0], 
                                      &objects[finalObj].mat.ambient[0], 
                                      &objects[finalObj].mat.specular[0], 
-                                     objects[finalObj].mat.shine,
+                                     objects[finalObj].mat.shine,*/
+                                     &objects[finalObj].mat,
                                      lightsPPM, numLights, objects, numObjects, 
                                      epsilon,
                                      finalObj, 3, &color[0]);
