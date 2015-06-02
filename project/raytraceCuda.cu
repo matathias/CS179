@@ -485,6 +485,7 @@ void lighting(double *point, double *n, double *e,
                     double objDist = d_norm(&ray[0]);
                     if (tfinal != FLT_MAX && tfinal >= 0 && objDist < lightDist)
                         useLight = false;
+                    delete[] ray;
                 }
             }
         }
@@ -521,6 +522,7 @@ void lighting(double *point, double *n, double *e,
                 specularSum[1] += l[i].color[1] * atten * pow(nDotDir, shine);
                 specularSum[2] += l[i].color[2] * atten * pow(nDotDir, shine);
             }
+            delete[] dirDif;
         }
     }
     /* Find the light contribution from reflection */
@@ -914,20 +916,20 @@ void raytraceKernel(double *grid, Object *objects, double numObjects,
             double pxColor[] = {bgColor[0], bgColor[1], bgColor[2]};
             if (!antiAliased)
             {
-                findFilmA(px, py, e1, e2, e3, filmDepth, &pointA[0]);
+                findFilmA(px, py, e1, e2, e3, filmDepth, pointA);
                 hitObject = false;
                 finalObj = 0, ttrueFinal = 0;
                 for (int k = 0; k < numObjects; k++)
                 {
                     // Find the ray equation transformations
-                    newa(objects[k].unScale, objects[k].unRotate, &pointA[0], &newA[0]);
+                    newa(objects[k].unScale, objects[k].unRotate, pointA, newA);
                     newb(objects[k].unScale, objects[k].unRotate, 
-                         objects[k].unTranslate, lookFrom, &newB[0]);
+                         objects[k].unTranslate, lookFrom, newB);
 
                     // Find the quadratic equation coefficients
                     findCoeffs(newA, newB, coeffs, true);
                     // Using the coefficients, find the roots
-                    findRoots(&coeffs[0], &roots[0]);
+                    findRoots(coeffs, roots);
 
                     // Check to see if the roots are FLT_MAX - if they are then the 
                     // ray missed the superquadric. If they haven't missed then we 
@@ -936,7 +938,7 @@ void raytraceKernel(double *grid, Object *objects, double numObjects,
                     {
                         // Use the update rule to find tfinal
                         double tini = min(roots[0], roots[1]);
-                        double tfinal = updateRule(&newA[0], &newB[0], objects[k].e, 
+                        double tfinal = updateRule(newA, newB, objects[k].e, 
                                                    objects[k].n, tini, epsilon);
 
                         /* Check to see if tfinal is FLT_MAX - if it is then the ray 
@@ -974,12 +976,12 @@ void raytraceKernel(double *grid, Object *objects, double numObjects,
                 }
                 if(hitObject)
                 {
-                    findRay(&pointA[0], lookFrom, &intersect[0], ttrueFinal);
-                    unitNormal(objects[finalObj].rotate, &finalNewA[0], &finalNewB[0], 
-                               &intersectNormal[0], ttrueFinal, objects[finalObj].e, 
+                    findRay(pointA, lookFrom, intersect, ttrueFinal);
+                    unitNormal(objects[finalObj].rotate, finalNewA, finalNewB, 
+                               intersectNormal, ttrueFinal, objects[finalObj].e, 
                                objects[finalObj].n);
 
-                    lighting(&intersect[0], &intersectNormal[0], lookFrom,
+                    lighting(intersect, intersectNormal, lookFrom,
                              &objects[finalObj].mat.diffuse[0], 
                              &objects[finalObj].mat.ambient[0], 
                              &objects[finalObj].mat.specular[0], 
@@ -1014,14 +1016,14 @@ void raytraceKernel(double *grid, Object *objects, double numObjects,
                         {
                             // Find the ray equation transformations
                             newa(objects[k].unScale, objects[k].unRotate, 
-                                 &pointA[0], &newA[0]);
+                                 pointA, newA);
                             newb(objects[k].unScale, objects[k].unRotate, 
-                                 objects[k].unTranslate, lookFrom, &newB[0]);
+                                 objects[k].unTranslate, lookFrom, newB);
 
                             // Find the quadratic equation coefficients
-                            findCoeffs(&newA[0], &newB[0], &coeffs[0], true);
+                            findCoeffs(&ewA, newB, coeffs, true);
                             // Using the coefficients, find the roots
-                            findRoots(&coeffs[0], &roots[0]);
+                            findRoots(coeffs, roots);
 
                             // Check to see if the roots are FLT_MAX - if they are then the 
                             // ray missed the superquadric. If they haven't missed then we 
@@ -1030,7 +1032,7 @@ void raytraceKernel(double *grid, Object *objects, double numObjects,
                             {
                                 // Use the update rule to find tfinal
                                 double tini = min(roots[0], roots[1]);
-                                double tfinal = updateRule(&newA[0], &newB[0], objects[k].e, 
+                                double tfinal = updateRule(newA, newB, objects[k].e, 
                                                            objects[k].n, tini, epsilon);
 
                                 /* Check to see if tfinal is FLT_MAX - if it is then the ray 
@@ -1068,16 +1070,14 @@ void raytraceKernel(double *grid, Object *objects, double numObjects,
                         }
                         if(hitObject)
                         {
-                            double intersect[3];
-                            double intersectNormal[3];
-                            findRay(&pointA[0], lookFrom, &intersect[0], ttrueFinal);
-                            unitNormal(objects[finalObj].rotate, &finalNewA[0], 
-                                       &finalNewB[0], &intersectNormal[0], ttrueFinal, 
+                            findRay(pointA, lookFrom, intersect, ttrueFinal);
+                            unitNormal(objects[finalObj].rotate, finalNewA, 
+                                       finalNewB, intersectNormal, ttrueFinal, 
                                        objects[finalObj].e, objects[finalObj].n);
 
                             double color[] = {0, 0, 0};
                             
-                            lighting(&intersect[0], &intersectNormal[0], lookFrom,
+                            lighting(intersect, intersectNormal, lookFrom,
                                      &objects[finalObj].mat.diffuse[0], 
                                      &objects[finalObj].mat.ambient[0], 
                                      &objects[finalObj].mat.specular[0], 
@@ -1091,8 +1091,6 @@ void raytraceKernel(double *grid, Object *objects, double numObjects,
                             pxColor[2] += color[2] * pxCoeffs[counter];
                             
                             delete[] color;
-                            delete[] intersect;
-                            delete[] intersectNormal;
                         }
                         counter++;
                     }
