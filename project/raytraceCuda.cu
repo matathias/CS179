@@ -939,7 +939,7 @@ void raytraceKernel(double *grid, Object *objects, double numObjects,
                          * "missed". */
                         if (tfinal != FLT_MAX && tfinal >= 0)
                         {
-                            printf("Pixel (%d, %d) hit superquadric.\n", i, j);
+                            //printf("Pixel (%d, %d) hit superquadric.\n", i, j);
                             if(hitObject && tfinal < ttrueFinal)
                             {
                                 ttrueFinal = tfinal;
@@ -977,6 +977,9 @@ void raytraceKernel(double *grid, Object *objects, double numObjects,
                              &objects[finalObj].mat,
                              lightsPPM, numLights, objects, numObjects, epsilon,
                              finalObj, 3, &pxColor[0]);
+                    pxColor[0] = 1;
+                    pxColor[1] = 1;
+                    pxColor[2] = 1;
                 }
             }
             else
