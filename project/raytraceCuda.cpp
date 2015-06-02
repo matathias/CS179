@@ -593,7 +593,7 @@ void parseArguments(int argc, char* argv[])
     }
 }
 
-void getArguments(int argc, char* argv[])
+bool getArguments(int argc, char* argv[])
 {
     if (argc > 1)
     {
@@ -606,9 +606,11 @@ void getArguments(int argc, char* argv[])
         }
         else
         {
-            parseArguments(argc, &argv[0]);
+            //parseArguments(argc, argv);
+            return true;
         }
     }
+    return false;
 }
 
 void parseFile(char* filename)
@@ -677,7 +679,8 @@ void printPPM(int pixelIntensity, int xre, int yre, double *grid)
 int main(int argc, char* argv[])
 {
     // extract the command line arguments
-    getArguments(argc, argv);
+    if(getArguments(argc, argv))
+        parseArguments(argc, argv);
     
     // block size will be 16 x 16 = 2^4 x 2^4
     int blockPower = 4;
