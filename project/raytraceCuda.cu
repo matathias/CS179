@@ -832,7 +832,7 @@ void lighting(double *point, double *n, double *e,
             refractedLight[1] *= objects[ind].mat.opacity;
             refractedLight[2] *= objects[ind].mat.opacity;
             delete[] intersectR;
-            delete[] intersectRNormal[];
+            delete[] intersectRNormal;
         }
         delete[] outRay;
         delete[] outPoint;
