@@ -927,7 +927,6 @@ void raytraceKernel(double *grid, Object *objects, double numObjects,
                     // can continue with the calculations.
                     if (roots[0] != FLT_MAX)
                     {
-                        printf("Pixel (%d, %d) hit bounding sphere.\n", i, j);
                         // Use the update rule to find tfinal
                         double tini = min(roots[0], roots[1]);
                         double tfinal = updateRule(newA, newB, objects[k].e, 
@@ -940,6 +939,7 @@ void raytraceKernel(double *grid, Object *objects, double numObjects,
                          * "missed". */
                         if (tfinal != FLT_MAX && tfinal >= 0)
                         {
+                            printf("Pixel (%d, %d) hit superquadric.\n", i, j);
                             if(hitObject && tfinal < ttrueFinal)
                             {
                                 ttrueFinal = tfinal;
