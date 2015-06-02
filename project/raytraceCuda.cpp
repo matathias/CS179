@@ -170,10 +170,12 @@ double norm(double *vec)
 /* Normalizes the given vector. */
 void normalize(double *vec)
 {
+    printf("Start of normalize: (%f, %f, %f)\n", vec[0], vec[1], vec[2]);
     double n = norm(vec);
     for (int i = 0; i < 3; i++) {
         vec[i] = vec[i] / n;
     }
+    printf("End of normalize: (%f, %f, %f)\n", vec[0], vec[1], vec[2]);
 }
 
 /* Returns the dot product of the given vectors. */
