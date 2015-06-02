@@ -568,11 +568,6 @@ void parseArguments(int argc, char* argv[])
         }
 
         objects = tempObjs;
-        int numObj = tempObjs.size();
-        p_objects = (Object *)malloc(sizeof(Object) * numObj);
-        for (int j = 0; j < numObj; j++) {
-            p_objects[j] = *tempObjs[j];
-        }
 
         Point_Light *eye = (Point_Light *)malloc(sizeof(Point_Light));
         create_Light(lookFrom[0], lookFrom[1], lookFrom[2], eyeColor[0],
@@ -585,11 +580,6 @@ void parseArguments(int argc, char* argv[])
         if (!defaultLights)
         {
             lightsPPM = tempLights;
-            int numLights = tempLights.size();
-            p_lights = (Point_Light *)malloc(sizeof(Point_Light) * numLights);
-            for (int j = 0; j < numLights; j++) {
-                p_lights[j] = *tempLights[j];
-            }
         }
     }
     catch (exception& ex)
@@ -692,6 +682,17 @@ int main(int argc, char* argv[])
     initPPM();
     /***** Allocate memory here *****/    
     double *grid = (double*)malloc(sizeof(double) * Ny * Nx * 3);
+    
+    int numObj = objects.size();
+    p_objects = (Object *)malloc(sizeof(Object) * numObj);
+    for (int j = 0; j < numObj; j++) {
+        p_objects[j] = *objects[j];
+    }
+    int numLights = lightsPPM.size();
+    p_lights = (Point_Light *)malloc(sizeof(Point_Light) * numLights);
+    for (int j = 0; j < numLights; j++) {
+        p_lights[j] = *lightsPPM[j];
+    }
     
     /* Allocate memory on the GPU */
     double *d_e1, *d_e2, *d_e3, *d_lookFrom, *d_up, *d_bgColor;
