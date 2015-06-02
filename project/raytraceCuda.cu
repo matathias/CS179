@@ -305,9 +305,7 @@ double updateRule(double *a, double *b, double e, double n, double t, double eps
     double tnew = t, told = t;
     bool stopPoint = false;
 
-/************ THIS FUCKIN FUNCTION *****************/
     while (!stopPoint)
-    //for (int iter = 0; iter < 10000 && !stopPoint; iter++)
     {
         told = tnew;
         findRay(a, b, &vec[0], told);
@@ -623,10 +621,6 @@ void lighting(double *point, double *n, double *e,
                    objects[finalObj].n);
                    
         lighting(&intersectR[0], &intersectRNormal[0], e,
-                 /*&objects[finalObj].mat.diffuse[0], 
-                 &objects[finalObj].mat.ambient[0], 
-                 &objects[finalObj].mat.specular[0], 
-                 objects[finalObj].mat.shine, */
                  &objects[finalObj].mat,
                  l, numLights, objects, numObjects, epsilon,
                  finalObj, generation-1, &reflectedLight[0]);
@@ -857,7 +851,7 @@ void lighting(double *point, double *n, double *e,
     maxVec[0] = diffuseSum[0] + specularSum[0] + reflectedLight[0] + refractedLight[0];
     maxVec[1] = diffuseSum[1] + specularSum[1] + reflectedLight[1] + refractedLight[1];
     maxVec[2] = diffuseSum[2] + specularSum[2] + reflectedLight[2] + refractedLight[2];
-    cWiseMin(&minVec[0], &maxVec[0], &res[0]);
+    cWiseMin(&minVec[0], &maxVec[0], res);
     
     // Free everything
     delete[] maxVec;
@@ -893,15 +887,6 @@ void raytraceKernel(double *grid, Object *objects, double numObjects,
     int finalObj = 0;
     bool hitObject = false;
     
-    /*double finalNewA[3];
-    double finalNewB[3];
-    double pointA[3];
-    double newA[3];
-    double newB[3];
-    double coeffs[3];
-    double roots[2];
-    double intersect[3];
-    double intersectNormal[3];*/
     double *finalNewA = &rayDoubles[j * Nx + i];
     double *finalNewB = &rayDoubles[j * Nx + i + 3];
     double *pointA = &rayDoubles[j * Nx + i + 6];
@@ -911,16 +896,6 @@ void raytraceKernel(double *grid, Object *objects, double numObjects,
     double *intersect = &rayDoubles[j * Nx + i + 18];
     double *intersectNormal = &rayDoubles[j * Nx + i + 21];
     double *roots = &rayDoubles[j * Nx + i + 24];
-    
-    pointerChk(finalNewA, __LINE__);
-    pointerChk(finalNewB, __LINE__);
-    pointerChk(pointA, __LINE__);
-    pointerChk(newA, __LINE__);
-    pointerChk(newB, __LINE__);
-    pointerChk(coeffs, __LINE__);
-    pointerChk(intersect, __LINE__);
-    pointerChk(intersectNormal, __LINE__);
-    pointerChk(roots, __LINE__);
     
     while (i < Nx)
     {
@@ -1097,10 +1072,6 @@ void raytraceKernel(double *grid, Object *objects, double numObjects,
                             pointerChk(&color[0], __LINE__);
                             
                             lighting(intersect, intersectNormal, lookFrom,
-                                     /*&objects[finalObj].mat.diffuse[0], 
-                                     &objects[finalObj].mat.ambient[0], 
-                                     &objects[finalObj].mat.specular[0], 
-                                     objects[finalObj].mat.shine,*/
                                      &objects[finalObj].mat,
                                      lightsPPM, numLights, objects, numObjects, 
                                      epsilon,
@@ -1121,26 +1092,14 @@ void raytraceKernel(double *grid, Object *objects, double numObjects,
             grid[index] = pxColor[0];
             grid[index + 1] = pxColor[1];
             grid[index + 2] = pxColor[2];
-            pointerChk(&grid[index], __LINE__);
-            pointerChk(&grid[index + 1], __LINE__);
-            pointerChk(&grid[index + 2], __LINE__);
+            if (pxColor[0] != 0 || pxColor[1] != 0 || pxColor[2] != 0)
+                printf("Color: %f, %f, %f\n", pxColor[0], pxColor[1], pxColor[2]);
             
             
             j += blockDim.y * gridDim.y;
         }
         i += blockDim.x * gridDim.x;
     }
-    
-    // can you use delete[] in cuda...?
-    /*delete[] finalNewA;
-    delete[] finalNewB;
-    delete[] pointA;
-    delete[] newA;
-    delete[] newB;
-    delete[] coeffs;
-    delete[] roots;
-    delete[] intersect;
-    delete[] intersectNormal;*/
 }
 
 void callRaytraceKernel(double *grid, Object *objs, double numObjects,
