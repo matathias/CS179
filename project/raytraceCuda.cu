@@ -455,8 +455,9 @@ void print_lights(Point_Light *p_lights, int numLights)
 }
 
 /********** Actual Raytracing Functions ***************************************/
-__device__
+
 template<>
+__device__
 void lighting<0>(double *point, double *n, double *e, Material *mat,
               Point_Light *l, int numLights, 
               Object *objects, int numObjects,
@@ -465,9 +466,9 @@ void lighting<0>(double *point, double *n, double *e, Material *mat,
 {
 }
 
-__device__
 // n is the normal. e is the eye. ind is the index of the object we're lighting.
 template <int depth>
+__device__
 void lighting(double *point, double *n, double *e, Material *mat,
               Point_Light *l, int numLights, 
               Object *objects, int numObjects,
