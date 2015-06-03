@@ -95,7 +95,7 @@ double filmY = 0.035;
 int Nx = 100, Ny = 100;
 
 // Name of output file
-string outName = "out.ppm";
+string outName = "output/out.ppm";
 
 vector<Point_Light*> lightsPPM;
 vector<Object*> objects;

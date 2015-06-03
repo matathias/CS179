@@ -36,6 +36,8 @@ of the name "out.ppm". If an input file /is/ specified, then the produced image
 will be output in a file of the same name as the input file, but with the
 file extension ".ppm" instead of ".txt".
 
+All output files are put in the "output" directory.
+
 inputs:
 [-res Nx Ny] where Nx and Ny are the output resolution of the raytraced file.
 [-obj e n xt yt zt a b c r1 r2 r3 theta] where e and n are the superquadric 
