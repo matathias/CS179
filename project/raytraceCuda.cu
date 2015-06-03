@@ -603,7 +603,7 @@ void refractions(Object *objects, int numObjects, Point_Light *l, int numLights,
     d_normalize(&refracted1[0]);
 
     double ttrueFinal = 0.0;
-    double finalObj = 0;
+    int finalObj = 0;
     bool hitObject = false;
     for (int k = 0; k < numObjects && generation > 0; k++)
     {
