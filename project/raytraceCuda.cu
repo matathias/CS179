@@ -948,37 +948,40 @@ void raytraceKernel(double *grid, Object *objects, Point_Light *lightsPPM,
     int i = threadIdx.x + blockDim.x * blockIdx.x;
     int j = threadIdx.y + blockDim.y * blockIdx.y;
     
-    double dx = data[2] / (double) Nx;
-    double dy = data[3] / (double) Ny;
+    // Only make the following assignments if i and j are actually within the
+    // image boundaries 
+    if (i < Nx && j < Ny) {
+        double dx = data[2] / (double) Nx;
+        double dy = data[3] / (double) Ny;
 
-    double ttrueFinal = 0.0;
-    int finalObj = 0;
-    bool hitObject = false;
-    
-    int rayInd = (j * Nx + i) * 26;
-    double *finalNewA = &rayDoubles[rayInd];
-    double *finalNewB = &rayDoubles[rayInd + 3];
-    double *pointA = &rayDoubles[rayInd + 6];
-    double *newA = &rayDoubles[rayInd + 9];
-    double *newB = &rayDoubles[rayInd + 12];
-    double *coeffs = &rayDoubles[rayInd + 15];
-    double *intersect = &rayDoubles[rayInd + 18];
-    double *intersectNormal = &rayDoubles[rayInd + 21];
-    double *roots = &rayDoubles[rayInd + 24];
-    
-    int lightInd = (j * Nx + i) * 32;
-    double *lDoubles = &lightDoubles[lightInd];
-    
-    pointerChk(finalNewA, __LINE__);
-    pointerChk(finalNewB, __LINE__);
-    pointerChk(pointA, __LINE__);
-    pointerChk(newA, __LINE__);
-    pointerChk(newB, __LINE__);
-    pointerChk(coeffs, __LINE__);
-    pointerChk(intersect, __LINE__);
-    pointerChk(intersectNormal, __LINE__);
-    pointerChk(roots, __LINE__);
-    
+        double ttrueFinal = 0.0;
+        int finalObj = 0;
+        bool hitObject = false;
+        
+        int rayInd = (j * Nx + i) * 26;
+        double *finalNewA = &rayDoubles[rayInd];
+        double *finalNewB = &rayDoubles[rayInd + 3];
+        double *pointA = &rayDoubles[rayInd + 6];
+        double *newA = &rayDoubles[rayInd + 9];
+        double *newB = &rayDoubles[rayInd + 12];
+        double *coeffs = &rayDoubles[rayInd + 15];
+        double *intersect = &rayDoubles[rayInd + 18];
+        double *intersectNormal = &rayDoubles[rayInd + 21];
+        double *roots = &rayDoubles[rayInd + 24];
+        
+        int lightInd = (j * Nx + i) * 32;
+        double *lDoubles = &lightDoubles[lightInd];
+        
+        pointerChk(finalNewA, __LINE__);
+        pointerChk(finalNewB, __LINE__);
+        pointerChk(pointA, __LINE__);
+        pointerChk(newA, __LINE__);
+        pointerChk(newB, __LINE__);
+        pointerChk(coeffs, __LINE__);
+        pointerChk(intersect, __LINE__);
+        pointerChk(intersectNormal, __LINE__);
+        pointerChk(roots, __LINE__);
+    }
     // Debugging
     /*if (i == 0 && j == 0) {
         print_objects(objects, data[0]);
