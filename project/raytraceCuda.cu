@@ -7,7 +7,7 @@
 
 // flags as to whether or not reflection and refraction are included in the
 // raytracing
-#define REFLECTION 0
+#define REFLECTION 1
 #define REFRACTION 0
 
 #define DEBUG 0
@@ -1231,12 +1231,14 @@ void callRaytraceKernel(double *grid, Object *objects, Point_Light *lightsPPM,
     size_t deviceLimit;
     gpuErrChk(cudaDeviceGetLimit(&deviceLimit, cudaLimitStackSize));
     printf("Device stack size: %d\n", (int) deviceLimit);
-    printf("Total Device stack memory: %d MB\n", (int) deviceLimit * numThreads / 1048576);
+    printf("Total Device stack memory: %d MB\n", 
+           (int) deviceLimit * numThreads / 1048576);
     
     gpuErrChk(cudaDeviceSetLimit(cudaLimitStackSize, 2048));
     gpuErrChk(cudaDeviceGetLimit(&deviceLimit, cudaLimitStackSize));
-    printf("New Device stack size: %d\n", deviceLimit);
-    printf("Total Device stack memory: %d MB\n", deviceLimit * numThreads / 1048576);
+    printf("New Device stack size: %d\n", (int) deviceLimit);
+    printf("Total Device stack memory: %d MB\n", 
+           (int) deviceLimit * numThreads / 1048576);
 
     // Allocate space on the gpu for the double arrays in the kernel
     double *rayDoubles;
