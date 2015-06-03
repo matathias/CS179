@@ -11,7 +11,7 @@
 #define REFRACTION 0
 
 #define REFLECTIONFUNC 0
-#define REFRACTIONFUNC 1
+#define REFRACTIONFUNC 0
 
 #define DEBUG 0
 
