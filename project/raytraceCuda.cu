@@ -1163,18 +1163,18 @@ void callRaytraceKernel(double *grid, Object *objects, Point_Light *lightsPPM,
     printf("Image size: %d x %d (%d Pixels)\n", Nx, Ny, Nx * Ny);
     printf("Total number of threads: %d\n", (blockSize * gx) * (blockSize * gy));
     
-    int factor = numThreads / (1024 * 1024);
+    float factor = numThreads / (1024 * 1024);
     size_t deviceLimit;
     gpuErrChk(cudaDeviceGetLimit(&deviceLimit, cudaLimitStackSize));
     printf("Original Device stack size: %d\n", (int) deviceLimit);
-    printf("Total Device stack memory: %d MB\n", (int) deviceLimit * factor);
+    printf("Total Device stack memory: %0.2f MB\n", (int) deviceLimit * factor);
     
     // Recursion's a bitch, gotta increase that stack size
     // (Also relevant for images larger than 400 x 400 or so, I suppose)
     gpuErrChk(cudaDeviceSetLimit(cudaLimitStackSize, 4096));
     gpuErrChk(cudaDeviceGetLimit(&deviceLimit, cudaLimitStackSize));
     printf("New Device stack size: %d\n", (int) deviceLimit);
-    printf("Total Device stack memory: %d MB\n", (int) deviceLimit * factor);
+    printf("Total Device stack memory: %0.2f MB\n", (int) deviceLimit * factor);
 
     // Allocate space on the gpu for the double arrays in the kernel
     double *rayDoubles;
