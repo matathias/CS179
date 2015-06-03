@@ -135,26 +135,26 @@ double d_dot(double *a, double *b)
 /* Implicit Superquadric function. */
 // vec is a 3-vector
 __device__
-double isq(double *vec, double e, double n)
+double isq(double *vec, double *e, double *n)
 {
     pointerChk(&vec[0], __LINE__);
     pointerChk(&vec[1], __LINE__);
     pointerChk(&vec[2], __LINE__);
-    pointerChk(&e, __LINE__);
-    pointerChk(&n, __LINE__);
+    pointerChk(e, __LINE__);
+    pointerChk(n, __LINE__);
     // Test for n = 0 now to prevent divide-by-zero errors.
     if (n == 0)
         return FLT_MAX;
     
-    double zTerm = pow(pow(vec[2], 2.0), 1.0 / (double) n);
+    double zTerm = pow(pow(vec[2], 2.0), 1.0 / (double) *n);
 
     // Test for e = 0 now to prevent divide-by-zero errors.
     if (e == 0)
         return zTerm;
         
-    double xTerm = pow(pow(vec[0], 2.0), 1.0 / (double) e);
-    double yTerm = pow(pow(vec[1], 2.0), 1.0 / (double) e);
-    double xyTerm = pow(xTerm + yTerm, e / (double) n);
+    double xTerm = pow(pow(vec[0], 2.0), 1.0 / (double) *e);
+    double yTerm = pow(pow(vec[1], 2.0), 1.0 / (double) *e);
+    double xyTerm = pow(xTerm + yTerm, *e / (double) *n);
     return xyTerm + zTerm - 1.0;
 }
 
@@ -295,7 +295,7 @@ double gPrime(double *vec, double *a, double e, double n)
  * If the ray actually misses the superquadric then FLT_MAX is returned instead.*/
 // a and b are 3-vectors
 __device__
-double updateRule(double *a, double *b, double e, double n, double t, double epsilon)
+double updateRule(double *a, double *b, double *e, double *n, double t, double epsilon)
 {
     double vec[3];
     pointerChk(&vec[0], __LINE__);
@@ -303,7 +303,7 @@ double updateRule(double *a, double *b, double e, double n, double t, double eps
     pointerChk(&vec[2], __LINE__);
     
     findRay(a, b, &vec[0], t);
-    double gP = gPrime(&vec[0], a, e, n);
+    double gP = gPrime(&vec[0], a, *e, *n);
     double gPPrevious = gP;
     double g = 0.0;
     double tnew = t, told = t;
@@ -313,7 +313,7 @@ double updateRule(double *a, double *b, double e, double n, double t, double eps
     {
         told = tnew;
         findRay(a, b, &vec[0], told);
-        gP = gPrime(&vec[0], a, e, n);
+        gP = gPrime(&vec[0], a, *e, *n);
         g = isq(&vec[0], e, n);
 
         if ((g - epsilon) <= 0)
@@ -453,8 +453,32 @@ void print_lights(Point_Light *p_lights, int numLights)
         printf("Attenuation Factor: %f\n", l->attenuation_k);
     }
 }
+/* lighting prototypes */
+__device__
+void lighting(double *point, double *n, double *e, Material *mat,
+              Point_Light *l, int numLights, 
+              Object *objects, int numObjects,
+              double epsilon, 
+              int ind, int generation, double *res, double *lightDoubles);
+__device__
+void lighting2(double *point, double *n, double *e, Material *mat,
+              Point_Light *l, int numLights, 
+              Object *objects, int numObjects,
+              double epsilon, 
+              int ind, int generation, double *res, double *lightDoubles);
 
 /********** Actual Raytracing Functions ***************************************/
+__device__
+void lighting2(double *point, double *n, double *e, Material *mat,
+              Point_Light *l, int numLights, 
+              Object *objects, int numObjects,
+              double epsilon, 
+              int ind, int generation, double *res, double *lightDoubles)
+{
+    lighting(point, n, e, mat, l, numLights, objects, numObjects, epsilon, 
+             ind, generation, res, lightDoubles)
+}
+
 __device__
 // n is the normal. e is the eye. ind is the index of the object we're lighting.
 void lighting(double *point, double *n, double *e, Material *mat,
@@ -531,8 +555,8 @@ void lighting(double *point, double *n, double *e, Material *mat,
                 {
                     // Use the update rule to find tfinal
                     double tini = min(roots[0], roots[1]);
-                    double tfinal = updateRule(&newA[0], &newB[0], objects[k].e, 
-                                               objects[k].n, tini, epsilon);
+                    double tfinal = updateRule(&newA[0], &newB[0], &objects[k].e, 
+                                               &objects[k].n, tini, epsilon);
 
                     /* Check to see if tfinal is FLT_MAX - if it is then the ray 
                      * missed the superquadric. Additionally, if tfinal is 
@@ -625,8 +649,8 @@ void lighting(double *point, double *n, double *e, Material *mat,
             {
                 // Use the update rule to find tfinal
                 double tini = min(roots[0], roots[1]);
-                double tfinal = updateRule(&newA[0], &newB[0], objects[k].e, 
-                                           objects[k].n, tini, epsilon);
+                double tfinal = updateRule(&newA[0], &newB[0], &objects[k].e, 
+                                           &objects[k].n, tini, epsilon);
 
                 /* Check to see if tfinal is FLT_MAX - if it is then the ray 
                  * missed the superquadric. Additionally, if tfinal is negative 
@@ -671,7 +695,7 @@ void lighting(double *point, double *n, double *e, Material *mat,
                    &intersectRNormal[0], ttrueFinal, objects[finalObj].e,
                    objects[finalObj].n);
                    
-        lighting(&intersectR[0], &intersectRNormal[0], e,
+        lighting2(&intersectR[0], &intersectRNormal[0], e,
                  &objects[finalObj].mat,
                  l, numLights, objects, numObjects, epsilon,
                  finalObj, generation-1, &reflectedLight[0], lightDoubles);
@@ -722,8 +746,8 @@ void lighting(double *point, double *n, double *e, Material *mat,
             {
                 // Use the update rule to find tfinal
                 double tini = min(roots[0], roots[1]);
-                double tfinal = updateRule(&newA[0], &newB[0], objects[k].e, 
-                                           objects[k].n, tini, epsilon);
+                double tfinal = updateRule(&newA[0], &newB[0], &objects[k].e, 
+                                           &objects[k].n, tini, epsilon);
 
                 /* Check to see if tfinal is FLT_MAX - if it is then the ray 
                  * missed the superquadric. Additionally, if tfinal is negative 
@@ -794,8 +818,8 @@ void lighting(double *point, double *n, double *e, Material *mat,
 
         double tini = max(refRoots[0], refRoots[1]);
 
-        double tfinalRef = updateRule(&refA[0], &refB[0], objects[ind].e, 
-                                      objects[ind].n, tini, epsilon);
+        double tfinalRef = updateRule(&refA[0], &refB[0], &objects[ind].e, 
+                                      &objects[ind].n, tini, epsilon);
 
         bool isRefracted = true;
         double outPoint[3];
@@ -844,8 +868,8 @@ void lighting(double *point, double *n, double *e, Material *mat,
                 {
                     // Use the update rule to find tfinal
                     double tini = min(roots[0], roots[1]);
-                    double tfinal = updateRule(&newA[0], &newB[0], objects[k].e, 
-                                               objects[k].n, tini, epsilon);
+                    double tfinal = updateRule(&newA[0], &newB[0], &objects[k].e, 
+                                               &objects[k].n, tini, epsilon);
 
                     /* Check to see if tfinal is FLT_MAX - if it is then the ray 
                      * missed the superquadric. Additionally, if tfinal is negative 
@@ -1044,8 +1068,8 @@ void raytraceKernel(double *grid, Object *objects, Point_Light *lightsPPM,
                     {
                         // Use the update rule to find tfinal
                         double tini = min(roots[0], roots[1]);
-                        double tfinal = updateRule(newA, newB, objects[k].e, 
-                                                   objects[k].n, tini, data[4]);
+                        double tfinal = updateRule(newA, newB, &objects[k].e, 
+                                                   &objects[k].n, tini, data[4]);
 
                         /* Check to see if tfinal is FLT_MAX - if it is then the ray 
                          * missed the superquadric. Additionally, if tfinal is negative 
@@ -1141,8 +1165,8 @@ void raytraceKernel(double *grid, Object *objects, Point_Light *lightsPPM,
                             {
                                 // Use the update rule to find tfinal
                                 double tini = min(roots[0], roots[1]);
-                                double tfinal = updateRule(newA, newB, objects[k].e, 
-                                                           objects[k].n, tini, data[4]);
+                                double tfinal = updateRule(newA, newB, &objects[k].e, 
+                                                           &objects[k].n, tini, data[4]);
 
                                 /* Check to see if tfinal is FLT_MAX - if it is then the ray 
                                  * missed the superquadric. Additionally, if tfinal is negative 
