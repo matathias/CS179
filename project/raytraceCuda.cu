@@ -511,8 +511,26 @@ void lighting(double *point, double *n, double *e,
             if (k != ind)
             {
                 // Find the ray equation transformations
-                newa(&objects[k].unScale[0], &objects[k].unRotate[0], 
+                //newa(&objects[k].unScale[0], &objects[k].unRotate[0], 
                      &lDirection[0], &newA[0]);
+                     
+                double a0 = (objects[k].unRotate[0] * lDirection[0]) + 
+                            (objects[k].unRotate[1] * lDirection[1]) + 
+                            (objects[k].unRotate[2] * lDirection[2]);
+                double a1 = (objects[k].unRotate[3] * lDirection[0]) + 
+                            (objects[k].unRotate[4] * lDirection[1]) + 
+                            (objects[k].unRotate[5] * lDirection[2]);
+                double a2 = (objects[k].unRotate[6] * lDirection[0]) + 
+                            (objects[k].unRotate[7] * lDirection[1]) + 
+                            (objects[k].unRotate[8] * lDirection[2]);
+                
+                newA[0] = (objects[k].unScale[0] * a0) + (objects[k].unScale[1] * a1) + 
+                          (objects[k].unScale[2] * a2);
+                newA[1] = (objects[k].unScale[3] * a0) + (objects[k].unScale[4] * a1) + 
+                          (objects[k].unScale[5] * a2);
+                newA[2] = (objects[k].unScale[6] * a0) + (objects[k].unScale[7] * a1) + 
+                          (objects[k].unScale[8] * a2);
+                     
                 newb(&objects[k].unScale[0], &objects[k].unRotate[0], 
                      &objects[k].unTranslate[0], point, &newB[0]);
 
@@ -1060,7 +1078,6 @@ void raytraceKernel(double *grid, Object *objects, Point_Light *lightsPPM,
                 {
                     // Find the ray equation transformations
                     //newa(objects[k].unScale, objects[k].unRotate, pointA, newA);
-                    
                     
                     double a0 = (objects[k].unRotate[0] * pointA[0]) + 
                                 (objects[k].unRotate[1] * pointA[1]) + 
