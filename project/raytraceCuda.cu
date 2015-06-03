@@ -469,9 +469,9 @@ void lighting(double *point, double *n, double *e, Material *mat,
     double refractedLight[3];// = {0.0, 0.0, 0.0};
     pointerChk(&diffuseSum[0], __LINE__);
     pointerChk(&specularSum[0], __LINE__);
-    pointerChk(&reflectedLight[0], __LINE__);
-    pointerChk(&reflectedLight[1], __LINE__);
-    pointerChk(&reflectedLight[2], __LINE__);
+    pointerChk(&reflectedLight[0], 472);
+    pointerChk(&reflectedLight[1], 473);
+    pointerChk(&reflectedLight[2], 474);
     pointerChk(&refractedLight[0], __LINE__);
     for (int i = 0; i < 3; i++)
     {
