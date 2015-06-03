@@ -680,8 +680,6 @@ void lighting(double *point, double *n, double *e, Material *mat,
             reflectedLight[1] *= shine;
             reflectedLight[2] *= shine;
         }*/
-        printf("reflected light: (%f, %f, %f)\n", reflectedLight[0],
-               reflectedLight[1], reflectedLight[2]);
     }
 #endif
     
@@ -1234,7 +1232,7 @@ void callRaytraceKernel(double *grid, Object *objects, Point_Light *lightsPPM,
     printf("Total Device stack memory: %d MB\n", 
            (int) deviceLimit * numThreads / 1048576);
     
-    gpuErrChk(cudaDeviceSetLimit(cudaLimitStackSize, 2048));
+    gpuErrChk(cudaDeviceSetLimit(cudaLimitStackSize, 4096));
     gpuErrChk(cudaDeviceGetLimit(&deviceLimit, cudaLimitStackSize));
     printf("New Device stack size: %d\n", (int) deviceLimit);
     printf("Total Device stack memory: %d MB\n", 
