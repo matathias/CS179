@@ -637,7 +637,10 @@ void getArguments(int argc, char* argv[])
     {
         string filetype = ".txt";
         string firstArg(argv[1]);
+        printf("getArguments firstArg: %s\n", firstArg.c_str());
         unsigned int isFile = firstArg.find(filetype);
+        printf("location of '.txt' in firstArg: %d\n", isFile);
+        printf("value of string::npos: %d\n", (int) string::npos);
         if (isFile != string::npos)
         {
             parseFile(argv[1]);
@@ -655,7 +658,7 @@ void parseFile(char* filename)
     string inName(filename);
     printf("Input file name: %s\n", inName.c_str());
     // chop off the file extension
-    unsigned int ext = inName.find_last_of(".txt");
+    unsigned int ext = inName.find(".txt");
     inName.erase(ext, 4);
     // if the file is in a directory path, chop off the directories
     // if your file system uses backslashes instead of forward slashes then eh,
@@ -666,7 +669,7 @@ void parseFile(char* filename)
     }
     outName = inName;
     outName.append(".ppm");
-    printf("Output file name: %s\n", outName.c_str());
+    printf("Output file name: %s\n\n", outName.c_str());
     
     
     ifstream ifs;
