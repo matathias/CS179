@@ -905,10 +905,10 @@ void lighting(double *point, double *n, double *e, Material *mat,
     }
 #endif
 
-    //double minVec[] = {1, 1, 1};
-    //double maxVec[3];
-    double *minVec = &lightDoubles[0];
-    double *maxVec = &lightDoubles[3];
+    double minVec[] = {1, 1, 1};
+    double maxVec[3];
+    //double *minVec = &lightDoubles[0];
+    //double *maxVec = &lightDoubles[3];
     minVec[0] = 1;
     minVec[1] = 1;
     minVec[2] = 1;
