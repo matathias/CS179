@@ -7,10 +7,10 @@
 
 // flags as to whether or not reflection and refraction are included in the
 // raytracing
-#define REFLECTION 0
+#define REFLECTION 1
 #define REFRACTION 0
 
-#define REFLECTIONFUNC 1
+#define REFLECTIONFUNC 0
 #define REFRACTIONFUNC 0
 
 #define DEBUG 0
@@ -1073,11 +1073,11 @@ void lighting(double *point, double *n, double *e, Material *mat,
                  &objects[finalObj].mat,
                  l, numLights, objects, numObjects, epsilon,
                  finalObj, generation-1, &reflectedLight[0]);
-        if (shine < 1) {
+        /*if (shine < 1) {
             reflectedLight[0] *= shine;
             reflectedLight[1] *= shine;
             reflectedLight[2] *= shine;
-        }
+        }*/
         printf("reflected light: (%f, %f, %f)\n", reflectedLight[0],
                reflectedLight[1], reflectedLight[2]);
     }
