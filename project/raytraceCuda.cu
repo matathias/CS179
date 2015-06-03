@@ -792,17 +792,17 @@ void lighting(double *point, double *n, double *e, Material *mat,
               Object *objects, int numObjects,
               double epsilon, int ind, int generation, double *res)
 {
-    double diffuseSum[3];// = {0.0, 0.0, 0.0};
-    double reflectedLight[3];// = {0.0, 0.0, 0.0};
-    double specularSum[3];// = {0.0, 0.0, 0.0};
-    double refractedLight[3];// = {0.0, 0.0, 0.0};
-    for (int i = 0; i < 3; i++)
+    double diffuseSum[3] = {0.0, 0.0, 0.0};
+    double reflectedLight[3] = {0.0, 0.0, 0.0};
+    double specularSum[3] = {0.0, 0.0, 0.0};
+    double refractedLight[3] = {0.0, 0.0, 0.0};
+    /*for (int i = 0; i < 3; i++)
     {
         diffuseSum[i] = 0;
         specularSum[i] = 0;
         reflectedLight[i] = 0;
         refractedLight[i] = 0;
-    }
+    }*/
     
     double* dif = &mat->diffuse[0];
     double* spec = &mat->specular[0];
