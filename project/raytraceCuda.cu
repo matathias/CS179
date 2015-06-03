@@ -1163,7 +1163,7 @@ void callRaytraceKernel(double *grid, Object *objects, Point_Light *lightsPPM,
     printf("Image size: %d x %d (%d Pixels)\n", Nx, Ny, Nx * Ny);
     printf("Total number of threads: %d\n", (blockSize * gx) * (blockSize * gy));
     
-    float factor = numThreads / (1024 * 1024);
+    float factor = numThreads / (float) (1024 * 1024);
     size_t deviceLimit;
     gpuErrChk(cudaDeviceGetLimit(&deviceLimit, cudaLimitStackSize));
     printf("Original Device stack size: %d\n", (int) deviceLimit);
