@@ -950,7 +950,7 @@ void raytraceKernel(double *grid, Object *objects, Point_Light *lightsPPM,
     
     // Only make the following assignments if i and j are actually within the
     // image boundaries 
-    if (i < Nx && j < Ny) {
+    /*if (i < Nx && j < Ny) {
         double dx = data[2] / (double) Nx;
         double dy = data[3] / (double) Ny;
 
@@ -981,7 +981,7 @@ void raytraceKernel(double *grid, Object *objects, Point_Light *lightsPPM,
         pointerChk(intersect, __LINE__);
         pointerChk(intersectNormal, __LINE__);
         pointerChk(roots, __LINE__);
-    }
+    }*/
     // Debugging
     /*if (i == 0 && j == 0) {
         print_objects(objects, data[0]);
@@ -1002,6 +1002,40 @@ void raytraceKernel(double *grid, Object *objects, Point_Light *lightsPPM,
         while (j < Ny)
 #endif
         {
+            /* Do all of this within the while loop to prevent threads with i's
+             * and j's outside of the image boundaris from accessing rayDoubles.
+             */
+            double dx = data[2] / (double) Nx;
+            double dy = data[3] / (double) Ny;
+
+            double ttrueFinal = 0.0;
+            int finalObj = 0;
+            bool hitObject = false;
+            
+            int rayInd = (j * Nx + i) * 26;
+            double *finalNewA = &rayDoubles[rayInd];
+            double *finalNewB = &rayDoubles[rayInd + 3];
+            double *pointA = &rayDoubles[rayInd + 6];
+            double *newA = &rayDoubles[rayInd + 9];
+            double *newB = &rayDoubles[rayInd + 12];
+            double *coeffs = &rayDoubles[rayInd + 15];
+            double *intersect = &rayDoubles[rayInd + 18];
+            double *intersectNormal = &rayDoubles[rayInd + 21];
+            double *roots = &rayDoubles[rayInd + 24];
+            
+            int lightInd = (j * Nx + i) * 32;
+            double *lDoubles = &lightDoubles[lightInd];
+            
+            pointerChk(finalNewA, __LINE__);
+            pointerChk(finalNewB, __LINE__);
+            pointerChk(pointA, __LINE__);
+            pointerChk(newA, __LINE__);
+            pointerChk(newB, __LINE__);
+            pointerChk(coeffs, __LINE__);
+            pointerChk(intersect, __LINE__);
+            pointerChk(intersectNormal, __LINE__);
+            pointerChk(roots, __LINE__);
+        
             // The positions are subtracted by a Nx/2 or Ny/2 term to center
             // the film plane
             double px = (i * dx) - (data[2] / (double) 2);
