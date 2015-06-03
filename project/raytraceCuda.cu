@@ -332,7 +332,7 @@ double updateRule(double *a, double *b, double *e, double *n, double t, double e
         }
     }
     
-    delete[] vec;
+    //delete[] vec;
 
     return tnew;
 }
@@ -1052,8 +1052,7 @@ void raytraceKernel(double *grid, Object *objects, Point_Light *lightsPPM,
                          * then either the ray has started inside the object or is 
                          * pointing away from the object; in both cases the ray has 
                          * "missed". */
-                        double test = FLT_MAX;
-                        if (tfinal != test && tfinal >= 0)
+                        if (tfinal != FLT_MAX && tfinal >= 0)
                         {
                             if(hitObject && tfinal < ttrueFinal)
                             {
@@ -1250,10 +1249,6 @@ void callRaytraceKernel(double *grid, Object *objects, Point_Light *lightsPPM,
     gpuErrChk(cudaMalloc(&lightDoubles, sizeof(double) * numThreads * 32));
     gpuErrChk(cudaMemset(lightDoubles, 0, sizeof(double) * numThreads * 32));
     
-    /*raytraceKernel<<<gridSize, blocks>>>(grid, objs, numObjects, lightsPPM,
-                                      numLights, Nx, Ny, filmX, filmY, bgColor,
-                                      e1, e2, e3, lookFrom, epsilon, filmDepth,
-                                      antiAliased, rayDoubles, lightDoubles);*/
     raytraceKernel<<<gridSize, blocks>>>(grid, objects, lightsPPM, data, 
                                          bgColor, e1, e2, e3, lookFrom, 
                                          rayDoubles, lightDoubles, Nx, Ny, 

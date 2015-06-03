@@ -789,9 +789,6 @@ int main(int argc, char* argv[])
                          cudaMemcpyHostToDevice));
     
     /* Call the GPU code. */
-    /*callRaytraceKernel(d_grid, d_objects, numObjects, d_lights, numLights,
-                       Nx, Ny, filmX, filmY, d_bgColor, d_e1, d_e2, d_e3,
-                       d_lookFrom, epsilon, filmDepth, antiAlias, blockPower);*/
     callRaytraceKernel(d_grid, d_objects, d_lights, d_kernelData, d_bgColor,
                        d_e1, d_e2, d_e3, d_lookFrom, Nx, Ny, antiAlias, blockPower);
     
