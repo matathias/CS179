@@ -28,13 +28,6 @@ inline void gpuAssert(cudaError_t code,
     exit(code);
   }
 }
-    
-__device__
-void pointerChk(double *ptr, int line) {
-    if (ptr == NULL) {
-        printf("ptr is null at line %d\n", line);
-    }
-}
 
 struct Point_Light
 {
@@ -140,11 +133,6 @@ double d_dot(double *a, double *b)
 __device__
 double isq(double *vec, double *e, double *n)
 {
-    pointerChk(&vec[0], __LINE__);
-    pointerChk(&vec[1], __LINE__);
-    pointerChk(&vec[2], __LINE__);
-    pointerChk(e, __LINE__);
-    pointerChk(n, __LINE__);
     // Test for n = 0 now to prevent divide-by-zero errors.
     if (n == 0)
         return FLT_MAX;
@@ -301,9 +289,6 @@ __device__
 double updateRule(double *a, double *b, double *e, double *n, double t, double epsilon)
 {
     double vec[3];
-    pointerChk(&vec[0], __LINE__);
-    pointerChk(&vec[1], __LINE__);
-    pointerChk(&vec[2], __LINE__);
     
     findRay(a, b, &vec[0], t);
     double gP = gPrime(&vec[0], a, *e, *n);
@@ -472,7 +457,6 @@ void reflections(Object *objects, int numObjects, Point_Light *l, int numLights,
 {
     double eDotN = d_dot(n, &eDirection[0]);
     double reflected[3];
-    pointerChk(&reflected[0], __LINE__);
     
     double newA[3];
     double newB[3];
@@ -488,8 +472,6 @@ void reflections(Object *objects, int numObjects, Point_Light *l, int numLights,
     int finalObj = 0;
     double finalNewA[3];
     double finalNewB[3];
-    pointerChk(&finalNewA[0], __LINE__);
-    pointerChk(&finalNewB[0], __LINE__);
     
     bool hitObject = false;
     for (int k = 0; k < numObjects && generation > 0 ; k++)
@@ -555,8 +537,6 @@ void reflections(Object *objects, int numObjects, Point_Light *l, int numLights,
     {
         double intersectR[3];
         double intersectRNormal[3];
-        pointerChk(&intersectR[0], __LINE__);
-        pointerChk(&intersectRNormal[0], __LINE__);
         
         findRay(&reflected[0], point, &intersectR[0], ttrueFinal);
         unitNormal(objects[finalObj].rotate, &finalNewA[0], &finalNewB[0], 
@@ -597,7 +577,6 @@ void refractions(Object *objects, int numObjects, Point_Light *l, int numLights,
     eDirection[2] *= -1;
     // Find the refracted ray
     double refracted1[3];
-    pointerChk(&refracted1[0], __LINE__);
     //double *refracted1 = &lightDoubles[9];
     refractedRay(&eDirection[0], n, &refracted1[0], objects[ind].mat.snell);
     d_normalize(&refracted1[0]);
@@ -667,8 +646,6 @@ void refractions(Object *objects, int numObjects, Point_Light *l, int numLights,
     {
         double intersectR[3];
         double intersectRNormal[3];
-        pointerChk(&intersectR[0], __LINE__);
-        pointerChk(&intersectRNormal[0], __LINE__);
         
         findRay(&refracted1[0], point, &intersectR[0], ttrueFinal);
         unitNormal(objects[finalObj].rotate, &finalNewA[0], &finalNewB[0], 
@@ -689,10 +666,6 @@ void refractions(Object *objects, int numObjects, Point_Light *l, int numLights,
         double refB[3];
         double refCoeffs[3];
         double refRoots[2];
-        pointerChk(&refA[0], __LINE__);
-        pointerChk(&refB[0], __LINE__);
-        pointerChk(&refCoeffs[0], __LINE__);
-        pointerChk(&refRoots[0], __LINE__);
         /*double *refA = &lightDoubles[18];
         double *refB = &lightDoubles[21];
         double *refCoeffs = &lightDoubles[24];
@@ -714,9 +687,6 @@ void refractions(Object *objects, int numObjects, Point_Light *l, int numLights,
         double outRay[3];
         //double *outPoint = &lightDoubles[24];
         //double *outRay = &lightDoubles[27];
-        pointerChk(&outPoint[0], __LINE__);
-        pointerChk(&outNormal[0], __LINE__);
-        pointerChk(&outRay[0], __LINE__);
         
         if (isRefracted) // the fuck is the point of this?
         {
@@ -798,8 +768,6 @@ void refractions(Object *objects, int numObjects, Point_Light *l, int numLights,
         {
             double intersectR[3];
             double intersectRNormal[3];
-            pointerChk(&intersectR[0], __LINE__);
-            pointerChk(&intersectRNormal[0], __LINE__);
             
             findRay(&outRay[0], &outPoint[0], &intersectR[0], ttrueFinal);
             unitNormal(objects[finalObj].rotate, &finalNewA[0], &finalNewB[0], 
@@ -828,12 +796,6 @@ void lighting(double *point, double *n, double *e, Material *mat,
     double specularSum[3];// = {0.0, 0.0, 0.0};
     double reflectedLight[3];// = {0.0, 0.0, 0.0};
     double refractedLight[3];// = {0.0, 0.0, 0.0};
-    pointerChk(&diffuseSum[0], __LINE__);
-    pointerChk(&specularSum[0], __LINE__);
-    pointerChk(&reflectedLight[0], __LINE__);
-    pointerChk(&reflectedLight[1], __LINE__);
-    pointerChk(&reflectedLight[2], __LINE__);
-    pointerChk(&refractedLight[0], __LINE__);
     for (int i = 0; i < 3; i++)
     {
         diffuseSum[i] = 0;
@@ -854,15 +816,10 @@ void lighting(double *point, double *n, double *e, Material *mat,
     //double *newB = &lightDoubles[3];
     //double *coeffs = &lightDoubles[6];
     //double *roots = &lightDoubles[30];
-    pointerChk(&newA[0], __LINE__);
-    pointerChk(&newB[0], __LINE__);
-    pointerChk(&coeffs[0], __LINE__);
-    pointerChk(&roots[0], __LINE__);
     
 
     // Get the unit direction from the point to the camera
     double eDirection[3];
-    pointerChk(&eDirection[0], __LINE__);
     
     for (int i = 0; i < 3; i++)
         eDirection[i] = e[i] - point[i];
@@ -877,7 +834,6 @@ void lighting(double *point, double *n, double *e, Material *mat,
         // Get the unit direction and the distance between the light and the
         // point
         double lDirection[3];
-        pointerChk(&lDirection[0], __LINE__);
         
         lDirection[0] = l[i].position[0] - point[0];
         lDirection[1] = l[i].position[1] - point[1];
@@ -925,7 +881,6 @@ void lighting(double *point, double *n, double *e, Material *mat,
                      * farther away than the light - if it is then it isn't 
                      * actually blocking the light. */
                     double ray[3];
-                    pointerChk(&ray[0], __LINE__);
                     
                     findRay(&lDirection[0], point, &ray[0], tfinal);
                     double objDist = d_norm(&ray[0]);
@@ -954,7 +909,6 @@ void lighting(double *point, double *n, double *e, Material *mat,
 
             // Add the specular factor to the specular sum
             double dirDif[3];
-            pointerChk(&dirDif[0], __LINE__);
             
             dirDif[0] = eDirection[0] + lDirection[0];
             dirDif[1] = eDirection[1] + lDirection[1];
@@ -981,7 +935,6 @@ void lighting(double *point, double *n, double *e, Material *mat,
 #if REFLECTION
     double eDotN = d_dot(n, &eDirection[0]);
     double reflected[3];
-    pointerChk(&reflected[0], __LINE__);
     
     //double *reflected = &lightDoubles[9];
     reflected[0] = (2 * n[0] * eDotN) - eDirection[0];
@@ -992,8 +945,6 @@ void lighting(double *point, double *n, double *e, Material *mat,
     int finalObj = 0;
     double finalNewA[3];
     double finalNewB[3];
-    pointerChk(&finalNewA[0], __LINE__);
-    pointerChk(&finalNewB[0], __LINE__);
     
     //double *finalNewA = &lightDoubles[12];
     //double *finalNewB = &lightDoubles[15];
@@ -1061,8 +1012,6 @@ void lighting(double *point, double *n, double *e, Material *mat,
     {
         double intersectR[3];
         double intersectRNormal[3];
-        pointerChk(&intersectR[0], __LINE__);
-        pointerChk(&intersectRNormal[0], __LINE__);
         
         findRay(&reflected[0], point, &intersectR[0], ttrueFinal);
         unitNormal(objects[finalObj].rotate, &finalNewA[0], &finalNewB[0], 
@@ -1097,7 +1046,6 @@ void lighting(double *point, double *n, double *e, Material *mat,
     eDirection[2] *= -1;
     // Find the refracted ray
     double refracted1[3];
-    pointerChk(&refracted1[0], __LINE__);
     //double *refracted1 = &lightDoubles[9];
     refractedRay(&eDirection[0], n, &refracted1[0], objects[ind].mat.snell);
     d_normalize(&refracted1[0]);
@@ -1167,8 +1115,6 @@ void lighting(double *point, double *n, double *e, Material *mat,
     {
         double intersectR[3];
         double intersectRNormal[3];
-        pointerChk(&intersectR[0], __LINE__);
-        pointerChk(&intersectRNormal[0], __LINE__);
         
         findRay(&refracted1[0], point, &intersectR[0], ttrueFinal);
         unitNormal(objects[finalObj].rotate, &finalNewA[0], &finalNewB[0], 
@@ -1189,10 +1135,6 @@ void lighting(double *point, double *n, double *e, Material *mat,
         double refB[3];
         double refCoeffs[3];
         double refRoots[2];
-        pointerChk(&refA[0], __LINE__);
-        pointerChk(&refB[0], __LINE__);
-        pointerChk(&refCoeffs[0], __LINE__);
-        pointerChk(&refRoots[0], __LINE__);
         /*double *refA = &lightDoubles[18];
         double *refB = &lightDoubles[21];
         double *refCoeffs = &lightDoubles[24];
@@ -1214,9 +1156,6 @@ void lighting(double *point, double *n, double *e, Material *mat,
         double outRay[3];
         //double *outPoint = &lightDoubles[24];
         //double *outRay = &lightDoubles[27];
-        pointerChk(&outPoint[0], __LINE__);
-        pointerChk(&outNormal[0], __LINE__);
-        pointerChk(&outRay[0], __LINE__);
         
         if (isRefracted) // the fuck is the point of this?
         {
@@ -1298,8 +1237,6 @@ void lighting(double *point, double *n, double *e, Material *mat,
         {
             double intersectR[3];
             double intersectRNormal[3];
-            pointerChk(&intersectR[0], __LINE__);
-            pointerChk(&intersectRNormal[0], __LINE__);
             
             findRay(&outRay[0], &outPoint[0], &intersectR[0], ttrueFinal);
             unitNormal(objects[finalObj].rotate, &finalNewA[0], &finalNewB[0], 
@@ -1319,8 +1256,6 @@ void lighting(double *point, double *n, double *e, Material *mat,
 
     double minVec[] = {1, 1, 1};
     double maxVec[3];
-    pointerChk(&minVec[0], __LINE__);
-    pointerChk(&maxVec[0], __LINE__);
     //double *minVec = &lightDoubles[0];
     //double *maxVec = &lightDoubles[3];
     minVec[0] = 1;
@@ -1405,16 +1340,6 @@ void raytraceKernel(double *grid, Object *objects, Point_Light *lightsPPM,
             double *intersect = &rayDoubles[rayInd + 18];
             double *intersectNormal = &rayDoubles[rayInd + 21];
             double *roots = &rayDoubles[rayInd + 24];
-            
-            pointerChk(finalNewA, __LINE__);
-            pointerChk(finalNewB, __LINE__);
-            pointerChk(pointA, __LINE__);
-            pointerChk(newA, __LINE__);
-            pointerChk(newB, __LINE__);
-            pointerChk(coeffs, __LINE__);
-            pointerChk(intersect, __LINE__);
-            pointerChk(intersectNormal, __LINE__);
-            pointerChk(roots, __LINE__);
         
             // The positions are subtracted by a Nx/2 or Ny/2 term to center
             // the film plane
@@ -1424,10 +1349,6 @@ void raytraceKernel(double *grid, Object *objects, Point_Light *lightsPPM,
             
             if (!antiAliased)
             {
-                pointerChk(pointA, __LINE__);
-                pointerChk(e1, __LINE__);
-                pointerChk(e2, __LINE__);
-                pointerChk(e3, __LINE__);
                 //findFilmA(&px, &py, e1, e2, e3, &data[5], pointA);
                 
                 for (int z = 0; z < 3; z++) {
@@ -1516,7 +1437,6 @@ void raytraceKernel(double *grid, Object *objects, Point_Light *lightsPPM,
                                      (1 / (2 * sqrt((double) 2))) / denom,
                                      (1 / (double) 2) / denom,
                                      (1 / (2 * sqrt((double) 2))) / denom};
-                pointerChk(&pxCoeffs[0], __LINE__);
                 int counter = 0;
                 for (int g = -1; g <= 1; g++)
                 {
