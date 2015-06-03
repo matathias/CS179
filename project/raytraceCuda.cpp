@@ -739,7 +739,7 @@ int main(int argc, char* argv[])
         p_lights[j] = *lightsPPM[j];
     }
     
-    double kernelData = (double*)malloc(sizeof(double) * 6);
+    double *kernelData = (double*)malloc(sizeof(double) * 6);
     kernelData[0] = numObjects;
     kernelData[1] = numLights;
     kernelData[2] = filmX;
@@ -760,7 +760,7 @@ int main(int argc, char* argv[])
     gpuErrChk(cudaMalloc(&d_up, 3 * sizeof(double)));
     gpuErrChk(cudaMalloc(&d_bgColor, 3 * sizeof(double)));
     gpuErrChk(cudaMalloc(&d_grid, sizeof(double) * Ny * Nx * 3));
-    gpuErrChk(cudaMalloc(&d_kernelData, sizeof(double) * 6);
+    gpuErrChk(cudaMalloc(&d_kernelData, sizeof(double) * 6));
     
     /* Copy data from the cpu to the gpu. */
     gpuErrChk(cudaMemcpy(d_e1, &e1[0], 3 * sizeof(double), cudaMemcpyHostToDevice));
