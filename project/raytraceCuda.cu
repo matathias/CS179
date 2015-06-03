@@ -10,8 +10,6 @@
 #define REFLECTION 1
 #define REFRACTION 1
 
-#define DEBUG 0
-
 #define SINGLETHREADMODE 0
 
 #define gpuErrChk(ans) { gpuAssert((ans), __FILE__, __LINE__); }
@@ -74,15 +72,6 @@ void cWiseMin(double *a, double *b, double *out)
             out[i] = b[i];
     }
 }
-
-/*__device__
-void findFilmA(double *x, double *y, double *e1, double *e2, double *e3, 
-               double *filmDepth, double *film)
-{
-    for (int i = 0; i < 3; i++) {
-        film[i] = (*filmDepth * e3[i]) + (*x * e1[i]) + (*y * e2[i]);
-    }
-}*/
 
 /* Returns -1 for negative numbers, 1 for positive numbers, and 0 for zero. */
 __device__
@@ -316,8 +305,6 @@ double updateRule(double *a, double *b, double *e, double *n, double t, double e
             gPPrevious = gP;
         }
     }
-    
-    //delete[] vec;
 
     return tnew;
 }
@@ -451,23 +438,12 @@ void lighting(double *point, double *n, double *e, Material *mat,
     double diffuseSum[3] = {0.0, 0.0, 0.0};
     double specularSum[3] = {0.0, 0.0, 0.0};
     double refractedLight[3] = {0.0, 0.0, 0.0};
-    /*for (int i = 0; i < 3; i++)
-    {
-        diffuseSum[i] = 0;
-        specularSum[i] = 0;
-        reflectedLight[i] = 0;
-        refractedLight[i] = 0;
-    }*/
     double reflectedLight[3] = {0.0, 0.0, 0.0};
     
     double* dif = &mat->diffuse[0];
     double* spec = &mat->specular[0];
     double shine = mat->shine;
     
-    /*double newA[] = {0, 0, 0};
-    double newB[] = {0, 0, 0};
-    double coeffs[] = {0, 0, 0};
-    double roots[] = {0, 0, 0};*/
     double *newA = &lightDoubles[0];
     double *newB = &lightDoubles[3];
     double *coeffs = &lightDoubles[6];
@@ -586,17 +562,14 @@ void lighting(double *point, double *n, double *e, Material *mat,
     
 #if REFLECTION
     double eDotN = d_dot(n, &eDirection[0]);
-    //double reflected[3];
-    
     double *reflected = &lightDoubles[9];
     reflected[0] = (2 * n[0] * eDotN) - eDirection[0];
     reflected[1] = (2 * n[1] * eDotN) - eDirection[1];
     reflected[2] = (2 * n[2] * eDotN) - eDirection[2];
+    
     d_normalize(&reflected[0]);
     double ttrueFinal = 0.0;
     int finalObj = 0;
-    //double finalNewA[3];
-    //double finalNewB[3];
     
     double *finalNewA = &lightDoubles[12];
     double *finalNewB = &lightDoubles[15];
@@ -675,11 +648,11 @@ void lighting(double *point, double *n, double *e, Material *mat,
                  &objects[finalObj].mat,
                  l, numLights, objects, numObjects, epsilon,
                  finalObj, generation-1, &reflectedLight[0], lightDoubles);
-        /*if (shine < 1) {
+        if (shine < 1) {
             reflectedLight[0] *= shine;
             reflectedLight[1] *= shine;
             reflectedLight[2] *= shine;
-        }*/
+        }
     }
 #endif
     
@@ -691,7 +664,6 @@ void lighting(double *point, double *n, double *e, Material *mat,
     eDirection[1] *= -1;
     eDirection[2] *= -1;
     // Find the refracted ray
-    //double refracted1[3];
     double *refracted1 = &lightDoubles[9];
     refractedRay(&eDirection[0], n, &refracted1[0], objects[ind].mat.snell);
     d_normalize(&refracted1[0]);
@@ -777,10 +749,6 @@ void lighting(double *point, double *n, double *e, Material *mat,
     }
     else
     {
-        /*double refA[3];
-        double refB[3];
-        double refCoeffs[3];
-        double refRoots[2];*/
         double *refA = &lightDoubles[18];
         double *refB = &lightDoubles[21];
         double *refCoeffs = &lightDoubles[24];
@@ -797,9 +765,7 @@ void lighting(double *point, double *n, double *e, Material *mat,
                                       &objects[ind].n, tini, epsilon);
 
         bool isRefracted = true;
-        //double outPoint[3];
         double outNormal[3];
-        //double outRay[3];
         double *outPoint = &lightDoubles[24];
         double *outRay = &lightDoubles[27];
         
@@ -900,8 +866,6 @@ void lighting(double *point, double *n, double *e, Material *mat,
     }
 #endif
 
-    //double minVec[] = {1, 1, 1};
-    //double maxVec[3];
     double *minVec = &lightDoubles[0];
     double *maxVec = &lightDoubles[3];
     minVec[0] = 1;
@@ -914,22 +878,9 @@ void lighting(double *point, double *n, double *e, Material *mat,
     maxVec[1] = diffuseSum[1] + specularSum[1] + reflectedLight[1] + refractedLight[1];
     maxVec[2] = diffuseSum[2] + specularSum[2] + reflectedLight[2] + refractedLight[2];
     cWiseMin(&minVec[0], &maxVec[0], res);
-    
-    // Free everything
-    
-    /*delete[] diffuseSum;
-    delete[] specularSum;
-    delete[] reflectedLight;
-    delete[] refractedLight;*/
 }
 
 __global__
-/*void raytraceKernel(double *grid, Object *objects, double numObjects,
-                    Point_Light *lightsPPM, double numLights, 
-                    int Nx, int Ny, double filmX, double filmY, 
-                    double *bgColor, double *e1, double *e2, double *e3, 
-                    double *lookFrom, double epsilon, double filmDepth,
-                    bool antiAliased, double *rayDoubles, double *lightDoubles)*/
 void raytraceKernel(double *grid, Object *objects, Point_Light *lightsPPM,
                     double *data, double *bgColor, double *e1, double *e2,
                     double *e3, double *lookFrom, double *rayDoubles,
@@ -998,11 +949,10 @@ void raytraceKernel(double *grid, Object *objects, Point_Light *lightsPPM,
             
             if (!antiAliased)
             {
-                //findFilmA(&px, &py, e1, e2, e3, &data[5], pointA);
-                
-                for (int z = 0; z < 3; z++) {
-                    pointA[z] = (data[5] * e3[z]) + (px * e1[z]) + (py * e2[z]);
-                }
+                // Transform point A into film coordinates
+                pointA[0] = (data[5] * e3[0]) + (px * e1[0]) + (py * e2[0]);
+                pointA[1] = (data[5] * e3[1]) + (px * e1[1]) + (py * e2[1]);
+                pointA[2] = (data[5] * e3[2]) + (px * e1[2]) + (py * e2[2]);
                 
                 hitObject = false;
                 finalObj = 0, ttrueFinal = 0;
@@ -1093,11 +1043,11 @@ void raytraceKernel(double *grid, Object *objects, Point_Light *lightsPPM,
                     {
                         double thisPx = px + (g * (dx / (double) 2));
                         double thisPy = py + (h * (dy / (double) 2));
-                        //findFilmA(&thisPx, &thisPy, e1, e2, e3, &data[5], pointA);
                         
-                        for (int z = 0; z < 3; z++) {
-                            pointA[z] = (data[5] * e3[z]) + (thisPx * e1[z]) + (thisPy * e2[z]);
-                        }
+                        // Transform point A into film Coordinates
+                        pointA[0] = (data[5] * e3[0]) + (thisPx * e1[0]) + (thisPy * e2[0]);
+                        pointA[1] = (data[5] * e3[1]) + (thisPx * e1[1]) + (thisPy * e2[1]);
+                        pointA[2] = (data[5] * e3[2]) + (thisPx * e1[2]) + (thisPy * e2[2]);
                         
                         hitObject = false;
                         finalObj = 0, ttrueFinal = 0;
@@ -1216,22 +1166,20 @@ void callRaytraceKernel(double *grid, Object *objects, Point_Light *lightsPPM,
     dim3 gridSize;
     gridSize.x = gx;
     gridSize.y = gy;
-#if DEBUG
-    printf("block size:  %d\n", blockSize);
-    printf("grid size x: %d\n", gx);
-    printf("grid size y: %d\n", gy);
-#endif
 
+    // Mostly debug info, but possibly interesting
     int numThreads = (blockSize * gx) * (blockSize * gy);
     printf("Image size: %d x %d (%d Pixels)\n", Nx, Ny, Nx * Ny);
     printf("Total number of threads: %d\n", (blockSize * gx) * (blockSize * gy));
     
     size_t deviceLimit;
     gpuErrChk(cudaDeviceGetLimit(&deviceLimit, cudaLimitStackSize));
-    printf("Device stack size: %d\n", (int) deviceLimit);
+    printf("Original Device stack size: %d\n", (int) deviceLimit);
     printf("Total Device stack memory: %d MB\n", 
            (int) deviceLimit * numThreads / 1048576);
     
+    // Recursion's a bitch, gotta increase that stack size
+    // (Also relevant for images larger than 400 x 400 or so, I suppose)
     gpuErrChk(cudaDeviceSetLimit(cudaLimitStackSize, 4096));
     gpuErrChk(cudaDeviceGetLimit(&deviceLimit, cudaLimitStackSize));
     printf("New Device stack size: %d\n", (int) deviceLimit);

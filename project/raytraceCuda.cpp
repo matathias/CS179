@@ -63,13 +63,6 @@ struct Object
     double unTranslate[3]; //3-vector
 };
 
-struct Pixel
-{
-    double red;
-    double green;
-    double blue;
-};
-
 /******************************************************************************/
 // Global variables
 
@@ -100,6 +93,9 @@ double filmDepth = 0.05;
 double filmX = 0.035;
 double filmY = 0.035;
 int Nx = 100, Ny = 100;
+
+// Name of output file
+string outName = "out.ppm";
 
 vector<Point_Light*> lightsPPM;
 vector<Object*> objects;
@@ -655,6 +651,28 @@ void getArguments(int argc, char* argv[])
 
 void parseFile(char* filename)
 {
+    // Create an outfile name from the infile before parsing the file
+    string inName(filename);
+    printf("Input file name: %s\n", inName);
+    // chop off the file extension
+    unsigned int ext = inName.find_last_of(".txt");
+    inName.erase(ext, 4);
+    // if the file is in a directory path, chop off the directories
+    unsigned int delimiter = inName.find_last_of("/");
+    if (delimiter != string::npos){
+        inName.erase(0, delimiter+1);
+    }
+    else {
+        delimiter = inName.find_last_of("\\");
+        if (delimiter != string::npos){
+            inName.erase(0, delimiter+1);
+        }
+    }
+    outName = inName;
+    outName.append(".ppm");
+    printf("Output file name: %s\n", outName);
+    
+    
     ifstream ifs;
     ifs.open(filename);
 
@@ -694,11 +712,11 @@ void parseFile(char* filename)
     parseArguments(input.size()+1, args);
 }
 
-// Print pixel data to output
+// Print pixel data to file
 void printPPM(int pixelIntensity, int xre, int yre, double *grid)
 {
     ofstream outFile;
-    outFile.open("out.ppm");
+    outFile.open(outName);
     
     // Print the PPM data to standard output
     outFile << "P3" << endl;
@@ -729,6 +747,7 @@ int main(int argc, char* argv[])
     int blockPower = 4;
 
     initPPM();
+        
     /***** Allocate memory here *****/    
     double *grid = (double*)malloc(sizeof(double) * Ny * Nx * 3);
     
@@ -750,9 +769,6 @@ int main(int argc, char* argv[])
     kernelData[3] = filmY;
     kernelData[4] = epsilon;
     kernelData[5] = filmDepth;
-    
-    //print_objects();
-    //print_lights();
     
     /* Allocate memory on the GPU */
     double *d_e1, *d_e2, *d_e3, *d_lookFrom, *d_up, *d_bgColor;
