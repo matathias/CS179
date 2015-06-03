@@ -467,6 +467,7 @@ void lighting(double *point, double *n, double *e, Material *mat,
 __device__
 void reflections(Object *objects, int numObjects, Point_Light *l, int numLights,
                  int ind, int generation, double *eDirection, double *point,
+                 double *n, double *e, double shine,
                  double epsilon, double *reflectedLight)
 {
     double eDotN = d_dot(n, &eDirection[0]);
@@ -579,12 +580,15 @@ void reflections(Object *objects, int numObjects, Point_Light *l, int numLights,
 __device__
 void refractions(Object *objects, int numObjects, Point_Light *l, int numLights,
                  int ind, int generation, double *eDirection, double *point,
+                 double *n, double *e,
                  double epsilon, double *refractedLight)
 {
     double newA[3];
     double newB[3];
     double coeffs[3];
     double roots[3];
+    double finalNewA[3];
+    double finalNewB[3];
     /* Find the refraction contribution. */
     // Change the eye-direction vector so that it points at the surface instead
     // of at the eye
@@ -598,9 +602,9 @@ void refractions(Object *objects, int numObjects, Point_Light *l, int numLights,
     refractedRay(&eDirection[0], n, &refracted1[0], objects[ind].mat.snell);
     d_normalize(&refracted1[0]);
 
-    ttrueFinal = 0.0;
-    finalObj = 0;
-    hitObject = false;
+    double ttrueFinal = 0.0;
+    double finalObj = 0;
+    bool hitObject = false;
     for (int k = 0; k < numObjects && generation > 0; k++)
     {
         if (k != ind)
@@ -971,7 +975,7 @@ void lighting(double *point, double *n, double *e, Material *mat,
     // Find the reflected ray
 #if REFLECTIONFUNC
     reflections(objects, numObjects, l, numLights, ind, generation, 
-                eDirection, point, epsilon, &reflectedLight[0]);
+                eDirection, point, n, e, shine, epsilon, &reflectedLight[0]);
 #endif
     
 #if REFLECTION
@@ -1081,7 +1085,7 @@ void lighting(double *point, double *n, double *e, Material *mat,
 
 #if REFRACTIONFUNC
     refractions(objects, numObjects, l, numLights, ind, generation, 
-                eDirection, point, epsilon, &refractedLight[0]);
+                eDirection, point, n, e, epsilon, &refractedLight[0]);
 #endif
     
 #if REFRACTION
