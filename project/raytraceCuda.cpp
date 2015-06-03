@@ -653,7 +653,7 @@ void parseFile(char* filename)
 {
     // Create an outfile name from the infile before parsing the file
     string inName(filename);
-    printf("Input file name: %s\n", inName);
+    printf("Input file name: %s\n", inName.c_str());
     // chop off the file extension
     unsigned int ext = inName.find_last_of(".txt");
     inName.erase(ext, 4);
@@ -666,7 +666,7 @@ void parseFile(char* filename)
     }
     outName = inName;
     outName.append(".ppm");
-    printf("Output file name: %s\n", outName);
+    printf("Output file name: %s\n", outName.c_str());
     
     
     ifstream ifs;
