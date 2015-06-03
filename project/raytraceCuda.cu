@@ -463,14 +463,21 @@ void lighting(double *point, double *n, double *e, Material *mat,
               double epsilon, 
               int ind, int generation, double *res)
 {
-    double diffuseSum[] = {0.0, 0.0, 0.0};
-    double specularSum[] = {0.0, 0.0, 0.0};
-    double reflectedLight[] = {0.0, 0.0, 0.0};
-    double refractedLight[] = {0.0, 0.0, 0.0};
+    double diffuseSum[3];// = {0.0, 0.0, 0.0};
+    double specularSum[3];// = {0.0, 0.0, 0.0};
+    double reflectedLight[3];// = {0.0, 0.0, 0.0};
+    double refractedLight[3];// = {0.0, 0.0, 0.0};
     pointerChk(&diffuseSum[0], __LINE__);
     pointerChk(&specularSum[0], __LINE__);
     pointerChk(&reflectedLight[0], __LINE__);
     pointerChk(&refractedLight[0], __LINE__);
+    for (int i = 0; i < 3; i++)
+    {
+        diffuseSum[i] = 0;
+        specularSum[i] = 0;
+        reflectedLight[i] = 0;
+        refractedLight[i] = 0;
+    }
     
     double* dif = &mat->diffuse[0];
     double* spec = &mat->specular[0];
