@@ -919,10 +919,10 @@ void lighting(double *point, double *n, double *e,
     
     // Free everything
     
-    delete[] diffuseSum;
+    /*delete[] diffuseSum;
     delete[] specularSum;
     delete[] reflectedLight;
-    delete[] refractedLight;
+    delete[] refractedLight;*/
 }
 
 __global__
