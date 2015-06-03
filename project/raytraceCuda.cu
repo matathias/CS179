@@ -12,7 +12,7 @@
 
 #define DEBUG 0
 
-#define SINGLETHREADMODE 1
+#define SINGLETHREADMODE 0
 
 #define gpuErrChk(ans) { gpuAssert((ans), __FILE__, __LINE__); }
 inline void gpuAssert(cudaError_t code,
@@ -55,10 +55,10 @@ struct Object
     double e;
     double n;
     Material mat;
-    double scale[9];      //3x3-matrix
-    double unScale[9];    //3x3-matrix
-    double rotate[9];     //3x3-matrix
-    double unRotate[9];   //3x3-matrix
+    double scale[9];       //3x3-matrix
+    double unScale[9];     //3x3-matrix
+    double rotate[9];      //3x3-matrix
+    double unRotate[9];    //3x3-matrix
     double translate[3];   //3-vector
     double unTranslate[3]; //3-vector
 };
@@ -966,6 +966,7 @@ void raytraceKernel(double *grid, Object *objects, Point_Light *lightsPPM,
 #else
     while (i < Nx)
     {
+        printf("i loop Pixel (%d, %d)\n", i, j);
         j = threadIdx.y + blockDim.y * blockIdx.y;
         
         while (j < Ny)
