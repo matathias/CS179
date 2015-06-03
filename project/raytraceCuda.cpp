@@ -641,8 +641,7 @@ void getArguments(int argc, char* argv[])
         unsigned int isFile = firstArg.find(filetype);
         printf("location of '.txt' in firstArg: %d\n", isFile);
         printf("value of string::npos: %d\n\n", (int) string::npos);
-        int thisIsToSupressCompilerWarnings = (int) string::npos;
-        if (isFile != thisIsToSupressCompilerWarnings)
+        if ((int) isFile != (int) string::npos)
         {
             parseFile(argv[1]);
         }
