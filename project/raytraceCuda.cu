@@ -282,13 +282,14 @@ void isqGradient(double *vec, double *grad, double e, double n)
 /* Derivative of the isq function. */
 // vec and a are 3-vectors
 __device__
-double gPrime(double *vec, double *a, double e, double n)
+void gPrime(double *vec, double *a, double e, double n, double *gP)
 {
     double tmp[3];
     isqGradient(vec, &tmp[0], e, n);
     double val = d_dot(a, &tmp[0]);
+    *gP = val;
     //delete[] tmp;
-    return val;
+    //return val;
 }
 
 /* Uses Newton's method to find the t value at which a ray hits the superquadric.
@@ -313,7 +314,7 @@ double updateRule(double *a, double *b, double *e, double *n, double t, double e
     {
         told = tnew;
         findRay(a, b, &vec[0], told);
-        gP = gPrime(&vec[0], a, *e, *n);
+        /*gP =*/ gPrime(&vec[0], a, *e, *n, &gP);
         g = isq(&vec[0], e, n);
 
         if ((g - epsilon) <= 0)
@@ -953,7 +954,7 @@ void raytraceKernel(double *grid, Object *objects, Point_Light *lightsPPM,
     
     // Debugging
     if (i == 0 && j == 0) {
-        print_objects(objects, data[0]);
+        //print_objects(objects, data[0]);
         print_lights(lightsPPM, data[1]);
     }
     __syncthreads();
