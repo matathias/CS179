@@ -86,11 +86,7 @@ int sign(double s)
 __device__
 double d_norm(double *vec)
 {
-    double n = 0;
-    for (int i = 0; i < 3; i++) {
-        n += vec[i] * vec[i];
-    }
-    return sqrt(n);
+    return sqrt((vec[0] * vec[0]) + (vec[1] * vec[1]) + (vec[2] * vec[2]));
 }
 
 /* Normalizes the given vector. */
@@ -98,20 +94,16 @@ __device__
 void d_normalize(double *vec)
 {
     double n = d_norm(vec);
-    for (int i = 0; i < 3; i++) {
-        vec[i] = vec[i] / (double) n;
-    }
+    vec[0] = vec[0] / (double) n;
+    vec[1] = vec[1] / (double) n;
+    vec[2] = vec[2] / (double) n;
 }
 
 /* Returns the dot product of the given vectors. */
 __device__
 double d_dot(double *a, double *b)
 {
-    double d = 0;
-    for (int i = 0; i < 3; i++) {
-        d += a[i] * b[i];
-    }
-    return d;
+    return (a[0] * b[0]) + (a[1] * b[1]) + (a[2] * b[2]);
 }
 
 /* Implicit Superquadric function. */
@@ -264,7 +256,6 @@ double gPrime(double *vec, double *a, double e, double n)
     double tmp[3];
     isqGradient(vec, &tmp[0], e, n);
     double val = d_dot(a, &tmp[0]);
-    //delete[] tmp;
     return val;
 }
 
