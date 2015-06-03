@@ -8,10 +8,10 @@
 // flags as to whether or not reflection and refraction are included in the
 // raytracing
 #define REFLECTION 0
-#define REFRACTION 1
+#define REFRACTION 0
 
 #define REFLECTIONFUNC 0
-#define REFRACTIONFUNC 0
+#define REFRACTIONFUNC 1
 
 #define DEBUG 0
 
