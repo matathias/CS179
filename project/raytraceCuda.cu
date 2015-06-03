@@ -461,7 +461,7 @@ void lighting(double *point, double *n, double *e, Material *mat,
               Point_Light *l, int numLights, 
               Object *objects, int numObjects,
               double epsilon, 
-              int ind, int generation, double *res, double *lightDoubles)
+              int ind, int generation, double *res)
 {
     double diffuseSum[] = {0.0, 0.0, 0.0};
     double specularSum[] = {0.0, 0.0, 0.0};
@@ -674,7 +674,7 @@ void lighting(double *point, double *n, double *e, Material *mat,
         lighting(&intersectR[0], &intersectRNormal[0], e,
                  &objects[finalObj].mat,
                  l, numLights, objects, numObjects, epsilon,
-                 finalObj, generation-1, &reflectedLight[0], lightDoubles);
+                 finalObj, generation-1, &reflectedLight[0]);
         if (shine < 1) {
             reflectedLight[0] *= shine;
             reflectedLight[1] *= shine;
@@ -771,7 +771,7 @@ void lighting(double *point, double *n, double *e, Material *mat,
         lighting(&intersectR[0], &intersectRNormal[0], e,
                  &objects[finalObj].mat,
                  l, numLights, objects, numObjects, epsilon,
-                 finalObj, generation-1, &refractedLight[0], lightDoubles);
+                 finalObj, generation-1, &refractedLight[0]);
         refractedLight[0] *= objects[ind].mat.opacity;
         refractedLight[1] *= objects[ind].mat.opacity;
         refractedLight[2] *= objects[ind].mat.opacity;
@@ -893,7 +893,7 @@ void lighting(double *point, double *n, double *e, Material *mat,
             lighting(&intersectR[0], &intersectRNormal[0], e,
                      &objects[finalObj].mat,
                      l, numLights, objects, numObjects, epsilon,
-                     finalObj, generation - 1, &refractedLight[0], lightDoubles);
+                     finalObj, generation - 1, &refractedLight[0]);
             refractedLight[0] *= objects[ind].mat.opacity;
             refractedLight[1] *= objects[ind].mat.opacity;
             refractedLight[2] *= objects[ind].mat.opacity;
@@ -938,7 +938,7 @@ __global__
 void raytraceKernel(double *grid, Object *objects, Point_Light *lightsPPM,
                     double *data, double *bgColor, double *e1, double *e2,
                     double *e3, double *lookFrom, double *rayDoubles,
-                    double *lightDoubles, int Nx, int Ny, bool antiAliased)
+                    int Nx, int Ny, bool antiAliased)
 {   
     /* data[0] = numObjects
      * data[1] = numLights
@@ -991,9 +991,6 @@ void raytraceKernel(double *grid, Object *objects, Point_Light *lightsPPM,
             double *intersect = &rayDoubles[rayInd + 18];
             double *intersectNormal = &rayDoubles[rayInd + 21];
             double *roots = &rayDoubles[rayInd + 24];
-            
-            int lightInd = (j * Nx + i) * 32;
-            double *lDoubles = &lightDoubles[lightInd];
             
             pointerChk(finalNewA, __LINE__);
             pointerChk(finalNewB, __LINE__);
@@ -1090,7 +1087,7 @@ void raytraceKernel(double *grid, Object *objects, Point_Light *lightsPPM,
                     lighting(intersect, intersectNormal, lookFrom,
                              &objects[finalObj].mat,
                              lightsPPM, data[1], objects, data[0], data[4],
-                             finalObj, 3, &pxColor[0], lDoubles);
+                             finalObj, 3, &pxColor[0]);
                 }
             }
             else
@@ -1190,7 +1187,7 @@ void raytraceKernel(double *grid, Object *objects, Point_Light *lightsPPM,
                                      &objects[finalObj].mat,
                                      lightsPPM, data[1], objects, data[0], 
                                      data[4],
-                                     finalObj, 3, &color[0], lDoubles);
+                                     finalObj, 3, &color[0]);
 
                             pxColor[0] += color[0] * pxCoeffs[counter];
                             pxColor[1] += color[1] * pxCoeffs[counter];
@@ -1251,16 +1248,11 @@ void callRaytraceKernel(double *grid, Object *objects, Point_Light *lightsPPM,
     gpuErrChk(cudaMalloc(&rayDoubles, sizeof(double) * numThreads * 26));
     gpuErrChk(cudaMemset(rayDoubles, 0, sizeof(double) * numThreads * 26));
     
-    double *lightDoubles;
-    gpuErrChk(cudaMalloc(&lightDoubles, sizeof(double) * numThreads * 32));
-    gpuErrChk(cudaMemset(lightDoubles, 0, sizeof(double) * numThreads * 32));
-    
     raytraceKernel<<<gridSize, blocks>>>(grid, objects, lightsPPM, data, 
                                          bgColor, e1, e2, e3, lookFrom, 
-                                         rayDoubles, lightDoubles, Nx, Ny, 
+                                         rayDoubles, Nx, Ny, 
                                          antiAliased);
     gpuErrChk(cudaPeekAtLastError());
     gpuErrChk(cudaDeviceSynchronize());
     gpuErrChk(cudaFree(rayDoubles));
-    gpuErrChk(cudaFree(lightDoubles));
 }
