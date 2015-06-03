@@ -457,8 +457,7 @@ void print_lights(Point_Light *p_lights, int numLights)
 /********** Actual Raytracing Functions ***************************************/
 __device__
 // n is the normal. e is the eye. ind is the index of the object we're lighting.
-void lighting(double *point, double *n, double *e,
-              Material *mat,
+void lighting(double *point, double *n, double *e, Material *mat,
               Point_Light *l, int numLights, 
               Object *objects, int numObjects,
               double epsilon, 
@@ -473,7 +472,8 @@ void lighting(double *point, double *n, double *e,
     double* spec = &mat->specular[0];
     double shine = mat->shine;
     
-    double *newA = &lightDoubles[0];
+    double newA[] = {0, 0, 0};
+    //double *newA = &lightDoubles[0];
     double *newB = &lightDoubles[3];
     double *coeffs = &lightDoubles[6];
     double *roots = &lightDoubles[30];
@@ -511,26 +511,8 @@ void lighting(double *point, double *n, double *e,
             if (k != ind)
             {
                 // Find the ray equation transformations
-                //newa(&objects[k].unScale[0], &objects[k].unRotate[0], 
-                //     &lDirection[0], &newA[0]);
-                     
-                double a0 = (objects[k].unRotate[0] * lDirection[0]) + 
-                            (objects[k].unRotate[1] * lDirection[1]) + 
-                            (objects[k].unRotate[2] * lDirection[2]);
-                double a1 = (objects[k].unRotate[3] * lDirection[0]) + 
-                            (objects[k].unRotate[4] * lDirection[1]) + 
-                            (objects[k].unRotate[5] * lDirection[2]);
-                double a2 = (objects[k].unRotate[6] * lDirection[0]) + 
-                            (objects[k].unRotate[7] * lDirection[1]) + 
-                            (objects[k].unRotate[8] * lDirection[2]);
-                
-                newA[0] = (objects[k].unScale[0] * a0) + (objects[k].unScale[1] * a1) + 
-                          (objects[k].unScale[2] * a2);
-                newA[1] = (objects[k].unScale[3] * a0) + (objects[k].unScale[4] * a1) + 
-                          (objects[k].unScale[5] * a2);
-                newA[2] = (objects[k].unScale[6] * a0) + (objects[k].unScale[7] * a1) + 
-                          (objects[k].unScale[8] * a2);
-                     
+                newa(&objects[k].unScale[0], &objects[k].unRotate[0], 
+                     &lDirection[0], &newA[0]);
                 newb(&objects[k].unScale[0], &objects[k].unRotate[0], 
                      &objects[k].unTranslate[0], point, &newB[0]);
 
@@ -966,40 +948,6 @@ void raytraceKernel(double *grid, Object *objects, Point_Light *lightsPPM,
     int i = threadIdx.x + blockDim.x * blockIdx.x;
     int j = threadIdx.y + blockDim.y * blockIdx.y;
     
-    // Only make the following assignments if i and j are actually within the
-    // image boundaries 
-    /*if (i < Nx && j < Ny) {
-        double dx = data[2] / (double) Nx;
-        double dy = data[3] / (double) Ny;
-
-        double ttrueFinal = 0.0;
-        int finalObj = 0;
-        bool hitObject = false;
-        
-        int rayInd = (j * Nx + i) * 26;
-        double *finalNewA = &rayDoubles[rayInd];
-        double *finalNewB = &rayDoubles[rayInd + 3];
-        double *pointA = &rayDoubles[rayInd + 6];
-        double *newA = &rayDoubles[rayInd + 9];
-        double *newB = &rayDoubles[rayInd + 12];
-        double *coeffs = &rayDoubles[rayInd + 15];
-        double *intersect = &rayDoubles[rayInd + 18];
-        double *intersectNormal = &rayDoubles[rayInd + 21];
-        double *roots = &rayDoubles[rayInd + 24];
-        
-        int lightInd = (j * Nx + i) * 32;
-        double *lDoubles = &lightDoubles[lightInd];
-        
-        pointerChk(finalNewA, __LINE__);
-        pointerChk(finalNewB, __LINE__);
-        pointerChk(pointA, __LINE__);
-        pointerChk(newA, __LINE__);
-        pointerChk(newB, __LINE__);
-        pointerChk(coeffs, __LINE__);
-        pointerChk(intersect, __LINE__);
-        pointerChk(intersectNormal, __LINE__);
-        pointerChk(roots, __LINE__);
-    }*/
     // Debugging
     /*if (i == 0 && j == 0) {
         print_objects(objects, data[0]);
@@ -1077,25 +1025,7 @@ void raytraceKernel(double *grid, Object *objects, Point_Light *lightsPPM,
                 for (int k = 0; k < data[0]; k++)
                 {
                     // Find the ray equation transformations
-                    //newa(objects[k].unScale, objects[k].unRotate, pointA, newA);
-                    
-                    double a0 = (objects[k].unRotate[0] * pointA[0]) + 
-                                (objects[k].unRotate[1] * pointA[1]) + 
-                                (objects[k].unRotate[2] * pointA[2]);
-                    double a1 = (objects[k].unRotate[3] * pointA[0]) + 
-                                (objects[k].unRotate[4] * pointA[1]) + 
-                                (objects[k].unRotate[5] * pointA[2]);
-                    double a2 = (objects[k].unRotate[6] * pointA[0]) + 
-                                (objects[k].unRotate[7] * pointA[1]) + 
-                                (objects[k].unRotate[8] * pointA[2]);
-                    
-                    newA[0] = (objects[k].unScale[0] * a0) + (objects[k].unScale[1] * a1) + 
-                              (objects[k].unScale[2] * a2);
-                    newA[1] = (objects[k].unScale[3] * a0) + (objects[k].unScale[4] * a1) + 
-                              (objects[k].unScale[5] * a2);
-                    newA[2] = (objects[k].unScale[6] * a0) + (objects[k].unScale[7] * a1) + 
-                              (objects[k].unScale[8] * a2);
-                    
+                    newa(objects[k].unScale, objects[k].unRotate, pointA, newA);
                     newb(objects[k].unScale, objects[k].unRotate, 
                          objects[k].unTranslate, lookFrom, newB);
 
