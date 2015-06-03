@@ -7,7 +7,7 @@
 
 // flags as to whether or not reflection and refraction are included in the
 // raytracing
-#define REFLECTION 1
+#define REFLECTION 0
 #define REFRACTION 0
 
 #define DEBUG 0
@@ -1224,7 +1224,7 @@ void callRaytraceKernel(double *grid, Object *objects, Point_Light *lightsPPM,
     printf("grid size y: %d\n", gy);
 #endif
 
-    int deviceLimit;
+    size_t deviceLimit;
     gpuErrChk(cudaDeviceGetLimit(&deviceLimit, cudaLimitStackSize));
     printf("Device stack size: %d\n", deviceLimit);
 
