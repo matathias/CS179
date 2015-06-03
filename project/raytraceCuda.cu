@@ -294,7 +294,7 @@ double gPrime(double *vec, double *a, double e, double n)
     double tmp[3];
     isqGradient(vec, &tmp[0], e, n);
     double val = d_dot(a, &tmp[0]);
-    delete[] tmp;
+    //delete[] tmp;
     return val;
 }
 
