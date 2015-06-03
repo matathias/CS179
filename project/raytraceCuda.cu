@@ -7,8 +7,11 @@
 
 // flags as to whether or not reflection and refraction are included in the
 // raytracing
-#define REFLECTION 1
+#define REFLECTION 0
 #define REFRACTION 0
+
+#define REFLECTIONFUNC 1
+#define REFRACTIONFUNC 0
 
 #define DEBUG 0
 
@@ -454,7 +457,362 @@ void print_lights(Point_Light *p_lights, int numLights)
     }
 }
 
+// lighting prototype
+__device__
+void lighting(double *point, double *n, double *e, Material *mat,
+              Point_Light *l, int numLights, 
+              Object *objects, int numObjects,
+              double epsilon, int ind, int generation, double *res);
 /********** Actual Raytracing Functions ***************************************/
+__device__
+void reflections(Object *objects, int numObjects, Point_Light *l, int numLights,
+                 int ind, int generation, double *eDirection, double *point,
+                 double epsilon, double *reflectedLight)
+{
+    double eDotN = d_dot(n, &eDirection[0]);
+    double reflected[3];
+    pointerChk(&reflected[0], __LINE__);
+    
+    double newA[3];
+    double newB[3];
+    double coeffs[3];
+    double roots[3];
+    
+    //double *reflected = &lightDoubles[9];
+    reflected[0] = (2 * n[0] * eDotN) - eDirection[0];
+    reflected[1] = (2 * n[1] * eDotN) - eDirection[1];
+    reflected[2] = (2 * n[2] * eDotN) - eDirection[2];
+    d_normalize(&reflected[0]);
+    double ttrueFinal = 0.0;
+    int finalObj = 0;
+    double finalNewA[3];
+    double finalNewB[3];
+    pointerChk(&finalNewA[0], __LINE__);
+    pointerChk(&finalNewB[0], __LINE__);
+    
+    bool hitObject = false;
+    for (int k = 0; k < numObjects && generation > 0 ; k++)
+    {
+        if (k != ind)
+        {
+            // Find the ray equation transformations
+            newa(objects[k].unScale, objects[k].unRotate, &reflected[0], 
+                 &newA[0]);
+            newb(objects[k].unScale, objects[k].unRotate, 
+                 objects[k].unTranslate, point, &newB[0]);
+
+            // Find the quadratic equation coefficients
+            findCoeffs(&newA[0], &newB[0], &coeffs[0], true);
+            // Using the coefficients, find the roots
+            findRoots(&coeffs[0], &roots[0]);
+
+            // Check to see if the roots are FLT_MAX - if they are then the 
+            // ray missed the superquadric. If they haven't missed then we 
+            // can continue with the calculations.
+            if (roots[0] != FLT_MAX)
+            {
+                // Use the update rule to find tfinal
+                double tini = min(roots[0], roots[1]);
+                double tfinal = updateRule(&newA[0], &newB[0], &objects[k].e, 
+                                           &objects[k].n, tini, epsilon);
+
+                /* Check to see if tfinal is FLT_MAX - if it is then the ray 
+                 * missed the superquadric. Additionally, if tfinal is negative 
+                 * then either the ray has started inside the object or is 
+                 * pointing away from the object; in both cases the ray has 
+                 * "missed". */
+                if (tfinal != FLT_MAX && tfinal >= 0)
+                {
+                    if(hitObject && tfinal < ttrueFinal)
+                    {
+                        ttrueFinal = tfinal;
+                        finalObj = k;
+                        finalNewA[0] = newA[0];
+                        finalNewA[1] = newA[1];
+                        finalNewA[2] = newA[2];
+                        finalNewB[0] = newB[0];
+                        finalNewB[1] = newB[1];
+                        finalNewB[2] = newB[2];
+                    }
+                    else if (!hitObject)
+                    {
+                        hitObject = true;
+                        ttrueFinal = tfinal;
+                        finalObj = k;
+                        finalNewA[0] = newA[0];
+                        finalNewA[1] = newA[1];
+                        finalNewA[2] = newA[2];
+                        finalNewB[0] = newB[0];
+                        finalNewB[1] = newB[1];
+                        finalNewB[2] = newB[2];
+                    }
+                }
+            }
+        }
+    }
+    if (hitObject)
+    {
+        double intersectR[3];
+        double intersectRNormal[3];
+        pointerChk(&intersectR[0], __LINE__);
+        pointerChk(&intersectRNormal[0], __LINE__);
+        
+        findRay(&reflected[0], point, &intersectR[0], ttrueFinal);
+        unitNormal(objects[finalObj].rotate, &finalNewA[0], &finalNewB[0], 
+                   &intersectRNormal[0], ttrueFinal, objects[finalObj].e,
+                   objects[finalObj].n);
+                   
+        lighting(&intersectR[0], &intersectRNormal[0], e,
+                 &objects[finalObj].mat,
+                 l, numLights, objects, numObjects, epsilon,
+                 finalObj, generation-1, &reflectedLight[0]);
+        if (shine < 1) {
+            reflectedLight[0] *= shine;
+            reflectedLight[1] *= shine;
+            reflectedLight[2] *= shine;
+        }
+        printf("reflected light: (%f, %f, %f)\n", reflectedLight[0],
+               reflectedLight[1], reflectedLight[2]);
+    }
+}
+
+__device__
+void refractions(Object *objects, int numObjects, Point_Light *l, int numLights,
+                 int ind, int generation, double *eDirection, double *point,
+                 double epsilon, double *refractedLight)
+{
+    double newA[3];
+    double newB[3];
+    double coeffs[3];
+    double roots[3];
+    /* Find the refraction contribution. */
+    // Change the eye-direction vector so that it points at the surface instead
+    // of at the eye
+    eDirection[0] *= -1;
+    eDirection[1] *= -1;
+    eDirection[2] *= -1;
+    // Find the refracted ray
+    double refracted1[3];
+    pointerChk(&refracted1[0], __LINE__);
+    //double *refracted1 = &lightDoubles[9];
+    refractedRay(&eDirection[0], n, &refracted1[0], objects[ind].mat.snell);
+    d_normalize(&refracted1[0]);
+
+    ttrueFinal = 0.0;
+    finalObj = 0;
+    hitObject = false;
+    for (int k = 0; k < numObjects && generation > 0; k++)
+    {
+        if (k != ind)
+        {
+            // Find the ray equation transformations
+            newa(objects[k].unScale, objects[k].unRotate, &refracted1[0], &newA[0]);
+            newb(objects[k].unScale, objects[k].unRotate, 
+                 objects[k].unTranslate, point, &newB[0]);
+
+            // Find the quadratic equation coefficients
+            findCoeffs(&newA[0], &newB[0], &coeffs[0], true);
+            // Using the coefficients, find the roots
+            findRoots(&coeffs[0], &roots[0]);
+
+            // Check to see if the roots are FLT_MAX - if they are then the 
+            // ray missed the superquadric. If they haven't missed then we 
+            // can continue with the calculations.
+            if (roots[0] != FLT_MAX)
+            {
+                // Use the update rule to find tfinal
+                double tini = min(roots[0], roots[1]);
+                double tfinal = updateRule(&newA[0], &newB[0], &objects[k].e, 
+                                           &objects[k].n, tini, epsilon);
+
+                /* Check to see if tfinal is FLT_MAX - if it is then the ray 
+                 * missed the superquadric. Additionally, if tfinal is negative 
+                 * then either the ray has started inside the object or is 
+                 * pointing away from the object; in both cases the ray has 
+                 * "missed". */
+                if (tfinal != FLT_MAX && tfinal >= 0)
+                {
+                    if(hitObject && tfinal < ttrueFinal)
+                    {
+                        ttrueFinal = tfinal;
+                        finalObj = k;
+                        finalNewA[0] = newA[0];
+                        finalNewA[1] = newA[1];
+                        finalNewA[2] = newA[2];
+                        finalNewB[0] = newB[0];
+                        finalNewB[1] = newB[1];
+                        finalNewB[2] = newB[2];
+                    }
+                    else if (!hitObject)
+                    {
+                        hitObject = true;
+                        ttrueFinal = tfinal;
+                        finalObj = k;
+                        finalNewA[0] = newA[0];
+                        finalNewA[1] = newA[1];
+                        finalNewA[2] = newA[2];
+                        finalNewB[0] = newB[0];
+                        finalNewB[1] = newB[1];
+                        finalNewB[2] = newB[2];
+                    }
+                }
+            }
+        }
+    }
+    if (hitObject)
+    {
+        double intersectR[3];
+        double intersectRNormal[3];
+        pointerChk(&intersectR[0], __LINE__);
+        pointerChk(&intersectRNormal[0], __LINE__);
+        
+        findRay(&refracted1[0], point, &intersectR[0], ttrueFinal);
+        unitNormal(objects[finalObj].rotate, &finalNewA[0], &finalNewB[0], 
+                   &intersectRNormal[0], ttrueFinal, objects[finalObj].e,
+                   objects[finalObj].n);
+
+        lighting(&intersectR[0], &intersectRNormal[0], e,
+                 &objects[finalObj].mat,
+                 l, numLights, objects, numObjects, epsilon,
+                 finalObj, generation-1, &refractedLight[0]);
+        refractedLight[0] *= objects[ind].mat.opacity;
+        refractedLight[1] *= objects[ind].mat.opacity;
+        refractedLight[2] *= objects[ind].mat.opacity;
+    }
+    else
+    {
+        double refA[3];
+        double refB[3];
+        double refCoeffs[3];
+        double refRoots[2];
+        pointerChk(&refA[0], __LINE__);
+        pointerChk(&refB[0], __LINE__);
+        pointerChk(&refCoeffs[0], __LINE__);
+        pointerChk(&refRoots[0], __LINE__);
+        /*double *refA = &lightDoubles[18];
+        double *refB = &lightDoubles[21];
+        double *refCoeffs = &lightDoubles[24];
+        double *refRoots = &lightDoubles[27];*/
+        newa(objects[ind].unScale, objects[ind].unRotate, &refracted1[0], &refA[0]);
+        newb(objects[ind].unScale, objects[ind].unRotate, 
+             objects[ind].unTranslate, point, &refB[0]);
+        findCoeffs(&refA[0], &refB[0], &refCoeffs[0], true);
+        findRoots(&refCoeffs[0], &refRoots[0]);
+
+        double tini = max(refRoots[0], refRoots[1]);
+
+        double tfinalRef = updateRule(&refA[0], &refB[0], &objects[ind].e, 
+                                      &objects[ind].n, tini, epsilon);
+
+        bool isRefracted = true;
+        double outPoint[3];
+        double outNormal[3];
+        double outRay[3];
+        //double *outPoint = &lightDoubles[24];
+        //double *outRay = &lightDoubles[27];
+        pointerChk(&outPoint[0], __LINE__);
+        pointerChk(&outNormal[0], __LINE__);
+        pointerChk(&outRay[0], __LINE__);
+        
+        if (isRefracted) // the fuck is the point of this?
+        {
+            findRay(&refracted1[0], point, &outPoint[0], tfinalRef);
+            unitNormal(objects[ind].rotate, &refA[0], &refB[0], &outNormal[0], tfinalRef,
+                       objects[ind].e, objects[ind].n);
+            refractedRay(&refracted1[0], &outNormal[0], &outRay[0],
+                         (double) 1 / objects[ind].mat.snell);
+            // If the point has total internal reflection, then don't bother
+            // with the rest of the refraction calculations.
+            if(outRay[0] == FLT_MAX)
+                isRefracted = false;
+        }
+        // Now that we've found where the ray exits, check to see if it hits any
+        // objects; if it does, find the color contribution from that object
+        ttrueFinal = 0.0;
+        finalObj = 0;
+        hitObject = false;
+        for (int k = 0; k < numObjects && generation > 0 && isRefracted; k++)
+        {
+            if (k != ind)
+            {
+                // Find the ray equation transformations
+                newa(objects[k].unScale, objects[k].unRotate, 
+                     &outRay[0], &newA[0]);
+                newb(objects[k].unScale, objects[k].unRotate, 
+                     objects[k].unTranslate, &outPoint[0], &newB[0]);
+
+                // Find the quadratic equation coefficients
+                findCoeffs(&newA[0], &newB[0], &coeffs[0], true);
+                // Using the coefficients, find the roots
+                findRoots(&coeffs[0], &roots[0]);
+
+                // Check to see if the roots are FLT_MAX - if they are then the 
+                // ray missed the superquadric. If they haven't missed then we 
+                // can continue with the calculations.
+                if (roots[0] != FLT_MAX)
+                {
+                    // Use the update rule to find tfinal
+                    double tini = min(roots[0], roots[1]);
+                    double tfinal = updateRule(&newA[0], &newB[0], &objects[k].e, 
+                                               &objects[k].n, tini, epsilon);
+
+                    /* Check to see if tfinal is FLT_MAX - if it is then the ray 
+                     * missed the superquadric. Additionally, if tfinal is negative 
+                     * then either the ray has started inside the object or is 
+                     * pointing away from the object; in both cases the ray has 
+                     * "missed". */
+                    if (tfinal != FLT_MAX && tfinal >= 0)
+                    {
+                        if(hitObject && tfinal < ttrueFinal)
+                        {
+                            ttrueFinal = tfinal;
+                            finalObj = k;
+                            finalNewA[0] = newA[0];
+                            finalNewA[1] = newA[1];
+                            finalNewA[2] = newA[2];
+                            finalNewB[0] = newB[0];
+                            finalNewB[1] = newB[1];
+                            finalNewB[2] = newB[2];
+                        }
+                        else if (!hitObject)
+                        {
+                            hitObject = true;
+                            ttrueFinal = tfinal;
+                            finalObj = k;
+                            finalNewA[0] = newA[0];
+                            finalNewA[1] = newA[1];
+                            finalNewA[2] = newA[2];
+                            finalNewB[0] = newB[0];
+                            finalNewB[1] = newB[1];
+                            finalNewB[2] = newB[2];
+                        }
+                    }
+                }
+            }
+        }
+        if (hitObject)
+        {
+            double intersectR[3];
+            double intersectRNormal[3];
+            pointerChk(&intersectR[0], __LINE__);
+            pointerChk(&intersectRNormal[0], __LINE__);
+            
+            findRay(&outRay[0], &outPoint[0], &intersectR[0], ttrueFinal);
+            unitNormal(objects[finalObj].rotate, &finalNewA[0], &finalNewB[0], 
+                       &intersectRNormal[0], ttrueFinal, objects[finalObj].e,
+                       objects[finalObj].n);
+
+            lighting(&intersectR[0], &intersectRNormal[0], e,
+                     &objects[finalObj].mat,
+                     l, numLights, objects, numObjects, epsilon,
+                     finalObj, generation - 1, &refractedLight[0]);
+            refractedLight[0] *= objects[ind].mat.opacity;
+            refractedLight[1] *= objects[ind].mat.opacity;
+            refractedLight[2] *= objects[ind].mat.opacity;
+        }
+    }
+}
+
 __device__
 // n is the normal. e is the eye. ind is the index of the object we're lighting.
 void lighting(double *point, double *n, double *e, Material *mat,
@@ -517,7 +875,6 @@ void lighting(double *point, double *n, double *e, Material *mat,
         double lDirection[3];
         pointerChk(&lDirection[0], __LINE__);
         
-        //for (int j = 0; j < 3; j++)
         lDirection[0] = l[i].position[0] - point[0];
         lDirection[1] = l[i].position[1] - point[1];
         lDirection[2] = l[i].position[2] - point[2];
@@ -570,7 +927,6 @@ void lighting(double *point, double *n, double *e, Material *mat,
                     double objDist = d_norm(&ray[0]);
                     if (tfinal != FLT_MAX && tfinal >= 0 && objDist < lightDist)
                         useLight = false;
-                    //delete[] ray;
                 }
             }
         }
@@ -609,11 +965,15 @@ void lighting(double *point, double *n, double *e, Material *mat,
                 specularSum[1] += l[i].color[1] * atten * pow(nDotDir, shine);
                 specularSum[2] += l[i].color[2] * atten * pow(nDotDir, shine);
             }
-            //delete[] dirDif;
         }
     }
     /* Find the light contribution from reflection */
     // Find the reflected ray
+#if REFLECTIONFUNC
+    reflections(objects, numObjects, l, numLights, ind, generation, 
+                eDirection, point, epsilon, &reflectedLight[0]);
+#endif
+    
 #if REFLECTION
     double eDotN = d_dot(n, &eDirection[0]);
     double reflected[3];
@@ -716,9 +1076,12 @@ void lighting(double *point, double *n, double *e, Material *mat,
         }
         printf("reflected light: (%f, %f, %f)\n", reflectedLight[0],
                reflectedLight[1], reflectedLight[2]);
-        //delete[] intersectR;
-        //delete[] intersectRNormal;
     }
+#endif
+
+#if REFRACTIONFUNC
+    refractions(objects, numObjects, l, numLights, ind, generation, 
+                eDirection, point, epsilon, &refractedLight[0]);
 #endif
     
 #if REFRACTION
@@ -863,7 +1226,6 @@ void lighting(double *point, double *n, double *e, Material *mat,
             if(outRay[0] == FLT_MAX)
                 isRefracted = false;
         }
-        //delete[] outNormal;
         // Now that we've found where the ray exits, check to see if it hits any
         // objects; if it does, find the color contribution from that object
         ttrueFinal = 0.0;
@@ -947,11 +1309,7 @@ void lighting(double *point, double *n, double *e, Material *mat,
             refractedLight[0] *= objects[ind].mat.opacity;
             refractedLight[1] *= objects[ind].mat.opacity;
             refractedLight[2] *= objects[ind].mat.opacity;
-            //delete[] intersectR;
-            //delete[] intersectRNormal;
         }
-        //delete[] outRay;
-        //delete[] outPoint;
     }
 #endif
 
@@ -1244,13 +1602,10 @@ void raytraceKernel(double *grid, Object *objects, Point_Light *lightsPPM,
                             pxColor[0] += color[0] * pxCoeffs[counter];
                             pxColor[1] += color[1] * pxCoeffs[counter];
                             pxColor[2] += color[2] * pxCoeffs[counter];
-                            
-                            //delete[] color;
                         }
                         counter++;
                     }
                 }
-                //delete[] pxCoeffs;
             }
             int index = (j * Nx + i) * 3;
             grid[index] = pxColor[0];
@@ -1285,8 +1640,6 @@ void callRaytraceKernel(double *grid, Object *objects, Point_Light *lightsPPM,
     int gy = (Ny / blockSize);
     if (gx < 1) gx = 1;
     if (gy < 1) gy = 1;
-    gx = 5;
-    gy = 5;
     dim3 gridSize;
     gridSize.x = gx;
     gridSize.y = gy;
