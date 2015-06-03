@@ -671,15 +671,17 @@ void lighting(double *point, double *n, double *e, Material *mat,
                    &intersectRNormal[0], ttrueFinal, objects[finalObj].e,
                    objects[finalObj].n);
                    
-        /*lighting(&intersectR[0], &intersectRNormal[0], e,
+        lighting(&intersectR[0], &intersectRNormal[0], e,
                  &objects[finalObj].mat,
                  l, numLights, objects, numObjects, epsilon,
-                 finalObj, generation-1, &reflectedLight[0]);*/
+                 finalObj, generation-1, &reflectedLight[0]);
         if (shine < 1) {
             reflectedLight[0] *= shine;
             reflectedLight[1] *= shine;
             reflectedLight[2] *= shine;
         }
+        printf("reflected light: (%f, %f, %f)\n", reflectedLight[0],
+               reflectedLight[1], reflectedLight[2]);
         //delete[] intersectR;
         //delete[] intersectRNormal;
     }
