@@ -12,7 +12,7 @@
 
 #define DEBUG 0
 
-#define SINGLETHREADMODE 0
+#define SINGLETHREADMODE 1
 
 #define gpuErrChk(ans) { gpuAssert((ans), __FILE__, __LINE__); }
 inline void gpuAssert(cudaError_t code,
@@ -453,32 +453,8 @@ void print_lights(Point_Light *p_lights, int numLights)
         printf("Attenuation Factor: %f\n", l->attenuation_k);
     }
 }
-/* lighting prototypes */
-__device__
-void lighting(double *point, double *n, double *e, Material *mat,
-              Point_Light *l, int numLights, 
-              Object *objects, int numObjects,
-              double epsilon, 
-              int ind, int generation, double *res, double *lightDoubles);
-__device__
-void lighting2(double *point, double *n, double *e, Material *mat,
-              Point_Light *l, int numLights, 
-              Object *objects, int numObjects,
-              double epsilon, 
-              int ind, int generation, double *res, double *lightDoubles);
 
 /********** Actual Raytracing Functions ***************************************/
-__device__
-void lighting2(double *point, double *n, double *e, Material *mat,
-              Point_Light *l, int numLights, 
-              Object *objects, int numObjects,
-              double epsilon, 
-              int ind, int generation, double *res, double *lightDoubles)
-{
-    lighting(point, n, e, mat, l, numLights, objects, numObjects, epsilon, 
-             ind, generation, res, lightDoubles);
-}
-
 __device__
 // n is the normal. e is the eye. ind is the index of the object we're lighting.
 void lighting(double *point, double *n, double *e, Material *mat,
@@ -695,7 +671,7 @@ void lighting(double *point, double *n, double *e, Material *mat,
                    &intersectRNormal[0], ttrueFinal, objects[finalObj].e,
                    objects[finalObj].n);
                    
-        lighting2(&intersectR[0], &intersectRNormal[0], e,
+        lighting(&intersectR[0], &intersectRNormal[0], e,
                  &objects[finalObj].mat,
                  l, numLights, objects, numObjects, epsilon,
                  finalObj, generation-1, &reflectedLight[0], lightDoubles);
