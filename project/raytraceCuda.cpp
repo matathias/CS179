@@ -658,15 +658,11 @@ void parseFile(char* filename)
     unsigned int ext = inName.find_last_of(".txt");
     inName.erase(ext, 4);
     // if the file is in a directory path, chop off the directories
+    // if your file system uses backslashes instead of forward slashes then eh,
+    // I dunno. fuck you I guess.
     unsigned int delimiter = inName.find_last_of("/");
     if (delimiter != string::npos){
         inName.erase(0, delimiter+1);
-    }
-    else {
-        delimiter = inName.find_last_of("\\");
-        if (delimiter != string::npos){
-            inName.erase(0, delimiter+1);
-        }
     }
     outName = inName;
     outName.append(".ppm");
