@@ -697,10 +697,13 @@ void parseFile(char* filename)
 // Print pixel data to output
 void printPPM(int pixelIntensity, int xre, int yre, double *grid)
 {
+    ofstream outFile;
+    outFile.open("out.ppm");
+    
     // Print the PPM data to standard output
-    cout << "P3" << endl;
-    cout << xre << " " << yre << endl;
-    cout << pixelIntensity << endl;
+    outFile << "P3" << endl;
+    outFile << xre << " " << yre << endl;
+    outFile << pixelIntensity << endl;
 
     for (int j = 0; j < yre; j++)
     {
@@ -711,9 +714,10 @@ void printPPM(int pixelIntensity, int xre, int yre, double *grid)
             int green = grid[index + 1] * pixelIntensity;
             int blue = grid[index + 2] * pixelIntensity;
             
-            cout << red << " " << green << " " << blue << endl;
+            outFile << red << " " << green << " " << blue << endl;
         }
     }
+    outFile.close();
 }
 
 int main(int argc, char* argv[])
