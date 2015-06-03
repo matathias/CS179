@@ -460,8 +460,7 @@ __device__
 void lighting(double *point, double *n, double *e, Material *mat,
               Point_Light *l, int numLights, 
               Object *objects, int numObjects,
-              double epsilon, 
-              int ind, int generation, double *res)
+              double epsilon, int ind, int generation, double *res)
 {
     double diffuseSum[3];// = {0.0, 0.0, 0.0};
     double specularSum[3];// = {0.0, 0.0, 0.0};
@@ -469,15 +468,9 @@ void lighting(double *point, double *n, double *e, Material *mat,
     double refractedLight[3];// = {0.0, 0.0, 0.0};
     pointerChk(&diffuseSum[0], __LINE__);
     pointerChk(&specularSum[0], __LINE__);
-    if (&reflectedLight[0] == NULL) {
-        printf("ptr is null at line %d\n", 473);
-    }
-    if (&reflectedLight[1] == NULL) {
-        printf("ptr is null at line %d\n", 476);
-    }
-    if (&reflectedLight[2] == NULL) {
-        printf("ptr is null at line %d\n", 479);
-    }
+    pointerChk(&reflectedLight[0], __LINE__);
+    pointerChk(&reflectedLight[1], __LINE__);
+    pointerChk(&reflectedLight[2], __LINE__);
     pointerChk(&refractedLight[0], __LINE__);
     for (int i = 0; i < 3; i++)
     {
@@ -1292,6 +1285,8 @@ void callRaytraceKernel(double *grid, Object *objects, Point_Light *lightsPPM,
     int gy = (Ny / blockSize);
     if (gx < 1) gx = 1;
     if (gy < 1) gy = 1;
+    gx = 5;
+    gy = 5;
     dim3 gridSize;
     gridSize.x = gx;
     gridSize.y = gy;
