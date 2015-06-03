@@ -712,7 +712,7 @@ void parseFile(char* filename)
 void printPPM(int pixelIntensity, int xre, int yre, double *grid)
 {
     ofstream outFile;
-    outFile.open(outName);
+    outFile.open(outName.c_str());
     
     // Print the PPM data to standard output
     outFile << "P3" << endl;
