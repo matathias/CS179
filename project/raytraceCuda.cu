@@ -476,7 +476,7 @@ void lighting2(double *point, double *n, double *e, Material *mat,
               int ind, int generation, double *res, double *lightDoubles)
 {
     lighting(point, n, e, mat, l, numLights, objects, numObjects, epsilon, 
-             ind, generation, res, lightDoubles)
+             ind, generation, res, lightDoubles);
 }
 
 __device__
