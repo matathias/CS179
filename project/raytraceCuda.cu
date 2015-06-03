@@ -304,7 +304,8 @@ double updateRule(double *a, double *b, double *e, double *n, double t, double e
     pointerChk(&vec[2], __LINE__);
     
     findRay(a, b, &vec[0], t);
-    double gP = gPrime(&vec[0], a, *e, *n);
+    double gP = 0;
+    gPrime(&vec[0], a, *e, *n, &gP);
     double gPPrevious = gP;
     double g = 0.0;
     double tnew = t, told = t;
