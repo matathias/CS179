@@ -62,13 +62,6 @@ struct Object
     double translate[3];   //3-vector
     double unTranslate[3]; //3-vector
 };
-
-struct Pixel
-{
-    double red;
-    double green;
-    double blue;
-};
                
 /********** Helper Functions **************************************************/
 __device__
@@ -944,19 +937,30 @@ void lighting(double *point, double *n, double *e,
 }
 
 __global__
-void raytraceKernel(double *grid, Object *objects, double numObjects,
+/*void raytraceKernel(double *grid, Object *objects, double numObjects,
                     Point_Light *lightsPPM, double numLights, 
                     int Nx, int Ny, double filmX, double filmY, 
                     double *bgColor, double *e1, double *e2, double *e3, 
                     double *lookFrom, double epsilon, double filmDepth,
-                    bool antiAliased, double *rayDoubles, double *lightDoubles)
+                    bool antiAliased, double *rayDoubles, double *lightDoubles)*/
+void raytraceKernel(double *grid, Object *objects, Point_Light *lightsPPM,
+                    double *data, double *bgColor, double *e1, double *e2,
+                    double *e3, double *lookFrom, double *rayDoubles,
+                    double *lightDoubles, int Nx, int Ny, bool antiAliased)
 {   
+    /* data[0] = numObjects
+     * data[1] = numLights
+     * data[2] = filmX
+     * data[3] = filmY
+     * data[4] = epsilon
+     * data[5] = filmDepth
+     */
     // Parallize by screen pixel
     int i = threadIdx.x + blockDim.x * blockIdx.x;
     int j = threadIdx.y + blockDim.y * blockIdx.y;
     
-    double dx = filmX / (double) Nx;
-    double dy = filmY / (double) Ny;
+    double dx = data[2] / (double) Nx;
+    double dy = data[3] / (double) Ny;
 
     double ttrueFinal = 0.0;
     int finalObj = 0;
@@ -988,8 +992,8 @@ void raytraceKernel(double *grid, Object *objects, double numObjects,
     
     // Debugging
     /*if (i == 0 && j == 0) {
-        print_objects(objects, numObjects);
-        print_lights(lightsPPM, numLights);
+        print_objects(objects, data[0]);
+        print_lights(lightsPPM, data[1]);
     }
     __syncthreads();*/
     
@@ -1008,8 +1012,8 @@ void raytraceKernel(double *grid, Object *objects, double numObjects,
         {
             // The positions are subtracted by a Nx/2 or Ny/2 term to center
             // the film plane
-            double px = (i * dx) - (filmX / (double) 2);
-            double py = (j * dy) - (filmY / (double) 2);
+            double px = (i * dx) - (data[2] / (double) 2);
+            double py = (j * dy) - (data[3] / (double) 2);
             double pxColor[] = {bgColor[0], bgColor[1], bgColor[2]};
             
             if (!antiAliased)
@@ -1018,10 +1022,10 @@ void raytraceKernel(double *grid, Object *objects, double numObjects,
                 pointerChk(e1, __LINE__);
                 pointerChk(e2, __LINE__);
                 pointerChk(e3, __LINE__);
-                findFilmA(&px, &py, e1, e2, e3, &filmDepth, pointA);
+                findFilmA(&px, &py, e1, e2, e3, &data[5], pointA);
                 hitObject = false;
                 finalObj = 0, ttrueFinal = 0;
-                for (int k = 0; k < numObjects; k++)
+                for (int k = 0; k < data[0]; k++)
                 {
                     // Find the ray equation transformations
                     newa(objects[k].unScale, objects[k].unRotate, pointA, newA);
@@ -1041,7 +1045,7 @@ void raytraceKernel(double *grid, Object *objects, double numObjects,
                         // Use the update rule to find tfinal
                         double tini = min(roots[0], roots[1]);
                         double tfinal = updateRule(newA, newB, &objects[k].e, 
-                                                   &objects[k].n, tini, epsilon);
+                                                   &objects[k].n, tini, data[4]);
 
                         /* Check to see if tfinal is FLT_MAX - if it is then the ray 
                          * missed the superquadric. Additionally, if tfinal is negative 
@@ -1086,7 +1090,7 @@ void raytraceKernel(double *grid, Object *objects, double numObjects,
 
                     lighting(intersect, intersectNormal, lookFrom,
                              &objects[finalObj].mat,
-                             lightsPPM, numLights, objects, numObjects, epsilon,
+                             lightsPPM, data[1], objects, data[0], data[4],
                              finalObj, 3, &pxColor[0], lDoubles);
                 }
             }
@@ -1110,10 +1114,10 @@ void raytraceKernel(double *grid, Object *objects, double numObjects,
                     {
                         double thisPx = px + (g * (dx / (double) 2));
                         double thisPy = py + (h * (dy / (double) 2));
-                        findFilmA(&thisPx, &thisPy, e1, e2, e3, &filmDepth, pointA);
+                        findFilmA(&thisPx, &thisPy, e1, e2, e3, &data[5], pointA);
                         hitObject = false;
                         finalObj = 0, ttrueFinal = 0;
-                        for (int k = 0; k < numObjects; k++)
+                        for (int k = 0; k < data[0]; k++)
                         {
                             // Find the ray equation transformations
                             newa(objects[k].unScale, objects[k].unRotate, 
@@ -1134,7 +1138,7 @@ void raytraceKernel(double *grid, Object *objects, double numObjects,
                                 // Use the update rule to find tfinal
                                 double tini = min(roots[0], roots[1]);
                                 double tfinal = updateRule(newA, newB, &objects[k].e, 
-                                                           &objects[k].n, tini, epsilon);
+                                                           &objects[k].n, tini, data[4]);
 
                                 /* Check to see if tfinal is FLT_MAX - if it is then the ray 
                                  * missed the superquadric. Additionally, if tfinal is negative 
@@ -1180,8 +1184,8 @@ void raytraceKernel(double *grid, Object *objects, double numObjects,
                             
                             lighting(intersect, intersectNormal, lookFrom,
                                      &objects[finalObj].mat,
-                                     lightsPPM, numLights, objects, numObjects, 
-                                     epsilon,
+                                     lightsPPM, data[1], objects, data[0], 
+                                     data[4],
                                      finalObj, 3, &color[0], lDoubles);
 
                             pxColor[0] += color[0] * pxCoeffs[counter];
@@ -1213,11 +1217,9 @@ void raytraceKernel(double *grid, Object *objects, double numObjects,
 }
 #endif
 
-void callRaytraceKernel(double *grid, Object *objs, double numObjects,
-                        Point_Light *lightsPPM, double numLights, int Nx, 
-                        int Ny, double filmX, double filmY, 
-                        double *bgColor, double *e1, double *e2, double *e3, 
-                        double *lookFrom, double epsilon, double filmDepth,
+void callRaytraceKernel(double *grid, Object *objects, Point_Light *lightsPPM, 
+                        double *data, double *bgColor, double *e1, double *e2, 
+                        double *e3, double *lookFrom, int Nx, int Ny,
                         bool antiAliased, int blockPower) 
 {
     int blockSize = pow(2, blockPower);
@@ -1248,10 +1250,13 @@ void callRaytraceKernel(double *grid, Object *objs, double numObjects,
     gpuErrChk(cudaMalloc(&lightDoubles, sizeof(double) * numThreads * 32));
     gpuErrChk(cudaMemset(lightDoubles, 0, sizeof(double) * numThreads * 32));
     
-    raytraceKernel<<<gridSize, blocks>>>(grid, objs, numObjects, lightsPPM,
+    /*raytraceKernel<<<gridSize, blocks>>>(grid, objs, numObjects, lightsPPM,
                                       numLights, Nx, Ny, filmX, filmY, bgColor,
                                       e1, e2, e3, lookFrom, epsilon, filmDepth,
-                                      antiAliased, rayDoubles, lightDoubles);
+                                      antiAliased, rayDoubles, lightDoubles);*/
+    raytraceKernel<<<gridSize, blocks>>>(grid, objects, lightsPPM, data, 
+                                         bgColor, e1, e2, e3, lookFrom, 
+                                         rayDoubles, lightDoubles, Nx, Ny, anti);
     gpuErrChk(cudaPeekAtLastError());
     gpuErrChk(cudaDeviceSynchronize());
     gpuErrChk(cudaFree(rayDoubles));

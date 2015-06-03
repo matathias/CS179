@@ -739,12 +739,20 @@ int main(int argc, char* argv[])
         p_lights[j] = *lightsPPM[j];
     }
     
+    double kernelData = (double*)malloc(sizeof(double) * 6);
+    kernelData[0] = numObjects;
+    kernelData[1] = numLights;
+    kernelData[2] = filmX;
+    kernelData[3] = filmY;
+    kernelData[4] = epsilon;
+    kernelData[5] = filmDepth;
+    
     //print_objects();
     //print_lights();
     
     /* Allocate memory on the GPU */
     double *d_e1, *d_e2, *d_e3, *d_lookFrom, *d_up, *d_bgColor;
-    double *d_grid;
+    double *d_grid, *d_kernelData;
     gpuErrChk(cudaMalloc(&d_e1, 3 * sizeof(double)));
     gpuErrChk(cudaMalloc(&d_e2, 3 * sizeof(double)));
     gpuErrChk(cudaMalloc(&d_e3, 3 * sizeof(double)));
@@ -752,6 +760,7 @@ int main(int argc, char* argv[])
     gpuErrChk(cudaMalloc(&d_up, 3 * sizeof(double)));
     gpuErrChk(cudaMalloc(&d_bgColor, 3 * sizeof(double)));
     gpuErrChk(cudaMalloc(&d_grid, sizeof(double) * Ny * Nx * 3));
+    gpuErrChk(cudaMalloc(&d_kernelData, sizeof(double) * 6);
     
     /* Copy data from the cpu to the gpu. */
     gpuErrChk(cudaMemcpy(d_e1, &e1[0], 3 * sizeof(double), cudaMemcpyHostToDevice));
@@ -761,6 +770,8 @@ int main(int argc, char* argv[])
                          cudaMemcpyHostToDevice));
     gpuErrChk(cudaMemcpy(d_up, &up[0], 3 * sizeof(double), cudaMemcpyHostToDevice));
     gpuErrChk(cudaMemcpy(d_bgColor, &bgColor[0], 3 * sizeof(double), 
+                         cudaMemcpyHostToDevice));
+    gpuErrChk(cudaMemcpy(d_kernelData, kernelData, sizeof(double) * 6,
                          cudaMemcpyHostToDevice));
     
     gpuErrChk(cudaMemset(d_grid, 0, sizeof(double) * Ny * Nx * 3));
@@ -778,9 +789,11 @@ int main(int argc, char* argv[])
                          cudaMemcpyHostToDevice));
     
     /* Call the GPU code. */
-    callRaytraceKernel(d_grid, d_objects, numObjects, d_lights, numLights,
+    /*callRaytraceKernel(d_grid, d_objects, numObjects, d_lights, numLights,
                        Nx, Ny, filmX, filmY, d_bgColor, d_e1, d_e2, d_e3,
-                       d_lookFrom, epsilon, filmDepth, antiAlias, blockPower);
+                       d_lookFrom, epsilon, filmDepth, antiAlias, blockPower);*/
+    callRaytraceKernel(d_grid, d_objects, d_lights, d_kernelData, d_bgColor,
+                       d_e1, d_e2, d_e3, d_lookFrom, Nx, Ny, antiAlias, blockPower);
     
     /* Copy data back to CPU. */
     gpuErrChk(cudaMemcpy(grid, d_grid, sizeof(double) * Ny * Nx * 3, 
@@ -793,6 +806,7 @@ int main(int argc, char* argv[])
     free(grid);
     free(p_objects);
     free(p_lights);
+    free(kernelData);
     
     gpuErrChk(cudaFree(d_e1));
     gpuErrChk(cudaFree(d_e2));
@@ -803,5 +817,6 @@ int main(int argc, char* argv[])
     gpuErrChk(cudaFree(d_grid));
     gpuErrChk(cudaFree(d_objects));
     gpuErrChk(cudaFree(d_lights));
+    gpuErrChk(cudaFree(d_kernelData));
 }
 
