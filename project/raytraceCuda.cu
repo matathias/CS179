@@ -1109,7 +1109,7 @@ void raytraceKernel(double *grid, Object *objects, double numObjects,
                     {
                         double thisPx = px + (g * (dx / (double) 2));
                         double thisPy = py + (h * (dy / (double) 2));
-                        findFilmA(thisPx, thisPy, e1, e2, e3, filmDepth, pointA);
+                        findFilmA(&thisPx, &thisPy, e1, e2, e3, &filmDepth, pointA);
                         hitObject = false;
                         finalObj = 0, ttrueFinal = 0;
                         for (int k = 0; k < numObjects; k++)
