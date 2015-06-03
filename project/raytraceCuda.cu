@@ -1224,11 +1224,18 @@ void callRaytraceKernel(double *grid, Object *objects, Point_Light *lightsPPM,
     printf("grid size y: %d\n", gy);
 #endif
 
+    printf("Image size: %d x %d (%d Pixels)\n", Nx, Ny, Nx * Ny);
+    printf("Total number of threads: %d\n", (blockSize * gx) * (blockSize * gy));
+    
     size_t deviceLimit;
     gpuErrChk(cudaDeviceGetLimit(&deviceLimit, cudaLimitStackSize));
     printf("Device stack size: %d\n", deviceLimit);
-    printf("Total number of threads: %d\n", (blockSize * gx) * (blockSize * gy));
-    printf("Image size: %d x %d (%d Pixels)\n", Nx, Ny, Nx * Ny);
+    printf("Total Device stack memory: %d MB\n", deviceLimit / 1048576);
+    
+    gpuErrChk(cudaDeviceSetLimit(cudaLimitStackSize, 2048));
+    gpuErrChk(cudaDeviceGetLimit(&deviceLimit, cudaLimitStackSize));
+    printf("New Device stack size: %d\n", deviceLimit);
+    printf("Total Device stack memory: %d MB\n", deviceLimit / 1048576);
 
     // Allocate space on the gpu for the double arrays in the kernel
     //int numThreads = (blockSize * gx) * (blockSize * gy);
