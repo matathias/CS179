@@ -1224,29 +1224,28 @@ void callRaytraceKernel(double *grid, Object *objects, Point_Light *lightsPPM,
     printf("grid size y: %d\n", gy);
 #endif
 
+    int numThreads = (blockSize * gx) * (blockSize * gy);
     printf("Image size: %d x %d (%d Pixels)\n", Nx, Ny, Nx * Ny);
     printf("Total number of threads: %d\n", (blockSize * gx) * (blockSize * gy));
     
     size_t deviceLimit;
     gpuErrChk(cudaDeviceGetLimit(&deviceLimit, cudaLimitStackSize));
-    printf("Device stack size: %d\n", deviceLimit);
-    printf("Total Device stack memory: %d MB\n", deviceLimit / 1048576);
+    printf("Device stack size: %d\n", (int) deviceLimit);
+    printf("Total Device stack memory: %d MB\n", (int) deviceLimit * numThreads / 1048576);
     
     gpuErrChk(cudaDeviceSetLimit(cudaLimitStackSize, 2048));
     gpuErrChk(cudaDeviceGetLimit(&deviceLimit, cudaLimitStackSize));
     printf("New Device stack size: %d\n", deviceLimit);
-    printf("Total Device stack memory: %d MB\n", deviceLimit / 1048576);
+    printf("Total Device stack memory: %d MB\n", deviceLimit * numThreads / 1048576);
 
     // Allocate space on the gpu for the double arrays in the kernel
-    //int numThreads = (blockSize * gx) * (blockSize * gy);
-    int numThreads = Nx * Ny;
     double *rayDoubles;
-    gpuErrChk(cudaMalloc(&rayDoubles, sizeof(double) * numThreads * 26));
-    gpuErrChk(cudaMemset(rayDoubles, 0, sizeof(double) * numThreads * 26));
+    gpuErrChk(cudaMalloc(&rayDoubles, sizeof(double) * Nx * Ny * 26));
+    gpuErrChk(cudaMemset(rayDoubles, 0, sizeof(double) * Nx * Ny * 26));
     
     double *lightDoubles;
-    gpuErrChk(cudaMalloc(&lightDoubles, sizeof(double) * numThreads * 32));
-    gpuErrChk(cudaMemset(lightDoubles, 0, sizeof(double) * numThreads * 32));
+    gpuErrChk(cudaMalloc(&lightDoubles, sizeof(double) * Nx * Ny * 32));
+    gpuErrChk(cudaMemset(lightDoubles, 0, sizeof(double) * Nx * Ny * 32));
     
     raytraceKernel<<<gridSize, blocks>>>(grid, objects, lightsPPM, data, 
                                          bgColor, e1, e2, e3, lookFrom, 
