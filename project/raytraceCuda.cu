@@ -473,10 +473,6 @@ void lighting(double *point, double *n, double *e,
     double* spec = &mat->specular[0];
     double shine = mat->shine;
     
-    /*double newA[3];
-    double newB[3];
-    double coeffs[3];
-    double roots[2];*/
     double *newA = &lightDoubles[0];
     double *newB = &lightDoubles[3];
     double *coeffs = &lightDoubles[6];
@@ -547,7 +543,7 @@ void lighting(double *point, double *n, double *e,
                     double objDist = d_norm(&ray[0]);
                     if (tfinal != FLT_MAX && tfinal >= 0 && objDist < lightDist)
                         useLight = false;
-                    delete[] ray;
+                    //delete[] ray;
                 }
             }
         }
@@ -584,7 +580,7 @@ void lighting(double *point, double *n, double *e,
                 specularSum[1] += l[i].color[1] * atten * pow(nDotDir, shine);
                 specularSum[2] += l[i].color[2] * atten * pow(nDotDir, shine);
             }
-            delete[] dirDif;
+            //delete[] dirDif;
         }
     }
     /* Find the light contribution from reflection */
@@ -681,8 +677,8 @@ void lighting(double *point, double *n, double *e,
             reflectedLight[1] *= shine;
             reflectedLight[2] *= shine;
         }
-        delete[] intersectR;
-        delete[] intersectRNormal;
+        //delete[] intersectR;
+        //delete[] intersectRNormal;
     }
 #endif
     
@@ -817,7 +813,7 @@ void lighting(double *point, double *n, double *e,
             if(outRay[0] == FLT_MAX)
                 isRefracted = false;
         }
-        delete[] outNormal;
+        //delete[] outNormal;
         // Now that we've found where the ray exits, check to see if it hits any
         // objects; if it does, find the color contribution from that object
         ttrueFinal = 0.0;
@@ -898,8 +894,8 @@ void lighting(double *point, double *n, double *e,
             refractedLight[0] *= objects[ind].mat.opacity;
             refractedLight[1] *= objects[ind].mat.opacity;
             refractedLight[2] *= objects[ind].mat.opacity;
-            delete[] intersectR;
-            delete[] intersectRNormal;
+            //delete[] intersectR;
+            //delete[] intersectRNormal;
         }
         //delete[] outRay;
         //delete[] outPoint;
@@ -922,18 +918,11 @@ void lighting(double *point, double *n, double *e,
     cWiseMin(&minVec[0], &maxVec[0], res);
     
     // Free everything
-    //delete[] maxVec;
-    //delete[] minVec;
     
     delete[] diffuseSum;
     delete[] specularSum;
     delete[] reflectedLight;
     delete[] refractedLight;
-    
-    /*delete[] newA;
-    delete[] newB;
-    delete[] coeffs;
-    delete[] roots;*/
 }
 
 __global__
@@ -1191,12 +1180,12 @@ void raytraceKernel(double *grid, Object *objects, Point_Light *lightsPPM,
                             pxColor[1] += color[1] * pxCoeffs[counter];
                             pxColor[2] += color[2] * pxCoeffs[counter];
                             
-                            delete[] color;
+                            //delete[] color;
                         }
                         counter++;
                     }
                 }
-                delete[] pxCoeffs;
+                //delete[] pxCoeffs;
             }
             int index = (j * Nx + i) * 3;
             grid[index] = pxColor[0];
