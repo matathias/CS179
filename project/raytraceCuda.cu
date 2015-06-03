@@ -473,10 +473,13 @@ void lighting(double *point, double *n, double *e, Material *mat,
     double shine = mat->shine;
     
     double newA[] = {0, 0, 0};
+    double newB[] = {0, 0, 0};
+    double coeffs[] = {0, 0, 0};
+    double roots[] = {0, 0, 0};
     //double *newA = &lightDoubles[0];
-    double *newB = &lightDoubles[3];
-    double *coeffs = &lightDoubles[6];
-    double *roots = &lightDoubles[30];
+    //double *newB = &lightDoubles[3];
+    //double *coeffs = &lightDoubles[6];
+    //double *roots = &lightDoubles[30];
     
 
     // Get the unit direction from the point to the camera
