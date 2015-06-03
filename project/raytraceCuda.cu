@@ -996,11 +996,11 @@ void raytraceKernel(double *grid, Object *objects, Point_Light *lightsPPM,
     int j = threadIdx.y + blockDim.y * blockIdx.y;
     
     // Debugging
-    if (i == 0 && j == 0) {
+    /*if (i == 0 && j == 0) {
         print_objects(objects, data[0]);
         print_lights(lightsPPM, data[1]);
     }
-    __syncthreads();
+    __syncthreads();*/
     
 #if SINGLETHREADMODE
     if (i == 0 && j == 0) {
