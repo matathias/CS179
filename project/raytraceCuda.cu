@@ -1245,7 +1245,8 @@ void callRaytraceKernel(double *grid, Object *objects, Point_Light *lightsPPM,
     printf("grid size y: %d\n", gy);
 #endif
     // Allocate space on the gpu for the double arrays in the kernel
-    int numThreads = (blockSize * gx) * (blockSize * gy);
+    //int numThreads = (blockSize * gx) * (blockSize * gy);
+    int numThreads = Nx * Ny;
     double *rayDoubles;
     gpuErrChk(cudaMalloc(&rayDoubles, sizeof(double) * numThreads * 26));
     gpuErrChk(cudaMemset(rayDoubles, 0, sizeof(double) * numThreads * 26));
