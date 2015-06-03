@@ -55,22 +55,22 @@ struct Object
 };
                
 /********** Helper Functions **************************************************/
+/* Stores the component-wise product of a and b into c. */
 __device__
 void cProduct(double *a, double *b, double *c) 
 {
-    for (int i = 0; i < 3; i++) {
-        c[i] = a[i] * b[i];
-    }
+    c[0] = a[0] * b[0];
+    c[1] = a[1] * b[1];
+    c[2] = a[2] * b[2];
 }
+
+/* Stores the component-wise minimum of a and b into out. */
 __device__
 void cWiseMin(double *a, double *b, double *out)
 {
-    for (int i = 0; i < 3; i++) {
-        if (a[i] < b[i])
-            out[i] = a[i];
-        else
-            out[i] = b[i];
-    }
+    out[0] = min(a[0], b[0]);
+    out[1] = min(a[1], b[1]);
+    out[2] = min(a[2], b[2]);
 }
 
 /* Returns -1 for negative numbers, 1 for positive numbers, and 0 for zero. */

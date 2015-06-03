@@ -637,10 +637,11 @@ void getArguments(int argc, char* argv[])
     {
         string filetype = ".txt";
         string firstArg(argv[1]);
-        printf("getArguments firstArg: %s\n", firstArg.c_str());
         unsigned int isFile = firstArg.find(filetype);
-        printf("location of '.txt' in firstArg: %d\n", isFile);
-        printf("value of string::npos: %d\n\n", (int) string::npos);
+        // Why do I need to cast both to ints? Fuck if I know! But I do, so
+        // don't change this, or the program won't be able to properly parse
+        // command-line inputs (though it will be able to parse inputs from a
+        // file)
         if ((int) isFile != (int) string::npos)
         {
             parseFile(argv[1]);

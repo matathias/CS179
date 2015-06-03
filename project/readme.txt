@@ -5,9 +5,6 @@ Project
 The main program, raytraceCuda, is located within the same directory as this 
 readme file. Simply run "make" from within the directory to compile the program.
 
-util.cpp and util.h are helper files that contain useful code used in the main 
-program such as superquadric functions.
-
 
 /------------------------------------------------------------------------------\
 |          ~~~ raytraceCuda ~~~                                                |
@@ -34,11 +31,10 @@ Note: instead of inputting arguments from the commandline, a single .txt file
       Additionally, because of how the file and argument parsers work, any text
       that is not part of an input command or its arguments is ignored.
 
-Regardless of input method, "| display" can be appended to the end of the input
-(sans quotation marks) to display an image instead of printing the rgb values to
-the terminal. "| convert - filename.imageextension" can be appened instead,
-which will save the program output as an image with the name "filename" and the
-extension "imageextension", whatever either may be.
+If no input file is specified, then the produced image will be output in a file
+of the name "out.ppm". If an input file /is/ specified, then the produced image
+will be output in a file of the same name as the input file, but with the
+file extension ".ppm" instead of ".txt".
 
 inputs:
 [-res Nx Ny] where Nx and Ny are the output resolution of the raytraced file.
@@ -75,8 +71,7 @@ inputs:
 
 
 All inputs require the first "dash" input to be typed exactly as you see it; the
-following values are to be replaced with numeric inputs. All values default to
-the assignment-specified defaults if they are not specified.
+following values are to be replaced with numeric inputs.
 
 -obj, -mat, and -l can be specified multiple times to create multiple of each
 item that they create. The rest of the commands can be specified multiple times
