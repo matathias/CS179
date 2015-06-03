@@ -952,11 +952,11 @@ void raytraceKernel(double *grid, Object *objects, Point_Light *lightsPPM,
     int j = threadIdx.y + blockDim.y * blockIdx.y;
     
     // Debugging
-    /*if (i == 0 && j == 0) {
+    if (i == 0 && j == 0) {
         print_objects(objects, data[0]);
         print_lights(lightsPPM, data[1]);
     }
-    __syncthreads();*/
+    __syncthreads();
     
 #if SINGLETHREADMODE
     if (i == 0 && j == 0) {
@@ -966,13 +966,11 @@ void raytraceKernel(double *grid, Object *objects, Point_Light *lightsPPM,
 #else
     while (i < Nx)
     {
-        printf("i loop Pixel (%d, %d)\n", i, j);
         j = threadIdx.y + blockDim.y * blockIdx.y;
         
         while (j < Ny)
 #endif
         {
-            printf("Pixel (%d, %d)\n", i, j);
             /* Do all of this within the while loop to prevent threads with i's
              * and j's outside of the image boundaris from accessing rayDoubles.
              */
