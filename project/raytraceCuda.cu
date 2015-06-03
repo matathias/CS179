@@ -1256,7 +1256,8 @@ void callRaytraceKernel(double *grid, Object *objects, Point_Light *lightsPPM,
                                       antiAliased, rayDoubles, lightDoubles);*/
     raytraceKernel<<<gridSize, blocks>>>(grid, objects, lightsPPM, data, 
                                          bgColor, e1, e2, e3, lookFrom, 
-                                         rayDoubles, lightDoubles, Nx, Ny, anti);
+                                         rayDoubles, lightDoubles, Nx, Ny, 
+                                         antiAliased);
     gpuErrChk(cudaPeekAtLastError());
     gpuErrChk(cudaDeviceSynchronize());
     gpuErrChk(cudaFree(rayDoubles));
