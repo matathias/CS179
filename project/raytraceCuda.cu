@@ -82,14 +82,14 @@ void cWiseMin(double *a, double *b, double *out)
     }
 }
 
-__device__
+/*__device__
 void findFilmA(double *x, double *y, double *e1, double *e2, double *e3, 
                double *filmDepth, double *film)
 {
     for (int i = 0; i < 3; i++) {
         film[i] = (*filmDepth * e3[i]) + (*x * e1[i]) + (*y * e2[i]);
     }
-}
+}*/
 
 /* Returns -1 for negative numbers, 1 for positive numbers, and 0 for zero. */
 __device__
@@ -1011,7 +1011,12 @@ void raytraceKernel(double *grid, Object *objects, Point_Light *lightsPPM,
                 pointerChk(e1, __LINE__);
                 pointerChk(e2, __LINE__);
                 pointerChk(e3, __LINE__);
-                findFilmA(&px, &py, e1, e2, e3, &data[5], pointA);
+                //findFilmA(&px, &py, e1, e2, e3, &data[5], pointA);
+                
+                for (int z = 0; z < 3; z++) {
+                    pointA[z] = (data[5] * e3[z]) + (px * e1[z]) + (py * e2[z]);
+                }
+                
                 hitObject = false;
                 finalObj = 0, ttrueFinal = 0;
                 for (int k = 0; k < data[0]; k++)
@@ -1102,7 +1107,12 @@ void raytraceKernel(double *grid, Object *objects, Point_Light *lightsPPM,
                     {
                         double thisPx = px + (g * (dx / (double) 2));
                         double thisPy = py + (h * (dy / (double) 2));
-                        findFilmA(&thisPx, &thisPy, e1, e2, e3, &data[5], pointA);
+                        //findFilmA(&thisPx, &thisPy, e1, e2, e3, &data[5], pointA);
+                        
+                        for (int z = 0; z < 3; z++) {
+                            pointA[z] = (data[5] * e3[z]) + (thisPx * e1[z]) + (thisPy * e2[z]);
+                        }
+                        
                         hitObject = false;
                         finalObj = 0, ttrueFinal = 0;
                         for (int k = 0; k < data[0]; k++)
