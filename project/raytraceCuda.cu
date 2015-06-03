@@ -1062,12 +1062,15 @@ void raytraceKernel(double *grid, Object *objects, Point_Light *lightsPPM,
                     //newa(objects[k].unScale, objects[k].unRotate, pointA, newA);
                     
                     
-                    double a0 = (objects[k].unRotate[0] * a[0]) + (objects[k].unRotate[1] * a[1]) + 
-                                (objects[k].unRotate[2] * a[2]);
-                    double a1 = (objects[k].unRotate[3] * a[0]) + (objects[k].unRotate[4] * a[1]) + 
-                                (objects[k].unRotate[5] * a[2]);
-                    double a2 = (objects[k].unRotate[6] * a[0]) + (objects[k].unRotate[7] * a[1]) + 
-                                (objects[k].unRotate[8] * a[2]);
+                    double a0 = (objects[k].unRotate[0] * pointA[0]) + 
+                                (objects[k].unRotate[1] * pointA[1]) + 
+                                (objects[k].unRotate[2] * pointA[2]);
+                    double a1 = (objects[k].unRotate[3] * pointA[0]) + 
+                                (objects[k].unRotate[4] * pointA[1]) + 
+                                (objects[k].unRotate[5] * pointA[2]);
+                    double a2 = (objects[k].unRotate[6] * pointA[0]) + 
+                                (objects[k].unRotate[7] * pointA[1]) + 
+                                (objects[k].unRotate[8] * pointA[2]);
                     
                     newA[0] = (objects[k].unScale[0] * a0) + (objects[k].unScale[1] * a1) + 
                               (objects[k].unScale[2] * a2);
