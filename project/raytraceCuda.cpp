@@ -670,6 +670,7 @@ void parseFile(char* filename)
     }
     outName = inName;
     outName.append(".ppm");
+    outName.insert(0, "output/");
     printf("Output file name: %s\n\n", outName.c_str());
     
     
