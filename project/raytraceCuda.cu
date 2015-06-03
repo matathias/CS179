@@ -1059,7 +1059,23 @@ void raytraceKernel(double *grid, Object *objects, Point_Light *lightsPPM,
                 for (int k = 0; k < data[0]; k++)
                 {
                     // Find the ray equation transformations
-                    newa(objects[k].unScale, objects[k].unRotate, pointA, newA);
+                    //newa(objects[k].unScale, objects[k].unRotate, pointA, newA);
+                    
+                    
+                    double a0 = (objects[k].unRotate[0] * a[0]) + (objects[k].unRotate[1] * a[1]) + 
+                                (objects[k].unRotate[2] * a[2]);
+                    double a1 = (objects[k].unRotate[3] * a[0]) + (objects[k].unRotate[4] * a[1]) + 
+                                (objects[k].unRotate[5] * a[2]);
+                    double a2 = (objects[k].unRotate[6] * a[0]) + (objects[k].unRotate[7] * a[1]) + 
+                                (objects[k].unRotate[8] * a[2]);
+                    
+                    newA[0] = (objects[k].unScale[0] * a0) + (objects[k].unScale[1] * a1) + 
+                              (objects[k].unScale[2] * a2);
+                    newA[1] = (objects[k].unScale[3] * a0) + (objects[k].unScale[4] * a1) + 
+                              (objects[k].unScale[5] * a2);
+                    newA[2] = (objects[k].unScale[6] * a0) + (objects[k].unScale[7] * a1) + 
+                              (objects[k].unScale[8] * a2);
+                    
                     newb(objects[k].unScale, objects[k].unRotate, 
                          objects[k].unTranslate, lookFrom, newB);
 
