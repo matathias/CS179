@@ -567,11 +567,11 @@ void reflections(Object *objects, int numObjects, Point_Light *l, int numLights,
                  &objects[finalObj].mat,
                  l, numLights, objects, numObjects, epsilon,
                  finalObj, generation-1, &reflectedLight[0]);
-        if (shine < 1) {
+        /*if (shine < 1) {
             reflectedLight[0] *= shine;
             reflectedLight[1] *= shine;
             reflectedLight[2] *= shine;
-        }
+        }*/
         printf("reflected light: (%f, %f, %f)\n", reflectedLight[0],
                reflectedLight[1], reflectedLight[2]);
     }
