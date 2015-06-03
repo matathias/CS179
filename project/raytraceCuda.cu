@@ -90,11 +90,11 @@ void cWiseMin(double *a, double *b, double *out)
 }
 
 __device__
-void findFilmA(double x, double y, double *e1, double *e2, double *e3, 
-               double filmDepth, double *film)
+void findFilmA(*double x, *double y, double *e1, double *e2, double *e3, 
+               *double filmDepth, double *film)
 {
     for (int i = 0; i < 3; i++) {
-        film[i] = (filmDepth * e3[i]) + (x * e1[i]) + (y * e2[i]);
+        film[i] = (*filmDepth * e3[i]) + (*x * e1[i]) + (*y * e2[i]);
     }
 }
 
@@ -1018,7 +1018,7 @@ void raytraceKernel(double *grid, Object *objects, double numObjects,
                 pointerChk(e1, __LINE__);
                 pointerChk(e2, __LINE__);
                 pointerChk(e3, __LINE__);
-                findFilmA(px, py, e1, e2, e3, filmDepth, pointA);
+                findFilmA(&px, &py, e1, e2, e3, &filmDepth, pointA);
                 hitObject = false;
                 finalObj = 0, ttrueFinal = 0;
                 for (int k = 0; k < numObjects; k++)
