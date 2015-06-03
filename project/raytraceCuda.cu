@@ -971,7 +971,7 @@ void raytraceKernel(double *grid, Object *objects, Point_Light *lightsPPM,
         while (j < Ny)
 #endif
         {
-            //printf("Pixel (%d, %d)\n", i, j);
+            printf("Pixel (%d, %d)\n", i, j);
             /* Do all of this within the while loop to prevent threads with i's
              * and j's outside of the image boundaris from accessing rayDoubles.
              */
