@@ -12,7 +12,7 @@
 
 #define DEBUG 0
 
-#define SINGLETHREADMODE 0
+#define SINGLETHREADMODE 1
 
 #define gpuErrChk(ans) { gpuAssert((ans), __FILE__, __LINE__); }
 inline void gpuAssert(cudaError_t code,
