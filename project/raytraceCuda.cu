@@ -282,14 +282,13 @@ void isqGradient(double *vec, double *grad, double e, double n)
 /* Derivative of the isq function. */
 // vec and a are 3-vectors
 __device__
-void gPrime(double *vec, double *a, double e, double n, double *gP)
+double gPrime(double *vec, double *a, double e, double n)
 {
     double tmp[3];
     isqGradient(vec, &tmp[0], e, n);
     double val = d_dot(a, &tmp[0]);
-    *gP = val;
     //delete[] tmp;
-    //return val;
+    return val;
 }
 
 /* Uses Newton's method to find the t value at which a ray hits the superquadric.
@@ -304,8 +303,7 @@ double updateRule(double *a, double *b, double *e, double *n, double t, double e
     pointerChk(&vec[2], __LINE__);
     
     findRay(a, b, &vec[0], t);
-    double gP = 0;
-    gPrime(&vec[0], a, *e, *n, &gP);
+    double gP = gPrime(&vec[0], a, *e, *n);
     double gPPrevious = gP;
     double g = 0.0;
     double tnew = t, told = t;
@@ -315,7 +313,7 @@ double updateRule(double *a, double *b, double *e, double *n, double t, double e
     {
         told = tnew;
         findRay(a, b, &vec[0], told);
-        /*gP =*/ gPrime(&vec[0], a, *e, *n, &gP);
+        gP = gPrime(&vec[0], a, *e, *n);
         g = isq(&vec[0], e, n);
 
         if ((g - epsilon) <= 0)
@@ -673,10 +671,10 @@ void lighting(double *point, double *n, double *e, Material *mat,
                    &intersectRNormal[0], ttrueFinal, objects[finalObj].e,
                    objects[finalObj].n);
                    
-        lighting(&intersectR[0], &intersectRNormal[0], e,
+        /*lighting(&intersectR[0], &intersectRNormal[0], e,
                  &objects[finalObj].mat,
                  l, numLights, objects, numObjects, epsilon,
-                 finalObj, generation-1, &reflectedLight[0]);
+                 finalObj, generation-1, &reflectedLight[0]);*/
         if (shine < 1) {
             reflectedLight[0] *= shine;
             reflectedLight[1] *= shine;
