@@ -793,8 +793,8 @@ void lighting(double *point, double *n, double *e, Material *mat,
               double epsilon, int ind, int generation, double *res)
 {
     double diffuseSum[3];// = {0.0, 0.0, 0.0};
-    double specularSum[3];// = {0.0, 0.0, 0.0};
     double reflectedLight[3];// = {0.0, 0.0, 0.0};
+    double specularSum[3];// = {0.0, 0.0, 0.0};
     double refractedLight[3];// = {0.0, 0.0, 0.0};
     for (int i = 0; i < 3; i++)
     {
