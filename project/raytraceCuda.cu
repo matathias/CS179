@@ -456,7 +456,18 @@ void print_lights(Point_Light *p_lights, int numLights)
 
 /********** Actual Raytracing Functions ***************************************/
 __device__
+template<>
+void lighting<0>(double *point, double *n, double *e, Material *mat,
+              Point_Light *l, int numLights, 
+              Object *objects, int numObjects,
+              double epsilon, 
+              int ind, int generation, double *res, double *lightDoubles)
+{
+}
+
+__device__
 // n is the normal. e is the eye. ind is the index of the object we're lighting.
+template <int depth>
 void lighting(double *point, double *n, double *e, Material *mat,
               Point_Light *l, int numLights, 
               Object *objects, int numObjects,
@@ -671,7 +682,7 @@ void lighting(double *point, double *n, double *e, Material *mat,
                    &intersectRNormal[0], ttrueFinal, objects[finalObj].e,
                    objects[finalObj].n);
                    
-        lighting(&intersectR[0], &intersectRNormal[0], e,
+        lighting<generation-1>(&intersectR[0], &intersectRNormal[0], e,
                  &objects[finalObj].mat,
                  l, numLights, objects, numObjects, epsilon,
                  finalObj, generation-1, &reflectedLight[0], lightDoubles);
@@ -1087,7 +1098,7 @@ void raytraceKernel(double *grid, Object *objects, Point_Light *lightsPPM,
                                intersectNormal, ttrueFinal, objects[finalObj].e, 
                                objects[finalObj].n);
 
-                    lighting(intersect, intersectNormal, lookFrom,
+                    lighting<3>(intersect, intersectNormal, lookFrom,
                              &objects[finalObj].mat,
                              lightsPPM, data[1], objects, data[0], data[4],
                              finalObj, 3, &pxColor[0], lDoubles);
@@ -1186,7 +1197,7 @@ void raytraceKernel(double *grid, Object *objects, Point_Light *lightsPPM,
 
                             double color[] = {0, 0, 0};
                             
-                            lighting(intersect, intersectNormal, lookFrom,
+                            lighting<3>(intersect, intersectNormal, lookFrom,
                                      &objects[finalObj].mat,
                                      lightsPPM, data[1], objects, data[0], 
                                      data[4],
