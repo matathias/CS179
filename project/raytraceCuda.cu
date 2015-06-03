@@ -953,7 +953,7 @@ void raytraceKernel(double *grid, Object *objects, Point_Light *lightsPPM,
     
     // Debugging
     if (i == 0 && j == 0) {
-        //print_objects(objects, data[0]);
+        print_objects(objects, data[0]);
         print_lights(lightsPPM, data[1]);
     }
     __syncthreads();
