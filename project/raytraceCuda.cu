@@ -609,7 +609,7 @@ void lighting(double *point, double *n, double *e, Material *mat,
 #if REFLECTION
     double eDotN = d_dot(n, &eDirection[0]);
     double reflected[3];
-    pointerChk(&reflect[0], __LINE__);
+    pointerChk(&reflected[0], __LINE__);
     
     //double *reflected = &lightDoubles[9];
     reflected[0] = (2 * n[0] * eDotN) - eDirection[0];
