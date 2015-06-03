@@ -140,8 +140,8 @@ double isq(double *vec, double e, double n)
     pointerChk(&vec[0], __LINE__);
     pointerChk(&vec[1], __LINE__);
     pointerChk(&vec[2], __LINE__);
-    pointerChk(e, __LINE__);
-    pointerChk(n, __LINE__);
+    pointerChk(&e, __LINE__);
+    pointerChk(&n, __LINE__);
     // Test for n = 0 now to prevent divide-by-zero errors.
     if (n == 0)
         return FLT_MAX;
@@ -154,7 +154,7 @@ double isq(double *vec, double e, double n)
         
     double xTerm = pow(pow(vec[0], 2.0), 1.0 / (double) e);
     double yTerm = pow(pow(vec[1], 2.0), 1.0 / (double) e);
-    double xyTerm = pow(xTerm + yTerm, *e / (double) n);
+    double xyTerm = pow(xTerm + yTerm, e / (double) n);
     return xyTerm + zTerm - 1.0;
 }
 
