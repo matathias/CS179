@@ -1048,7 +1048,8 @@ void raytraceKernel(double *grid, Object *objects, double numObjects,
                          * then either the ray has started inside the object or is 
                          * pointing away from the object; in both cases the ray has 
                          * "missed". */
-                        if (tfinal != FLT_MAX && tfinal >= 0)
+                        double test = FLT_MAX;
+                        if (tfinal != test && tfinal >= 0)
                         {
                             if(hitObject && tfinal < ttrueFinal)
                             {
