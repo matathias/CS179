@@ -90,8 +90,8 @@ void cWiseMin(double *a, double *b, double *out)
 }
 
 __device__
-void findFilmA(*double x, *double y, double *e1, double *e2, double *e3, 
-               *double filmDepth, double *film)
+void findFilmA(double *x, double *y, double *e1, double *e2, double *e3, 
+               double *filmDepth, double *film)
 {
     for (int i = 0; i < 3; i++) {
         film[i] = (*filmDepth * e3[i]) + (*x * e1[i]) + (*y * e2[i]);
