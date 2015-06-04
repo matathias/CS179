@@ -502,7 +502,7 @@ void parseArguments(int argc, char* argv[])
                 if (opacity > 1) opacity = 1;
                 if (opacity < 0) opacity = 0;
                 if (reflectivity > 1) reflectivity = 1;
-                if (reflecitvity < 0) reflectivity = 0;
+                if (reflectivity < 0) reflectivity = 0;
                 create_Material(atof(argv[inInd-9]), atof(argv[inInd-8]), atof(argv[inInd-7]),
                                 0, 0, 0, atof(argv[inInd-6]), 
                                 atof(argv[inInd-5]), atof(argv[inInd-4]),

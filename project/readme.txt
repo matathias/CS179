@@ -62,12 +62,15 @@ inputs:
               the program at the position of the eye). This input can be
               specified multiple times, but only the inputs from the first time
               will be used
-[-mat dr dg db sr sg sb shine refraction opacity] where (dr, dg, db) is the 
-    diffuse rgb value, (sr, sg, sb) is the specular rgb value, shine is the 
-    shininess value (higher number means more shininess), refraction is the
-    snell ratio of the object (should be 1 or less), and opacity is the opacity
-    of the object. (Note about opacity: 0 means completely solid, 1 means 
-    completely see-through)
+[-mat dr dg db sr sg sb shine refraction opacity reflectivity] 
+    where (dr, dg, db) is the diffuse rgb value, (sr, sg, sb) is the specular 
+    rgb value, shine is the shininess value (higher number means more 
+    shininess), refraction is the snell ratio of the object (should be 1 or 
+    less), opacity is the opacity of the object, and reflectivity is the
+    reflectivity of the object. Opacity is capped to a range of [0, 1] where 0
+    is completely solid and 1 is completely see-through. Reflectivity is capped
+    to a range of [0, 1] where 0 is completely non-reflective and 1 is
+    completely reflective.
 [-anti] toggles antialiasing (defaults to off). Beware, this will multiply
         runtime by a factor of 9.
 
