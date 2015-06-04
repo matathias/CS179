@@ -12,6 +12,8 @@
 
 #define SINGLETHREADMODE 0
 
+#define RECURSIONDEPTH 4
+
 #define gpuErrChk(ans) { gpuAssert((ans), __FILE__, __LINE__); }
 inline void gpuAssert(cudaError_t code,
                       const char *file,
@@ -1019,7 +1021,8 @@ void raytraceKernel(double *grid, Object *objects, Point_Light *lightsPPM,
                     lighting(intersect, intersectNormal, lookFrom,
                              &objects[finalObj].mat,
                              lightsPPM, data[1], objects, data[0], data[4],
-                             finalObj, 3, &pxColor[0], lDoubles);
+                             finalObj, RECURSIONDEPTH,
+                             &pxColor[0], lDoubles);
                 }
             }
             else
@@ -1118,7 +1121,8 @@ void raytraceKernel(double *grid, Object *objects, Point_Light *lightsPPM,
                                      &objects[finalObj].mat,
                                      lightsPPM, data[1], objects, data[0], 
                                      data[4],
-                                     finalObj, 3, &color[0], lDoubles);
+                                     finalObj, RECURSIONDEPTH, 
+                                     &color[0], lDoubles);
 
                             pxColor[0] += color[0] * pxCoeffs[counter];
                             pxColor[1] += color[1] * pxCoeffs[counter];
