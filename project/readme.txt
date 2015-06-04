@@ -85,9 +85,5 @@ cause the program to never return...
 
 Several text files have been included with some scene presets in the scenes 
 directory; use them if you'd like. The image output that I produced for many of
-the scenes is in the images directory, and they should be named respective to 
-the .txt file that created them. However, if you aren't a fan of profanity, I 
-suggest you stay away from objects4.txt and objects4Anti.txt. Aditionally, any
-of the .txt files that include both anti-aliasing and a resolution of 800 x 800
-either take an indeterminably long time to return, or don't return at all (this
-applies mainly to objects10.txt).
+the scenes is in the output directory, and they should be named respective to 
+the .txt file that created them.

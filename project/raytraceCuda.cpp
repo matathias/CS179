@@ -48,6 +48,7 @@ struct Material
     double shine;
     double snell;
     double opacity;
+    double reflectivity;
 };
 
 struct Object
@@ -325,7 +326,7 @@ void create_film_plane(double *e1, double *e2, double *e3)
 void create_Material(double dr, double dg, double db, 
                      double ar, double ag, double ab,
                      double sr, double sg, double sb, 
-                     double shine, double refract, double opac, 
+                     double shine, double refract, double opac, double reflect,
                      Material *mat)
 {
     mat->diffuse[0] = dr;
@@ -341,6 +342,7 @@ void create_Material(double dr, double dg, double db,
     mat->shine = shine;
     mat->snell = refract;
     mat->opacity = opac;
+    mat->reflectivity = reflect;
 }
 
 void create_default_material(Material *m)
@@ -348,7 +350,7 @@ void create_default_material(Material *m)
     create_Material(0.5, 0.5, 0.5,      // diffuse rgb
                     0.01, 0.01, 0.01,   // ambient rgb
                     0.5, 0.5, 0.5,      // specular rgb
-                    10, 0.9, 0.01, m);
+                    10, 0.9, 0.01, 0.9, m);
 }
 
 void create_object(double e, double n, double xt, double yt, double zt, 
@@ -383,6 +385,7 @@ void change_object_material(Object *obj, Material *mat)
     obj->mat.shine = mat->shine;
     obj->mat.snell = mat->snell;
     obj->mat.opacity = mat->opacity;
+    obj->mat.reflectivity = mat->reflectivity;
 }
 
 void create_default_object()
@@ -490,15 +493,21 @@ void parseArguments(int argc, char* argv[])
             }
             else if (strcmp(argv[inInd], inMats) == 0)
             {
-                inInd += 9;
-                if (inInd >= argc) throw out_of_range("Missing argument(s) for -mat [dr dg db sr sg sb shine refraction opacity]");
+                inInd += 10;
+                if (inInd >= argc) throw out_of_range("Missing argument(s) for -mat [dr dg db sr sg sb shine refraction opacity reflectivity]");
                 tdefaultObject = false;
                 Material *mat = (Material*)malloc(sizeof(Material));
-                create_Material(atof(argv[inInd-8]), atof(argv[inInd-7]),
-                                atof(argv[inInd-6]), 0, 0, 0, 
+                double opacity = atof(argv[inInd-1]);
+                double reflectivity = atof(argv[inInd]);
+                if (opacity > 1) opacity = 1;
+                if (opacity < 0) opacity = 0;
+                if (reflectivity > 1) reflectivity = 1;
+                if (reflecitvity < 0) reflectivity = 0;
+                create_Material(atof(argv[inInd-9]), atof(argv[inInd-8]), atof(argv[inInd-7]),
+                                0, 0, 0, atof(argv[inInd-6]), 
                                 atof(argv[inInd-5]), atof(argv[inInd-4]),
                                 atof(argv[inInd-3]), atof(argv[inInd-2]),
-                                atof(argv[inInd-1]), atof(argv[inInd]), mat);
+                                opacity, reflectivity, mat);
                 tempMats.push_back(mat);
             }
             else if (strcmp(argv[inInd], inLights) == 0)
