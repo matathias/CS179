@@ -553,6 +553,12 @@ void lighting(double *point, double *n, double *e, Material *mat,
     // Find the reflected ray
     
 #if REFLECTION
+    double ttrueFinal = 0.0;
+    int finalObj = 0;
+    bool hitObject = false;
+    
+    double *finalNewA = &lightDoubles[12];
+    double *finalNewB = &lightDoubles[15];
     // If the object's reflectivity is 0 then just don't bother
     if (objects[ind].mat.reflectivity != 0) {
         double eDotN = d_dot(n, &eDirection[0]);
@@ -562,13 +568,7 @@ void lighting(double *point, double *n, double *e, Material *mat,
         reflected[2] = (2 * n[2] * eDotN) - eDirection[2];
         
         d_normalize(&reflected[0]);
-        double ttrueFinal = 0.0;
-        int finalObj = 0;
         
-        double *finalNewA = &lightDoubles[12];
-        double *finalNewB = &lightDoubles[15];
-        
-        bool hitObject = false;
         for (int k = 0; k < numObjects && generation > 0 ; k++)
         {
             if (k != ind)
